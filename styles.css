@@ -495,8 +495,3 @@ footer {
   margin-right: auto;
   max-width: 1140px;
 }
-
-@media screen and (min-width: 1024px)
-.container {
-    width: 92%;
-}
