@@ -2,8 +2,9 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import { MapRoutingModule } from './map-routing.module';
+import { LeafletMarkerClusterModule } from '@asymmetrik/ngx-leaflet-markercluster';
 
+import { MapRoutingModule } from './map-routing.module';
 import { MapComponent } from './components/map/map.component';
 
 
@@ -14,7 +15,10 @@ import { MapComponent } from './components/map/map.component';
   imports: [
     CommonModule,
     MapRoutingModule,
-    LeafletModule
-  ]
+    LeafletModule,
+    LeafletMarkerClusterModule
+  ],
+  exports: [MapComponent],
+  bootstrap: [MapComponent]
 })
 export class MapModule { }

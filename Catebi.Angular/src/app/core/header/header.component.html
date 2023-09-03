@@ -42,11 +42,11 @@
 
   <div class="d-none d-md-flex flex-grow-1 align-items-start margin-3">
     <button type="button" class="ml-2 mr-2 m-1 btn border-0 font-weight-bold"
+      [class.active]="isActive(item)"
       *ngFor="let item of menuItems"
       [routerLink]="(isHome$ | async) ? item.homePath : item.pagePath"
       [fragment]="(isHome$ | async) ? item.fragment : ''"
-      [ngClass]="item.cssButton"
-
+      [ngClass]="[isButtonActive, item.cssButton]"
       >{{item.title}}</button>
   </div>
 

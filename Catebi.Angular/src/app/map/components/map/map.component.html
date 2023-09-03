@@ -1,5 +1,26 @@
-<div style="height: 300px;"
-     leaflet
-     [leafletOptions]="options"
-     [leafletLayersControl]="layersControl">
+<div class="container" style="margin-bottom: 30px;">
+
+	<div class="row">
+		<div class="col-md-12">
+
+			<h2>Marker Clusters</h2>
+
+			<!-- Control Form -->
+			<form class="form" style="margin-bottom: 16px;">
+				<button type="button" class="btn btn-primary" (click)="refreshData()">Generate Data</button>
+			</form>
+
+			<!-- Map -->
+			<div leaflet style="height: 600px; width: 600px;"
+				 [leafletOptions]="options"
+				 [leafletBaseLayers]="baseLayers"
+				 [leafletLayersControlOptions]="layersControlOptions"
+				 [leafletMarkerCluster]="markerClusterData"
+				 [leafletMarkerClusterOptions]="markerClusterOptions"
+				 (leafletMarkerClusterReady)="markerClusterReady($event)">
+			</div>
+
+		</div>
+	</div>
+
 </div>

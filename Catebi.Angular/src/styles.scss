@@ -1,3 +1,7 @@
+/* Importing Bootstrap SCSS file. */
+@import "bootstrap/scss/bootstrap";
+
+
 html,
 body {
   width: 100%;
@@ -27,8 +31,6 @@ body {
   min-height: 10vh;
 }
 
-/* Importing Bootstrap SCSS file. */
-@import "bootstrap/scss/bootstrap";
 
 body {
   font-family: Arial, sans-serif;
