@@ -4,11 +4,10 @@ import { BehaviorSubject, Observable } from 'rxjs';
 
 // ACCESS CONSTANTS
 export const NOTION = {
-  bearerToken: 'secret_entb4diRbuA3yDFpd6s14ClEqn1yCdLENUuUOWLvTok',
+  bearerToken: '',
   database: {
-    //api: 'https://api.notion.com/v1/databases',
     api: 'http://localhost:3000/database',
-    id: '64da38a2d05347f4a9ad1e8c79c8e4f7',
+    id: '',
   }
 };
 
