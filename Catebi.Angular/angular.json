@@ -67,7 +67,8 @@
             "scripts": [],
             "allowedCommonJsDependencies": [
               "rxjs",
-              "leaflet"
+              "leaflet",
+              "leaflet.markercluster"
             ]
           },
           "configurations": {
@@ -99,6 +100,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "Catebi.Angular:build",
+            "proxyConfig": "proxy.config.json"
+          },
           "configurations": {
             "production": {
               "browserTarget": "Catebi.Angular:build:production"

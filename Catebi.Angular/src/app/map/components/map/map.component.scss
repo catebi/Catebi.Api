@@ -1,0 +1,19 @@
+:host::ng-deep .marker-cluster-small {
+  background-color: #49afa5 !important;
+}
+
+:host::ng-deep .marker-cluster-small div {
+  background-color: #1c9489 !important;
+  color: #fff !important;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  @extend .marker-cluster-small;
+
+  div {
+    @extend .marker-cluster-small;
+  }
+}
+
