@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>4.1.0-preview</VersionPrefix>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    
+    <PackageId>Notion.Net</PackageId>
+    <Authors>Vedant Koditkar</Authors>
+    <Description>A Notion API dotnet client</Description>
+    <RepositoryUrl>https://github.com/notion-dotnet/notion-sdk-net</RepositoryUrl>
+    <PackageTags>notion;client;api;json;sdk;notion.net</PackageTags>
+    <PackageIcon>notion-logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="JsonSubTypes" Version="1.8.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\notion-logo.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath> 
+    </None>
+    <None Include="..\..\docs\README.md">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath> 
+    </None>
+  </ItemGroup>
+
+</Project>
