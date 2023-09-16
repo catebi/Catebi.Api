@@ -7,25 +7,49 @@ var builder = WebApplication.CreateBuilder(args);
 
 var services = builder.Services;
 
+// Register CORS policy
+services
+  .AddCors(options =>
+  {
+    options.AddPolicy(
+        "CorsPolicy",
+        builder =>
+        {
+          builder
+              .AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .Build();
+        }
+    );
+  });
+
 services.AddControllers();
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
+
+services.AddMemoryCache();
 
 services.Configure<NotionApiSettings>(builder.Configuration.GetSection("NotionApi"));
 
 var notionAuthToken = builder.Configuration.GetSection("NotionApi:AuthToken").Value;
 
-services.AddNotionClient(options => {
+services.AddNotionClient(options =>
+{
   options.AuthToken = notionAuthToken;
 });
 
+services.AddScoped<INotionApiService, NotionApiService>();
+
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -33,5 +57,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();
