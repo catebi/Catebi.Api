@@ -1,0 +1,26 @@
+<div class="container" style="margin-bottom: 30px;">
+
+  <h2>Кошки</h2>
+
+  <!-- Marker Count -->
+  <p>количество кошек: {{ markerClusterData.length }}</p>
+
+  <!-- Control Form -->
+  <form class="form" style="margin-bottom: 16px;">
+    <button type="button" class="btn btn-primary" (click)="refreshData()">получить кошек</button>
+  </form>
+
+  <div *ngIf="loading$ | async" class="spinner-border" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+
+  <!-- Map -->
+  <div leaflet id="map"
+    [leafletOptions]="options"
+    [leafletBaseLayers]="baseLayers"
+    [leafletLayersControlOptions]="layersControlOptions"
+    [leafletMarkerCluster]="markerClusterData"
+    [leafletMarkerClusterOptions]="markerClusterOptions"
+    (leafletMarkerClusterReady)="markerClusterReady($event)">
+  </div>
+</div>

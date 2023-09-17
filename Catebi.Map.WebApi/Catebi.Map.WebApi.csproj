@@ -9,15 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <PackageReference Include="Notion.Net" Version="4.1.0" /> -->
+    <PackageReference Include="Notion.Net" Version="4.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Autofac" Version="7.1.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Autofac.Extras.DynamicProxy" Version="7.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\notion-sdk-net-main\Src\Notion.Client\Notion.Client.csproj" />
   </ItemGroup>
 
 </Project>
