@@ -1,5 +1,4 @@
-using Catebi.Map.WebApi.Models;
-using Microsoft.Extensions.Configuration;
+  AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +28,9 @@ services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
 services.AddMemoryCache();
+
+services.AddDbContext<CatebiContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Pgsql")));
 
 services.Configure<NotionApiSettings>(builder.Configuration.GetSection("NotionApi"));
 

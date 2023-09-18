@@ -20,9 +20,9 @@ export class PopupService {
 
 return `${image}
 <div style='display: flex; flex-direction: column; align-items: left; padding: 15px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;'>
-  <div style='margin-bottom: 5px; font-size: 14px;'><strong>Id:</strong> ${ data.catId }</div>
+  <div style='margin-bottom: 5px; font-size: 14px;'><strong>Id:</strong> ${ data.notionCatId }</div>
   <div style='margin-bottom: 5px; font-size: 14px;'><strong>Имя/описание:</strong> ${ data.name }</div>
-  <div style='font-size: 14px;'><strong><a href='${ data.url }' target='_blank' style='color: #007bff;'>Notion link</a></strong></div>
+  <div style='font-size: 14px;'><strong><a href='${ data.notionPageUrl }' target='_blank' style='color: #007bff;'>Notion link</a></strong></div>
 </div>
 `
   }

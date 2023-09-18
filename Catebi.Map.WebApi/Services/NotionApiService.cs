@@ -8,16 +8,19 @@ public class NotionApiService : INotionApiService
 {
     private readonly IMemoryCache _cache;
     private readonly INotionClient _client;
+    private readonly CatebiContext _context;
     private readonly NotionApiSettings _notionSettings;
     private readonly ILogger<NotionApiService> _logger;
 
     public NotionApiService(
         INotionClient client,
+        CatebiContext context,
         IOptions<NotionApiSettings> notionSettings,
         ILogger<NotionApiService> logger,
         IMemoryCache memoryCache) // Inject the IMemoryCache
     {
         _client = client;
+        _context = context;
         _notionSettings = notionSettings.Value;
         _logger = logger;
         _cache = memoryCache;
@@ -25,7 +28,7 @@ public class NotionApiService : INotionApiService
 
     public async Task<List<CatDto>> GetCats()
     {
-            // Optionally, you could cache this key list as well.
+        // Optionally, you could cache this key list as well.
         _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
         cachedCatKeys = cachedCatKeys ?? new List<string>();
 
@@ -42,7 +45,7 @@ public class NotionApiService : INotionApiService
 
             foreach(var cat in updatedOrNewCats)
             {
-                var cachedCat = catsResult.FirstOrDefault(x => x.CatId == cat.CatId);
+                var cachedCat = catsResult.FirstOrDefault(x => x.NotionCatId == cat.NotionCatId);
                 if (cachedCat != null)
                 {
                     catsResult.Remove(cachedCat);
@@ -50,7 +53,7 @@ public class NotionApiService : INotionApiService
                 catsResult.Add(cat);
 
                 // Update the cache
-                var key = cat.CatId;
+                var key = cat.NotionCatId;
                 _cache.Remove(key);
                 _cache.Set(key, cat);
 
@@ -66,7 +69,33 @@ public class NotionApiService : INotionApiService
         // Save individual cats in the cache
         CacheCats(catsResult);
 
+        await SaveCatsToDb(catsResult);
+
         return catsResult;
+    }
+
+    private async Task SaveCatsToDb(List<CatDto> catsResult)
+    {
+        var cats = catsResult.Select(x => new Cat
+        {
+            NotionCatId = x.NotionCatId,
+            Name = x.Name,
+            GeoLocation = x.GeoLocation,
+            Address = x.Address,
+            NotionPageUrl = x.NotionPageUrl,
+            CatImageUrl = x.Images.Select(i =>
+                            new CatImageUrl
+                            {
+                                Name = i.Name,
+                                Url = i.Url,
+                                Type = i.Type
+                            }).ToList(),
+            CreatedTime = x.CreatedTime.ToUniversalTime(),
+            LastEditedTime = x.LastEditedTime.ToUniversalTime()
+        });
+
+        _context.Cat.AddRange(cats);
+        await _context.SaveChangesAsync();
     }
 
     private async Task<List<CatDto>> GetCatsFromNotion(DatabasesQueryParameters queryParams)
@@ -98,7 +127,7 @@ public class NotionApiService : INotionApiService
         var cachedCatKeys = new List<string>();
         foreach (var cat in cats)
         {
-            var key = cat.CatId;
+            var key = cat.NotionCatId;
 
             _cache.Remove(key);
             _cache.Set(key, cat, cacheOptions);
@@ -132,14 +161,14 @@ public class NotionApiService : INotionApiService
             var idProperty = ((UniqueIdPropertyValue)properties["id"]).UniqueId;
             return new CatDto
             {
-                CatId = $"{idProperty.Prefix}-{idProperty.Number}",
+                NotionCatId = $"{idProperty.Prefix}-{idProperty.Number}",
                 Name = ((TitlePropertyValue)x.Properties["cat\\name"]).Title.FirstOrDefault()?.PlainText,
                 GeoLocation = ((RichTextPropertyValue)x.Properties["geo_location"]).RichText.FirstOrDefault()?.PlainText,
                 Address = ((RichTextPropertyValue)x.Properties["address"]).RichText.FirstOrDefault()?.PlainText,
-                Url = x.Url,
+                NotionPageUrl = x.Url,
                 Images = ((FilesPropertyValue)x.Properties["Files & media"])
                             .Files
-                            .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url })
+                            .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
                             .ToList(),
                 CreatedTime = x.CreatedTime,
                 LastEditedTime = x.LastEditedTime
