@@ -1,0 +1,28 @@
+{
+	"nodes":[
+		{"id":"ad69a0b3f34040fa","type":"group","x":-1480,"y":-340,"width":2560,"height":2700,"label":"catebi_db"},
+		{"id":"337e49642a8d6252","type":"group","x":-1400,"y":1080,"width":1820,"height":1000,"label":"dictionaries"},
+		{"id":"6addc1a943f59415","type":"text","text":"**cat**\n\n- cat_id integer\n- name text\n- notion_cat_id text\n- address text\n- geo_location text\n- created_time timestamp\n- last_edited_time timestamp\n- notion_page_url text\n\n\n\nчто сделать:\n\n\n\n-  <span style=\"color:green\">добавить уникальный constraint  \n- <span style=\"color:green\">добавить справочники  \n\t<span style=\"color:green\">- sex  \n\t<span style=\"color:green\">- cat_collar  \n\t<span style=\"color:green\">- cat_house_space  \n\t<span style=\"color:green\">- cat_tag + cat2tag  \n\n- <span style=\"color:green\">добавить таблицы \n\t- <span style=\"color:green\">volunteer\n\n<span style=\"color:green\">новые поля\n<span style=\"color:green\">- cat_sex_id\n<span style=\"color:green\">- cat_collar_id\n<span style=\"color:green\">- cat_house_space_id\n<span style=\"color:green\">- in_date (default - today)\n<span style=\"color:green\">- out_date\n<span style=\"color:green\">- neutered_date\n<span style=\"color:green\">- responsible_volunteer_id (notion name deliverer)\n<span style=\"color:green\">- comment text","x":-600,"y":-287,"width":820,"height":847},
+		{"id":"13f951f56ef3053a","type":"text","text":"**volunteer**\n\n\n- volunteer_id\n- notion_volunteer_id\n- name\n- notion_user_id\n- telegram_account\n- address\n- location\n","x":480,"y":320,"width":240,"height":300},
+		{"id":"f7f50f23c916d22b","type":"text","text":"cat_image_url\n\n- cat_image_url_id integer\n- cat_id integer\n- name text\n- url text\n- type text","x":550,"y":-200,"width":310,"height":220},
+		{"id":"3397615e50d844d8","type":"text","text":"**color**\n\n- color_id (pk)\n- rgb_code (unique)\n- hex_code (unique)\n- color_name (unique)","x":-1360,"y":1120,"width":250,"height":180},
+		{"id":"3d71cbca4a056f04","type":"text","text":"**cat_sex**\n\n\n- cat_sex_id\n- name (unique)\n- color_id (fk)","x":-777,"y":1250,"width":217,"height":180},
+		{"id":"aa7189f066544dd9","type":"text","text":"**cat_collar**\n\n\n- cat_collar_id\n- name (unique)\n- color_id (fk)  \n\n","x":-480,"y":1250,"width":200,"height":180},
+		{"id":"ae01b2a1dd76989f","type":"text","text":"**cat_tag**\n\n\n- cat_tag_id\n- name text (unique)\n- color_id (fk)\n\n","x":60,"y":1250,"width":280,"height":220},
+		{"id":"ebda520793f3c6f9","type":"text","text":"**cat2tag**\n\n- cat2tag_id\n- cat_id\n- cat_tag_id\n\n\n\n\n","x":94,"y":880,"width":213,"height":168,"color":"5"},
+		{"id":"7482cc64e0462ac3","type":"text","text":"**cat_house_space**\n\n\n- cat_house_space_id\n- name text (unique)\n- short_name\n- color_id (fk)\n","x":-220,"y":1250,"width":240,"height":250}
+	],
+	"edges":[
+		{"id":"c101e92ddb22ac15","fromNode":"6addc1a943f59415","fromSide":"right","toNode":"f7f50f23c916d22b","toSide":"left","toEnd":"none","label":"1:many"},
+		{"id":"a7ab513f738bae6f","fromNode":"6addc1a943f59415","fromSide":"bottom","toNode":"3d71cbca4a056f04","toSide":"top","toEnd":"none","label":"1:many"},
+		{"id":"0e59da88cdad6380","fromNode":"6addc1a943f59415","fromSide":"bottom","toNode":"aa7189f066544dd9","toSide":"top","toEnd":"none","label":"1:many"},
+		{"id":"135c6708d8f03c49","fromNode":"6addc1a943f59415","fromSide":"right","toNode":"13f951f56ef3053a","toSide":"left","toEnd":"none","label":"1:many"},
+		{"id":"cf507175b26ca833","fromNode":"6addc1a943f59415","fromSide":"bottom","toNode":"ebda520793f3c6f9","toSide":"top","toEnd":"none","color":"5","label":"many:many"},
+		{"id":"ebe04784756e90ea","fromNode":"3397615e50d844d8","fromSide":"right","toNode":"3d71cbca4a056f04","toSide":"left","toEnd":"none"},
+		{"id":"aaee3eb1f56bafee","fromNode":"3397615e50d844d8","fromSide":"right","toNode":"aa7189f066544dd9","toSide":"top","toEnd":"none"},
+		{"id":"c62866c2837cd1d6","fromNode":"3397615e50d844d8","fromSide":"right","toNode":"7482cc64e0462ac3","toSide":"top","toEnd":"none"},
+		{"id":"619928798738cc3a","fromNode":"3397615e50d844d8","fromSide":"right","toNode":"ae01b2a1dd76989f","toSide":"top","toEnd":"none"},
+		{"id":"1f080fc9c833c12b","fromNode":"ebda520793f3c6f9","fromSide":"bottom","toNode":"ae01b2a1dd76989f","toSide":"top","toEnd":"none","color":"5"},
+		{"id":"8cc22fab4b912f36","fromNode":"6addc1a943f59415","fromSide":"bottom","toNode":"7482cc64e0462ac3","toSide":"top","toEnd":"none","label":"1:many"}
+	]
+}
