@@ -1,12 +1,12 @@
 drop table if exists ctb.cat_image_url;
-drop table if exists ctb.cat_house_space;
 drop table if exists ctb.cat2cat_tag;
+drop table if exists ctb.cat;
+drop table if exists ctb.cat_house_space;
 drop table if exists ctb.cat_tag;
 drop table if exists ctb.cat_collar;
 drop table if exists ctb.cat_sex;
-drop table if exists ctb.cat;
-drop table if exists ctb.color;
 drop table if exists ctb.volunteer;
+drop table if exists ctb.color;
 
 
 -- cat table
@@ -50,7 +50,7 @@ comment on column ctb.cat.comment is 'Текст примечания';
 
 -- cat_image_url table
 create table ctb.cat_image_url (
-    cat_image_url_id serial PRINARY KEY,
+    cat_image_url_id serial PRIMARY KEY,
     cat_id integer not null,
     name text,
     url text not null,
