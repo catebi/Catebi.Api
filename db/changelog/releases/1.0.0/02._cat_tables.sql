@@ -31,32 +31,31 @@ create table ctb.cat (
 
 comment on table ctb.cat is 'Кошка/кот';
 
-comment on column ctb.cat.cat_id  is 'Ид.';
-comment on column ctb.cat.notion_cat_id  is 'Ид. в Notion';
+comment on column ctb.cat.cat_id  is 'ID кошки в бд';
+comment on column ctb.cat.notion_cat_id  is 'ID в Notion';
 comment on column ctb.cat.name is 'Имя/описание';
 comment on column ctb.cat.address is 'Адрес';
 comment on column ctb.cat.geo_location is 'Геолокация';
 comment on column ctb.cat.created_time is 'Дата создания';
 comment on column ctb.cat.last_edited_time is 'Дата последнего изменения';
 comment on column ctb.cat.notion_page_url is 'Линк на страницу в Notion';
-comment on column ctb.cat.cat_sex_id is 'Пол ("м"/"ж")';
-comment on column ctb.cat.cat_collar_id is 'Ошейник (fk ctb.cat_collar)';
-comment on column ctb.cat.cat_house_space_id is 'id комнаты в котодоме (fk ctb.cat_house_space)';
-comment on column ctb.cat.in_date is 'дата прибытия кошки';
-comment on column ctb.cat.out_date is 'дата отъезда кошки';
-comment on column ctb.cat.neutered_date is 'дата стерилизации кошки';
-comment on column ctb.cat.responsible_volunteer_id is 'id волонтёра (в notion - deliverer)';
-comment on column ctb.cat.comment is 'текст примечания';
+comment on column ctb.cat.cat_sex_id is 'Пол';
+comment on column ctb.cat.cat_collar_id is 'Ошейник';
+comment on column ctb.cat.cat_house_space_id is 'ID комнаты в котодоме';
+comment on column ctb.cat.in_date is 'Дата прибытия кошки';
+comment on column ctb.cat.out_date is 'Дата отъезда кошки';
+comment on column ctb.cat.neutered_date is 'Дата стерилизации кошки';
+comment on column ctb.cat.responsible_volunteer_id is 'ID волонтёра (в notion - deliverer)';
+comment on column ctb.cat.comment is 'Текст примечания';
 
 -- cat_image_url table
 create table ctb.cat_image_url (
-    cat_image_url_id serial,
+    cat_image_url_id serial PRINARY KEY,
     cat_id integer not null,
     name text,
     url text not null,
     type text not null,
 
-    constraint pk_cat_image_url primary key (cat_image_url_id),
     foreign key (cat_id) references ctb.cat(cat_id)
 );
 
@@ -64,8 +63,8 @@ create index ix_cat_image_url_cat on ctb.cat_image_url (cat_id);
 
 comment on table ctb.cat_image_url is 'Ссылка на картинки для кошек/котов';
 
-comment on column ctb.cat_image_url.cat_image_url_id is 'Ид.';
-comment on column ctb.cat_image_url.cat_id is 'Ид. кошки/кота';
+comment on column ctb.cat_image_url.cat_image_url_id is 'ID';
+comment on column ctb.cat_image_url.cat_id is 'ID кошки/кота';
 comment on column ctb.cat_image_url.name is 'Имя/описание';
 comment on column ctb.cat_image_url.url is 'Ссылка на картинку';
 comment on column ctb.cat_image_url.type is 'Тип картинки';
@@ -78,11 +77,11 @@ create table ctb.color (
 	hex_code varchar (7) NOT NULL UNIQUE
 );
 
-comment on table ctb.color is 'словарь цветов (для ошейников, отметок и проч)';
-comment on column ctb.color.color_id is 'id цвета в базе (thx cap)';
-comment on column ctb.color.name is 'название кириллицей';
-comment on column ctb.color.rgb_code is 'запись в формате "(255, 255, 255)"';
-comment on column ctb.color.hex_code is 'запись в формате "#000000"';
+comment on table ctb.color is 'Словарь цветов (для ошейников, отметок и проч)';
+comment on column ctb.color.color_id is 'ID цвета в базе (thx cap)';
+comment on column ctb.color.name is 'Hазвание кириллицей';
+comment on column ctb.color.rgb_code is 'Запись в формате "(255, 255, 255)"';
+comment on column ctb.color.hex_code is 'Запись в формате "#000000"';
 
 -- cat_sex table
 create table ctb.cat_sex (
@@ -93,40 +92,40 @@ create table ctb.cat_sex (
     FOREIGN KEY (color_id) references ctb.color(color_id)
 );
 
-comment on table ctb.cat_sex is 'словарь: пол';
-comment on column ctb.cat_sex.cat_sex_id is 'id пола (1/2)';
-comment on column ctb.cat_sex.name is 'пол: название (м/ж)';
-comment on column ctb.cat_sex.color_id is 'id цвета (fk ctb.color)';
+comment on table ctb.cat_sex is 'Словарь: пол';
+comment on column ctb.cat_sex.cat_sex_id is 'ID пола';
+comment on column ctb.cat_sex.name is 'Пол: название (м/ж)';
+comment on column ctb.cat_sex.color_id is 'ID цвета';
 
 -- cat_collar table
 create table ctb.cat_collar (
     cat_collar_id serial PRIMARY KEY,	
     name text NOT NULL UNIQUE,	
-    color_id integer,
+    color_id integer NOT NULL,
 	
     FOREIGN KEY (color_id) references ctb.color(color_id)
 );
 
-comment on table ctb.cat_collar is 'словарь: ошейник';
-comment on column ctb.cat_collar.cat_collar_id is 'id ошейника';
-comment on column ctb.cat_collar.name is 'название ошейника (обычно по его цвету)';
-comment on column ctb.cat_collar.color_id is 'id цвета (fk ctb.color)';
+comment on table ctb.cat_collar is 'Cловарь: ошейник';
+comment on column ctb.cat_collar.cat_collar_id is 'ID ошейника';
+comment on column ctb.cat_collar.name is 'Название ошейника (обычно по его цвету)';
+comment on column ctb.cat_collar.color_id is 'ID цвета';
 
 -- cat_house_space table
 create table ctb.cat_house_space (
     cat_house_space_id serial PRIMARY KEY,	
     name text NOT NULL UNIQUE,
 	short_name varchar(10),
-    color_id integer,
+    color_id integer NOT NULL,
 	
     FOREIGN KEY (color_id) references ctb.color(color_id)
 );
 
-comment on table ctb.cat_house_space is 'словарь: котоквартира';
-comment on column ctb.cat_house_space.cat_house_space_id is 'id комнаты';
+comment on table ctb.cat_house_space is 'Словарь: котоквартира';
+comment on column ctb.cat_house_space.cat_house_space_id is 'ID комнаты';
 comment on column ctb.cat_house_space.name is 'название комнаты';
 comment on column ctb.cat_house_space.short_name is 'сокращение "Комната1"-->"К1"';
-comment on column ctb.cat_house_space.color_id is 'id цвета (fk ctb.color)';
+comment on column ctb.cat_house_space.color_id is 'ID цвета';
 
 -- cat_tag table
 create table ctb.cat_tag (
@@ -138,9 +137,9 @@ create table ctb.cat_tag (
 );
 
 comment on table ctb.cat_tag is 'словарь: теги кошек';
-comment on column ctb.cat_tag.cat_tag_id is 'id тега';
+comment on column ctb.cat_tag.cat_tag_id is 'ID тега';
 comment on column ctb.cat_tag.name is 'текст тега ("медуход", "аборт" итп)';
-comment on column ctb.cat_tag.color_id is 'id цвета (fk ctb.color)';
+comment on column ctb.cat_tag.color_id is 'ID цвета';
 
 -- cat2cat_tag table
 create table ctb.cat2cat_tag (
@@ -149,13 +148,14 @@ create table ctb.cat2cat_tag (
 	cat_tag_id integer NOT NULL,
 	
     FOREIGN KEY (cat_id) references ctb.cat(cat_id),
-	FOREIGN KEY (cat_tag_id) references ctb.cat_tag(cat_tag_id)
+	FOREIGN KEY (cat_tag_id) references ctb.cat_tag(cat_tag_id),
+	UNIQUE (cat_id, cat_tag_id)
 );
 
 comment on table ctb.cat2cat_tag is 'словарь для связи кошек и тегов';
-comment on column ctb.cat2cat_tag.cat2cat_tag_id is 'id соотношения';
-comment on column ctb.cat2cat_tag.cat_id is 'id кошки (fk ctb.cat)';
-comment on column ctb.cat2cat_tag.cat_tag_id is 'id кошки (fk ctb.cat_tag)';
+comment on column ctb.cat2cat_tag.cat2cat_tag_id is 'ID соотношения';
+comment on column ctb.cat2cat_tag.cat_id is 'ID кошки';
+comment on column ctb.cat2cat_tag.cat_tag_id is 'ID тега';
 
 --volunteer table 
 create table ctb.volunteer (
@@ -169,11 +169,11 @@ create table ctb.volunteer (
 );
 
 comment on table ctb.volunteer is 'справочник волонтёров';
-comment on column ctb.volunteer.volunteer_id is 'id волонтёра';
-comment on column ctb.volunteer.notion_volunteer_id is 'id записи о волонтёре в Notion';
+comment on column ctb.volunteer.volunteer_id is 'ID волонтёра';
+comment on column ctb.volunteer.notion_volunteer_id is 'ID записи о волонтёре в Notion';
 comment on column ctb.volunteer.name is 'имя/ник волонтёра';
-comment on column ctb.volunteer.notion_user_id is 'id аккаунта волонтёра в Notion';
-comment on column ctb.volunteer.telegram_account is 'telegram username волонтёра';
+comment on column ctb.volunteer.notion_user_id is 'ID аккаунта волонтёра в Notion';
+comment on column ctb.volunteer.telegram_account is 'Telegram username волонтёра';
 comment on column ctb.volunteer.address is 'физический (обычно неполный) адрес проживания волонтёра';
 comment on column ctb.volunteer.location is 'координаты в пригодном для экспорта формате';
 
@@ -190,4 +190,3 @@ alter table ctb.cat
 alter table ctb.cat 
 	add foreign key (cat_house_space_id) 
 	references ctb.cat_house_space(cat_house_space_id);
-
