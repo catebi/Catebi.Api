@@ -9,12 +9,12 @@ namespace Catebi.Map.WebApi.Db.Catebi.Entities;
 public partial class CatImageUrl
 {
     /// <summary>
-    /// Ид.
+    /// Id
     /// </summary>
     public int CatImageUrlId { get; set; }
 
     /// <summary>
-    /// Ид. кошки/кота
+    /// Id кошки/кота
     /// </summary>
     public int CatId { get; set; }
 

@@ -90,8 +90,8 @@ public class NotionApiService : INotionApiService
                                 Url = i.Url,
                                 Type = i.Type
                             }).ToList(),
-            CreatedTime = x.CreatedTime.ToUniversalTime(),
-            LastEditedTime = x.LastEditedTime.ToUniversalTime()
+            CreatedDate = x.CreatedTime.ToUniversalTime(),
+            ChangedDate = x.LastEditedTime.ToUniversalTime()
         });
 
         _context.Cat.AddRange(cats);

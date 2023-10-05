@@ -9,12 +9,12 @@ namespace Catebi.Map.WebApi.Db.Catebi.Entities;
 public partial class Cat
 {
     /// <summary>
-    /// Ид.
+    /// Id кошки в бд
     /// </summary>
     public int CatId { get; set; }
 
     /// <summary>
-    /// Ид. в Notion
+    /// Id в Notion
     /// </summary>
     public string? NotionCatId { get; set; }
 
@@ -34,19 +34,69 @@ public partial class Cat
     public string? GeoLocation { get; set; }
 
     /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedTime { get; set; }
-
-    /// <summary>
-    /// Дата последнего изменения
-    /// </summary>
-    public DateTime LastEditedTime { get; set; }
-
-    /// <summary>
     /// Линк на страницу в Notion
     /// </summary>
     public string? NotionPageUrl { get; set; }
 
+    /// <summary>
+    /// Пол
+    /// </summary>
+    public int CatSexId { get; set; }
+
+    /// <summary>
+    /// Ошейник
+    /// </summary>
+    public int? CatCollarId { get; set; }
+
+    /// <summary>
+    /// Id комнаты в котодоме
+    /// </summary>
+    public int? CatHouseSpaceId { get; set; }
+
+    /// <summary>
+    /// Дата прибытия кошки
+    /// </summary>
+    public DateOnly? InDate { get; set; }
+
+    /// <summary>
+    /// Дата отъезда кошки
+    /// </summary>
+    public DateOnly? OutDate { get; set; }
+
+    /// <summary>
+    /// Дата стерилизации кошки
+    /// </summary>
+    public DateOnly? NeuteredDate { get; set; }
+
+    /// <summary>
+    /// Id волонтёра (в notion - deliverer)
+    /// </summary>
+    public int? ResponsibleVolunteerId { get; set; }
+
+    /// <summary>
+    /// Текст примечания
+    /// </summary>
+    public string? Comment { get; set; }
+
+    /// <summary>
+    /// Дата создания
+    /// </summary>
+    public DateTime CreatedDate { get; set; }
+
+    /// <summary>
+    /// Дата последнего изменения
+    /// </summary>
+    public DateTime ChangedDate { get; set; }
+
+    public virtual ICollection<Cat2catTag> Cat2catTag { get; set; } = new List<Cat2catTag>();
+
+    public virtual CatCollar? CatCollar { get; set; }
+
+    public virtual CatHouseSpace? CatHouseSpace { get; set; }
+
     public virtual ICollection<CatImageUrl> CatImageUrl { get; set; } = new List<CatImageUrl>();
+
+    public virtual CatSex CatSex { get; set; } = null!;
+
+    public virtual Volunteer? ResponsibleVolunteer { get; set; }
 }
