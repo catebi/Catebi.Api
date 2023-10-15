@@ -8,6 +8,7 @@ drop table if exists ctb.cat_sex;
 drop table if exists ctb.volunteer;
 drop table if exists ctb.color;
 
+
 -- cat table
 create table ctb.cat (
     cat_id serial primary key,
@@ -115,20 +116,17 @@ comment on column ctb.cat_collar.color_id is 'Id цвета';
 
 -- cat_house_space table
 create table ctb.cat_house_space (
-    cat_house_space_id serial primary key,
-    name text not null unique,
-    short_name varchar(10),
-    color_id integer not null,
-
-    foreign key (color_id) references ctb.color(color_id)
+    cat_house_space_id serial PRIMARY KEY,    
+    name text NOT NULL UNIQUE,
+    color_id integer NOT NULL,
+    
+    FOREIGN KEY (color_id) references ctb.color(color_id)
 );
 
 comment on table ctb.cat_house_space is 'Словарь: котоквартира';
-
-comment on column ctb.cat_house_space.cat_house_space_id is 'Id комнаты';
+comment on column ctb.cat_house_space.cat_house_space_id is 'ID комнаты';
 comment on column ctb.cat_house_space.name is 'Название комнаты';
-comment on column ctb.cat_house_space.short_name is 'Сокращение "Комната1"-->"К1"';
-comment on column ctb.cat_house_space.color_id is 'Id цвета';
+comment on column ctb.cat_house_space.color_id is 'ID цвета';
 
 -- cat_tag table
 create table ctb.cat_tag (
@@ -187,19 +185,16 @@ comment on column ctb.volunteer.geo_location is 'Координаты в при�
 comment on column ctb.volunteer.created_date is 'Дата создания';
 comment on column ctb.volunteer.changed_date is 'Дата последнего изменения';
 
-
--- foreign keys
-
--- ctb.cat
-alter table ctb.cat
-    add foreign key (cat_sex_id)
-        references ctb.cat_sex(cat_sex_id);
-alter table ctb.cat
-    add foreign key (responsible_volunteer_id)
-        references ctb.volunteer(volunteer_id);
-alter table ctb.cat
-    add foreign key (cat_collar_id)
-        references ctb.cat_collar(cat_collar_id);
-alter table ctb.cat
-    add foreign key (cat_house_space_id)
-        references ctb.cat_house_space(cat_house_space_id);
+-- additional constraints to main table - ctb.cat
+alter table ctb.cat 
+    add foreign key (cat_sex_id) 
+    references ctb.cat_sex(cat_sex_id);
+alter table ctb.cat 
+    add foreign key (responsible_volunteer_id) 
+    references ctb.volunteer(volunteer_id);
+alter table ctb.cat 
+    add foreign key (cat_collar_id) 
+    references ctb.cat_collar(cat_collar_id);
+alter table ctb.cat 
+    add foreign key (cat_house_space_id) 
+    references ctb.cat_house_space(cat_house_space_id);
