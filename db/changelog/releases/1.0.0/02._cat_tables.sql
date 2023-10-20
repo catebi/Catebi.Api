@@ -167,7 +167,7 @@ comment on column ctb.volunteer.name is 'Имя/ник волонтёра';
 comment on column ctb.volunteer.notion_user_id is 'ID аккаунта волонтёра в Notion';
 comment on column ctb.volunteer.telegram_account is 'Telegram username волонтёра';
 comment on column ctb.volunteer.address is 'Физический (обычно неполный) адрес проживания волонтёра';
-comment on column ctb.volunteer.location is 'Координаты в пригодном для экспорта формате';
+comment on column ctb.volunteer.geo_location is 'Координаты в пригодном для экспорта формате';
 comment on column ctb.volunteer.created_date is 'Дата создания';
 comment on column ctb.volunteer.changed_date is 'Дата последнего изменения';
 
