@@ -6,7 +6,7 @@
 		{"id":"f7f50f23c916d22b","type":"text","text":"cat_image_url\n\n- cat_image_url_id\n- <span style=\"color:lightgreen\">cat_id</span>\n- name\n- url\n- type","x":400,"y":-280,"width":290,"height":240,"color":"5"},
 		{"id":"6addc1a943f59415","type":"text","text":"**cat**\n\n- cat_id integer\n- name text\n- notion_cat_id text\n- address text\n- geo_location text\n- notion_page_url text\n- <span style=\"color:lightgreen\">cat_sex_id</span>\n- <span style=\"color:lightgreen\">cat_collar_id</span>\n- <span style=\"color:lightgreen\">cat_house_space_id</span>\n- in_date\n- out_date\n- neutered_date\n- <span style=\"color: lightgreen;\">responsible_volunteer_id</mark> (notion name 'deliverer') \n- comment text \n- created_date timestamp\n- changed_date timestamp","x":-560,"y":-360,"width":480,"height":520},
 		{"id":"3d71cbca4a056f04","type":"text","text":"**cat_sex**\n\n\n- cat_sex_id\n- name\n- <span style=\"color:lightgreen\">color_id</span>","x":-760,"y":840,"width":240,"height":205},
-		{"id":"7482cc64e0462ac3","type":"text","text":"**cat_house_space**\n\n\n- cat_house_space_id\n- name\n- short_name\n- <span style=\"color:lightgreen\">color_id</span>\n","x":-215,"y":840,"width":255,"height":205},
+		{"id":"7482cc64e0462ac3","type":"text","text":"**cat_house_space**\n\n\n- cat_house_space_id\n- name\n- <span style=\"color:lightgreen\">color_id</span>\n","x":-215,"y":840,"width":255,"height":205},
 		{"id":"ae01b2a1dd76989f","type":"text","text":"**cat_tag**\n\n\n- cat_tag_id\n- name\n- <span style=\"color:lightgreen\">color_id</span>\n\n","x":101,"y":840,"width":246,"height":205},
 		{"id":"aa7189f066544dd9","type":"text","text":"**cat_collar**\n\n\n- cat_collar_id\n- name\n- <span style=\"color:lightgreen\">color_id</span> \n\n","x":-480,"y":840,"width":240,"height":205},
 		{"id":"3397615e50d844d8","type":"text","text":"**color**\n\n- color_id\n- rgb_code\n- hex_code\n- color_name","x":-340,"y":1240,"width":250,"height":200},
@@ -22,7 +22,7 @@
 		{"id":"aaee3eb1f56bafee","fromNode":"3397615e50d844d8","fromSide":"top","toNode":"aa7189f066544dd9","toSide":"bottom","toEnd":"none"},
 		{"id":"c62866c2837cd1d6","fromNode":"3397615e50d844d8","fromSide":"top","toNode":"7482cc64e0462ac3","toSide":"bottom","toEnd":"none"},
 		{"id":"619928798738cc3a","fromNode":"3397615e50d844d8","fromSide":"top","toNode":"ae01b2a1dd76989f","toSide":"bottom","toEnd":"none"},
-		{"id":"1f080fc9c833c12b","fromNode":"ebda520793f3c6f9","fromSide":"bottom","toNode":"ae01b2a1dd76989f","toSide":"top","toEnd":"none"},
+		{"id":"1f080fc9c833c12b","fromNode":"ebda520793f3c6f9","fromSide":"bottom","toNode":"ae01b2a1dd76989f","toSide":"top","toEnd":"none","label":"N:1"},
 		{"id":"8cc22fab4b912f36","fromNode":"6addc1a943f59415","fromSide":"bottom","toNode":"7482cc64e0462ac3","toSide":"top","toEnd":"none","label":"1:N"}
 	]
 }
