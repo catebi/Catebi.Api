@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Словарь цветов (для ошейников, отметок и проч)
@@ -9,7 +9,7 @@ namespace Catebi.Map.WebApi.Db.Catebi.Entities;
 public partial class Color
 {
     /// <summary>
-    /// Id цвета в базе (thx cap)
+    /// Id цвета в базе
     /// </summary>
     public int ColorId { get; set; }
 

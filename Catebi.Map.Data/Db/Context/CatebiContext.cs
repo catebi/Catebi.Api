@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Catebi.Map.WebApi.Db.Catebi.Entities;
+using Catebi.Map.Data.Db.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Context;
+namespace Catebi.Map.Data.Db.Context;
 
 public partial class CatebiContext : DbContext
 {
@@ -14,7 +14,7 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<Cat> Cat { get; set; }
 
-    public virtual DbSet<Cat2catTag> Cat2catTag { get; set; }
+    public virtual DbSet<CatCatTag> CatCatTag { get; set; }
 
     public virtual DbSet<CatCollar> CatCollar { get; set; }
 
@@ -45,7 +45,7 @@ public partial class CatebiContext : DbContext
                 .HasComment("Id кошки в бд")
                 .HasColumnName("cat_id");
             entity.Property(e => e.Address)
-                .HasComment("Адрес")
+                .HasComment("Адрес (где нашли кошку)")
                 .HasColumnName("address");
             entity.Property(e => e.CatCollarId)
                 .HasComment("Ошейник")
@@ -70,10 +70,9 @@ public partial class CatebiContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_date");
             entity.Property(e => e.GeoLocation)
-                .HasComment("Геолокация")
+                .HasComment("Геолокация (координаты по адресу)")
                 .HasColumnName("geo_location");
             entity.Property(e => e.InDate)
-                .HasDefaultValueSql("(now())::date")
                 .HasComment("Дата прибытия кошки")
                 .HasColumnName("in_date");
             entity.Property(e => e.Name)
@@ -86,13 +85,13 @@ public partial class CatebiContext : DbContext
                 .HasComment("Id в Notion")
                 .HasColumnName("notion_cat_id");
             entity.Property(e => e.NotionPageUrl)
-                .HasComment("Линк на страницу в Notion")
+                .HasComment("Ссылка на страницу в Notion")
                 .HasColumnName("notion_page_url");
             entity.Property(e => e.OutDate)
                 .HasComment("Дата отъезда кошки")
                 .HasColumnName("out_date");
             entity.Property(e => e.ResponsibleVolunteerId)
-                .HasComment("Id волонтёра (в notion - deliverer)")
+                .HasComment("Id волонтёра, ответственного за кошку (в notion - deliverer)")
                 .HasColumnName("responsible_volunteer_id");
 
             entity.HasOne(d => d.CatCollar).WithMany(p => p.Cat)
@@ -113,18 +112,18 @@ public partial class CatebiContext : DbContext
                 .HasConstraintName("cat_responsible_volunteer_id_fkey");
         });
 
-        modelBuilder.Entity<Cat2catTag>(entity =>
+        modelBuilder.Entity<CatCatTag>(entity =>
         {
-            entity.HasKey(e => e.Cat2catTagId).HasName("cat2cat_tag_pkey");
+            entity.HasKey(e => e.CatCatTagId).HasName("cat_cat_tag_pkey");
 
-            entity.ToTable("cat2cat_tag", "ctb", tb => tb.HasComment("Словарь для связи кошек и тегов"));
+            entity.ToTable("cat_cat_tag", "ctb", tb => tb.HasComment("Словарь для связи кошек и тегов"));
 
-            entity.HasIndex(e => new { e.CatId, e.CatTagId }, "cat2cat_tag_cat_id_cat_tag_id_key").IsUnique();
+            entity.HasIndex(e => new { e.CatId, e.CatTagId }, "cat_cat_tag_cat_id_cat_tag_id_key").IsUnique();
 
-            entity.Property(e => e.Cat2catTagId)
-                .HasDefaultValueSql("nextval('cat2cat_tag_cat2cat_tag_id_seq'::regclass)")
+            entity.Property(e => e.CatCatTagId)
+                .HasDefaultValueSql("nextval('cat_cat_tag_cat_cat_tag_id_seq'::regclass)")
                 .HasComment("Id соотношения")
-                .HasColumnName("cat2cat_tag_id");
+                .HasColumnName("cat_cat_tag_id");
             entity.Property(e => e.CatId)
                 .HasComment("Id кошки")
                 .HasColumnName("cat_id");
@@ -132,15 +131,15 @@ public partial class CatebiContext : DbContext
                 .HasComment("Id тега")
                 .HasColumnName("cat_tag_id");
 
-            entity.HasOne(d => d.Cat).WithMany(p => p.Cat2catTag)
+            entity.HasOne(d => d.Cat).WithMany(p => p.CatCatTag)
                 .HasForeignKey(d => d.CatId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("cat2cat_tag_cat_id_fkey");
+                .HasConstraintName("cat_cat_tag_cat_id_fkey");
 
-            entity.HasOne(d => d.CatTag).WithMany(p => p.Cat2catTag)
+            entity.HasOne(d => d.CatTag).WithMany(p => p.CatCatTag)
                 .HasForeignKey(d => d.CatTagId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("cat2cat_tag_cat_tag_id_fkey");
+                .HasConstraintName("cat_cat_tag_cat_tag_id_fkey");
         });
 
         modelBuilder.Entity<CatCollar>(entity =>
@@ -186,10 +185,6 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.Name)
                 .HasComment("Название комнаты")
                 .HasColumnName("name");
-            entity.Property(e => e.ShortName)
-                .HasMaxLength(10)
-                .HasComment("Сокращение \"Комната1\"-->\"К1\"")
-                .HasColumnName("short_name");
 
             entity.HasOne(d => d.Color).WithMany(p => p.CatHouseSpace)
                 .HasForeignKey(d => d.ColorId)
@@ -207,7 +202,7 @@ public partial class CatebiContext : DbContext
 
             entity.Property(e => e.CatImageUrlId)
                 .HasDefaultValueSql("nextval('cat_image_url_cat_image_url_id_seq'::regclass)")
-                .HasComment("Id")
+                .HasComment("Id ссылки в бд")
                 .HasColumnName("cat_image_url_id");
             entity.Property(e => e.CatId)
                 .HasComment("Id кошки/кота")
@@ -290,7 +285,7 @@ public partial class CatebiContext : DbContext
 
             entity.Property(e => e.ColorId)
                 .HasDefaultValueSql("nextval('color_color_id_seq'::regclass)")
-                .HasComment("Id цвета в базе (thx cap)")
+                .HasComment("Id цвета в базе")
                 .HasColumnName("color_id");
             entity.Property(e => e.HexCode)
                 .HasMaxLength(7)

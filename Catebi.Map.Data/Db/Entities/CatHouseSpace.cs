@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
-/// Словарь: пол
+/// Словарь: котоквартира
 /// </summary>
-public partial class CatSex
+public partial class CatHouseSpace
 {
     /// <summary>
-    /// Id пола
+    /// Id комнаты
     /// </summary>
-    public int CatSexId { get; set; }
+    public int CatHouseSpaceId { get; set; }
 
     /// <summary>
-    /// Пол: название (м/ж)
+    /// Название комнаты
     /// </summary>
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Id цвета
     /// </summary>
-    public int? ColorId { get; set; }
+    public int ColorId { get; set; }
 
     public virtual ICollection<Cat> Cat { get; set; } = new List<Cat>();
 
-    public virtual Color? Color { get; set; }
+    public virtual Color Color { get; set; } = null!;
 }

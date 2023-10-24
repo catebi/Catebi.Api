@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Справочник волонтёров

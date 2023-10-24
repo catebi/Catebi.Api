@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Словарь для связи кошек и тегов
 /// </summary>
-public partial class Cat2catTag
+public partial class CatCatTag
 {
     /// <summary>
     /// Id соотношения
     /// </summary>
-    public int Cat2catTagId { get; set; }
+    public int CatCatTagId { get; set; }
 
     /// <summary>
     /// Id кошки

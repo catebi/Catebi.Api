@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Notion.Client;
@@ -43,7 +44,7 @@ public class NotionApiService : INotionApiService
             queryParams = new DatabasesQueryParameters { Filter = lastEditedTimeFilter, PageSize = 10 };
             var updatedOrNewCats = await GetCatsFromNotion(queryParams);
 
-            foreach(var cat in updatedOrNewCats)
+            foreach (var cat in updatedOrNewCats)
             {
                 var cachedCat = catsResult.FirstOrDefault(x => x.NotionCatId == cat.NotionCatId);
                 if (cachedCat != null)
@@ -74,6 +75,19 @@ public class NotionApiService : INotionApiService
         return catsResult;
     }
 
+    private async Task SyncDictionaries()
+    {
+        //sex, collar, tags, room
+        var catsDb = await _client.Databases.RetrieveAsync(_notionSettings.DatabaseIds[NotionDb.Cats]);
+        var options = new JsonSerializerOptions { WriteIndented = true, MaxDepth = 64 };
+        var json = JsonSerializer.Serialize<Database>(catsDb);
+
+        foreach(var prop in catsDb.Properties)
+        {
+            //prop.Value.Type
+        }
+    }
+
     private async Task SaveCatsToDb(List<CatDto> catsResult)
     {
         var cats = catsResult.Select(x => new Cat
@@ -101,15 +115,14 @@ public class NotionApiService : INotionApiService
     private async Task<List<CatDto>> GetCatsFromNotion(DatabasesQueryParameters queryParams)
     {
         var catsResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Cats], queryParams);
-
-        var catsResult = catsResponse.Results.Select(GetCatDto())
+        var catsResult = catsResponse.Results.Select(GetCatDto)
                                              .ToList();
 
         while (catsResponse.HasMore)
         {
             queryParams.StartCursor = catsResponse.NextCursor;
             catsResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Cats], queryParams);
-            catsResult.AddRange(catsResponse.Results.Select(GetCatDto()));
+            catsResult.AddRange(catsResponse.Results.Select(GetCatDto));
         }
 
         return catsResult;
@@ -153,26 +166,24 @@ public class NotionApiService : INotionApiService
         return cats;
     }
 
-    private static Func<Page, CatDto> GetCatDto()
+    private static CatDto GetCatDto(Page x)
     {
-        return x =>
+        var properties = x.Properties;
+        var idProperty = ((UniqueIdPropertyValue)properties["id"]).UniqueId;
+
+        return new CatDto
         {
-            var properties = x.Properties;
-            var idProperty = ((UniqueIdPropertyValue)properties["id"]).UniqueId;
-            return new CatDto
-            {
-                NotionCatId = $"{idProperty.Prefix}-{idProperty.Number}",
-                Name = ((TitlePropertyValue)x.Properties["cat\\name"]).Title.FirstOrDefault()?.PlainText,
-                GeoLocation = ((RichTextPropertyValue)x.Properties["geo_location"]).RichText.FirstOrDefault()?.PlainText,
-                Address = ((RichTextPropertyValue)x.Properties["address"]).RichText.FirstOrDefault()?.PlainText,
-                NotionPageUrl = x.Url,
-                Images = ((FilesPropertyValue)x.Properties["Files & media"])
-                            .Files
-                            .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
-                            .ToList(),
-                CreatedTime = x.CreatedTime,
-                LastEditedTime = x.LastEditedTime
-            };
+            NotionCatId = $"{idProperty.Prefix}-{idProperty.Number}",
+            Name = ((TitlePropertyValue)x.Properties["cat\\name"]).Title.FirstOrDefault()?.PlainText,
+            GeoLocation = ((RichTextPropertyValue)x.Properties["geo_location"]).RichText.FirstOrDefault()?.PlainText,
+            Address = ((RichTextPropertyValue)x.Properties["address"]).RichText.FirstOrDefault()?.PlainText,
+            NotionPageUrl = x.Url,
+            Images = ((FilesPropertyValue)x.Properties["Files & media"])
+                        .Files
+                        .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
+                        .ToList(),
+            CreatedTime = x.CreatedTime,
+            LastEditedTime = x.LastEditedTime
         };
     }
 }

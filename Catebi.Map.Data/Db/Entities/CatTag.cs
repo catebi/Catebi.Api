@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Словарь: теги кошек
@@ -23,7 +23,7 @@ public partial class CatTag
     /// </summary>
     public int? ColorId { get; set; }
 
-    public virtual ICollection<Cat2catTag> Cat2catTag { get; set; } = new List<Cat2catTag>();
+    public virtual ICollection<CatCatTag> CatCatTag { get; set; } = new List<CatCatTag>();
 
     public virtual Color? Color { get; set; }
 }

@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
-/// Словарь: котоквартира
+/// Словарь: ошейник
 /// </summary>
-public partial class CatHouseSpace
+public partial class CatCollar
 {
     /// <summary>
-    /// Id комнаты
+    /// Id ошейника
     /// </summary>
-    public int CatHouseSpaceId { get; set; }
+    public int CatCollarId { get; set; }
 
     /// <summary>
-    /// Название комнаты
+    /// Название ошейника (обычно по его цвету)
     /// </summary>
     public string Name { get; set; } = null!;
-
-    /// <summary>
-    /// Сокращение &quot;Комната1&quot;--&gt;&quot;К1&quot;
-    /// </summary>
-    public string? ShortName { get; set; }
 
     /// <summary>
     /// Id цвета

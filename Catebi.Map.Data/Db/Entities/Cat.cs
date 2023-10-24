@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Кошка/кот
@@ -24,17 +24,17 @@ public partial class Cat
     public string Name { get; set; } = null!;
 
     /// <summary>
-    /// Адрес
+    /// Адрес (где нашли кошку)
     /// </summary>
     public string? Address { get; set; }
 
     /// <summary>
-    /// Геолокация
+    /// Геолокация (координаты по адресу)
     /// </summary>
     public string? GeoLocation { get; set; }
 
     /// <summary>
-    /// Линк на страницу в Notion
+    /// Ссылка на страницу в Notion
     /// </summary>
     public string? NotionPageUrl { get; set; }
 
@@ -69,7 +69,7 @@ public partial class Cat
     public DateOnly? NeuteredDate { get; set; }
 
     /// <summary>
-    /// Id волонтёра (в notion - deliverer)
+    /// Id волонтёра, ответственного за кошку (в notion - deliverer)
     /// </summary>
     public int? ResponsibleVolunteerId { get; set; }
 
@@ -88,7 +88,7 @@ public partial class Cat
     /// </summary>
     public DateTime ChangedDate { get; set; }
 
-    public virtual ICollection<Cat2catTag> Cat2catTag { get; set; } = new List<Cat2catTag>();
+    public virtual ICollection<CatCatTag> CatCatTag { get; set; } = new List<CatCatTag>();
 
     public virtual CatCollar? CatCollar { get; set; }
 
