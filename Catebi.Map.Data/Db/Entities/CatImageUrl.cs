@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Catebi.Map.WebApi.Db.Catebi.Entities;
+namespace Catebi.Map.Data.Db.Entities;
 
 /// <summary>
 /// Ссылка на картинки для кошек/котов
@@ -9,12 +9,12 @@ namespace Catebi.Map.WebApi.Db.Catebi.Entities;
 public partial class CatImageUrl
 {
     /// <summary>
-    /// Ид.
+    /// Id ссылки в бд
     /// </summary>
     public int CatImageUrlId { get; set; }
 
     /// <summary>
-    /// Ид. кошки/кота
+    /// Id кошки/кота
     /// </summary>
     public int CatId { get; set; }
 

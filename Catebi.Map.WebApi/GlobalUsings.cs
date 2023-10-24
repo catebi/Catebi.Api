@@ -4,5 +4,5 @@ global using Catebi.Map.WebApi.Models;
 global using Catebi.Map.WebApi.Interfaces;
 global using Catebi.Map.WebApi.Services;
 
-global using Catebi.Map.WebApi.Db.Catebi.Context;
-global using Catebi.Map.WebApi.Db.Catebi.Entities;
+global using Catebi.Map.Data.Db.Context;
+global using Catebi.Map.Data.Db.Entities;
