@@ -1,4 +1,4 @@
-namespace Catebi.Map.WebApi.Models;
+namespace Catebi.Map.Data.Models;
 
 public class NotionApiSettings
 {

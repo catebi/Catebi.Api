@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+
 using Notion.Client;
 
-namespace Catebi.Map.WebApi.Services;
+namespace Catebi.Map.Domain.Services;
 
 public class NotionApiService : INotionApiService
 {
@@ -29,6 +31,7 @@ public class NotionApiService : INotionApiService
 
     public async Task<List<CatDto>> GetCats()
     {
+        await SyncDictionaries();
         // Optionally, you could cache this key list as well.
         _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
         cachedCatKeys = cachedCatKeys ?? new List<string>();
@@ -77,14 +80,89 @@ public class NotionApiService : INotionApiService
 
     private async Task SyncDictionaries()
     {
-        //sex, collar, tags, room
         var catsDb = await _client.Databases.RetrieveAsync(_notionSettings.DatabaseIds[NotionDb.Cats]);
-        var options = new JsonSerializerOptions { WriteIndented = true, MaxDepth = 64 };
-        var json = JsonSerializer.Serialize<Database>(catsDb);
 
-        foreach(var prop in catsDb.Properties)
+        foreach(var prop in catsDb.Properties.Where(x => new [] { "collar", "tags", "room" }.Contains(x.Value.Name)))
         {
-            //prop.Value.Type
+            switch (prop.Value.Name)
+            {
+                case "collar":
+                    var collarValues =
+                        ((SelectProperty)prop.Value)
+                            .Select
+                            .Options
+                            .Select(x => new {x.Name, x.Color})
+                            .ToList();
+
+                    foreach(var val in collarValues)
+                    {
+                        var entity = await _context.CatCollar.SingleOrDefaultAsync(x => x.Name == val.Name);
+                        if (entity == null)
+                        {
+                            var colorString = val.Color.ToString();
+                            Enum.TryParse(colorString, out Colors colorValue);
+                            await _context.CatCollar.AddAsync(new CatCollar
+                            {
+                                Name = val.Name,
+                                ColorId = (int)colorValue,
+                            });
+                        }
+                    }
+
+                    break;
+
+                case "tags":
+                   var tagValues =
+                        ((MultiSelectProperty)prop.Value)
+                            .MultiSelect
+                            .Options
+                            .Select(x => new {x.Name, x.Color})
+                            .ToList();
+
+                    foreach(var val in tagValues)
+                    {
+                        var entity = await _context.CatTag.SingleOrDefaultAsync(x => x.Name == val.Name);
+                        if (entity == null)
+                        {
+                            var colorString = val.Color.ToString();
+                            Enum.TryParse(colorString, out Colors colorValue);
+                            await _context.CatTag.AddAsync(new CatTag
+                            {
+                                Name = val.Name,
+                                ColorId = (int)colorValue,
+                            });
+                        }
+                    }
+
+                    break;
+
+                case "room":
+                    var roomValues =
+                        ((SelectProperty)prop.Value)
+                            .Select
+                            .Options
+                            .Select(x => new {x.Name, x.Color})
+                            .ToList();
+
+                    foreach(var val in roomValues)
+                    {
+                        var entity = await _context.CatHouseSpace.SingleOrDefaultAsync(x => x.Name == val.Name);
+                        if (entity == null)
+                        {
+                            var colorString = val.Color.ToString();
+                            Enum.TryParse(colorString, out Colors colorValue);
+                            await _context.CatHouseSpace.AddAsync(new CatHouseSpace
+                            {
+                                Name = val.Name,
+                                ColorId = (int)colorValue,
+                            });
+                        }
+                    }
+
+                    break;
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 

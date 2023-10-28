@@ -1,3 +1,5 @@
+namespace Catebi.Map.Data.Models;
+
 public class CatDto
 {
     public string NotionCatId { get; set; }
