@@ -7,3 +7,5 @@ global using Catebi.Map.Data.Models.Enums;
 
 global using Catebi.Map.Data.Db.Context;
 global using Catebi.Map.Data.Db.Entities;
+
+global using Catebi.Map.Data.Helpers;

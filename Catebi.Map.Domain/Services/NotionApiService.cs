@@ -14,6 +14,11 @@ public class NotionApiService : INotionApiService
     private readonly CatebiContext _context;
     private readonly NotionApiSettings _notionSettings;
     private readonly ILogger<NotionApiService> _logger;
+    private List<Data.Db.Entities.Color> _colors;
+    private List<CatSex> _sexes;
+    private List<CatCollar> _collars;
+    private List<CatTag> _catTags;
+    private List<Volunteer> _volunteers;
 
     public NotionApiService(
         INotionClient client,
@@ -32,16 +37,17 @@ public class NotionApiService : INotionApiService
     public async Task<List<CatDto>> GetCats()
     {
         await SyncDictionaries();
+        await InitDictionaries();
         // Optionally, you could cache this key list as well.
         _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
-        cachedCatKeys = cachedCatKeys ?? new List<string>();
+        cachedCatKeys ??= [];
 
         var queryParams = new DatabasesQueryParameters();
 
         var catsResult = GetAllCatsFromCache(cachedCatKeys);
         if (catsResult.Any())
         {
-            var lastUpdated = catsResult.Max(x => x.LastEditedTime);
+            var lastUpdated = catsResult.Max(x => x.ChangedDate);
 
             var lastEditedTimeFilter = new TimestampLastEditedTimeFilter(after: lastUpdated);
             queryParams = new DatabasesQueryParameters { Filter = lastEditedTimeFilter, PageSize = 10 };
@@ -76,6 +82,15 @@ public class NotionApiService : INotionApiService
         await SaveCatsToDb(catsResult);
 
         return catsResult;
+    }
+
+    private async Task InitDictionaries()
+    {
+        _colors = await _context.Color.ToListAsync();
+        _sexes = await _context.CatSex.Include(x => x.Color).ToListAsync();
+        _collars = await _context.CatCollar.Include(x => x.Color).ToListAsync();
+        _catTags = await _context.CatTag.Include(x => x.Color).ToListAsync();
+        _volunteers = await _context.Volunteer.ToListAsync();
     }
 
     private async Task SyncDictionaries()
@@ -182,8 +197,19 @@ public class NotionApiService : INotionApiService
                                 Url = i.Url,
                                 Type = i.Type
                             }).ToList(),
-            CreatedDate = x.CreatedTime.ToUniversalTime(),
-            ChangedDate = x.LastEditedTime.ToUniversalTime()
+            InDate = x.InDate,
+            OutDate = x.OutDate,
+            NeuteredDate = x.NeuteredDate,
+            Comment = x.Comment,
+            CatSexId = x.Sex.Id,
+            CatCollarId = x.Collar?.Id,
+            CatHouseSpaceId = x.Space?.Id,
+            CatCatTag = x.Tags.Select(t => new CatCatTag
+            {
+                CatTagId = t.Id,
+            }).ToList(),
+            CreatedDate = x.CreatedDate.ToUniversalTime(),
+            ChangedDate = x.ChangedDate.ToUniversalTime()
         });
 
         _context.Cat.AddRange(cats);
@@ -244,10 +270,21 @@ public class NotionApiService : INotionApiService
         return cats;
     }
 
-    private static CatDto GetCatDto(Page x)
+    private CatDto GetCatDto(Page x)
     {
         var properties = x.Properties;
         var idProperty = ((UniqueIdPropertyValue)properties["id"]).UniqueId;
+        var sexValue = ((SelectPropertyValue)x.Properties["sex"]).Select?.Name ?? "ж";
+        var catSex = _sexes.Single(x => x.Name.ToLower() == sexValue.ToLower());
+
+        var collarValue = ((SelectPropertyValue)x.Properties["collar"]).Select?.Name;
+        var collar = _collars.SingleOrDefault(x => x.Name.ToLower() == collarValue?.ToLower());
+
+        var tagValues = ((MultiSelectPropertyValue)x.Properties["tags"]).MultiSelect?.Select(x => x.Name).ToList();
+        var tags = _catTags.Where(x => tagValues?.Contains(x.Name.ToLower()) ?? false).ToList();
+
+        var catSpace = ((SelectPropertyValue)x.Properties["room"]).Select?.Name;
+        var space = _context.CatHouseSpace.SingleOrDefault(x => x.Name == catSpace);
 
         return new CatDto
         {
@@ -256,12 +293,21 @@ public class NotionApiService : INotionApiService
             GeoLocation = ((RichTextPropertyValue)x.Properties["geo_location"]).RichText.FirstOrDefault()?.PlainText,
             Address = ((RichTextPropertyValue)x.Properties["address"]).RichText.FirstOrDefault()?.PlainText,
             NotionPageUrl = x.Url,
+            InDate = ((DatePropertyValue)x.Properties["in_date"]).Date?.Start.ToDateOnly(),
+            OutDate = ((DatePropertyValue)x.Properties["out_date"]).Date?.Start.ToDateOnly(),
+            NeuteredDate = ((DatePropertyValue)x.Properties["Neutered"]).Date?.Start.ToDateOnly(),
+            Comment = ((RichTextPropertyValue)x.Properties["comment"]).RichText.FirstOrDefault()?.PlainText,
+            Sex = new LookupDto { Id = catSex.CatSexId, Name = catSex.Name, Color = catSex.Color!.HexCode },
+            Collar = collar != null ? new LookupDto { Id = collar.CatCollarId, Name = collar.Name, Color = collar.Color!.HexCode } : null,
+            Space = space != null ? new LookupDto { Id = space.CatHouseSpaceId, Name = space.Name, Color = space.Color!.HexCode } : null,
+            Tags = tags.Select(x => new LookupDto { Id = x.CatTagId, Name = x.Name, Color = x.Color!.HexCode }).ToList(),
+            //ResponsibleVolunteer = ((PeoplePropertyValue)x.Properties["responsible_volunteer"]).People.FirstOrDefault()?.Id,
             Images = ((FilesPropertyValue)x.Properties["Files & media"])
                         .Files
                         .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
                         .ToList(),
-            CreatedTime = x.CreatedTime,
-            LastEditedTime = x.LastEditedTime
+            CreatedDate = x.CreatedTime,
+            ChangedDate = x.LastEditedTime
         };
     }
 }
