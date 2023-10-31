@@ -6,32 +6,35 @@ drop table if exists ctb.permission;
 -- ctb.role table
 create table ctb.role (
     role_id serial PRIMARY KEY,
-    name text
-);
+    name text unique
+);	
 
-comment on table ctb.role IS '������ ����� ���������';
-comment on column ctb.role.role_id IS 'ID ����';
-comment on column ctb.role.name IS '������������ ����';
+comment on table ctb.role is 'Список ролей волонтёров';
+comment on column ctb.role.role_id is 'ID роли';
+comment on column ctb.role.nameis 'Наименование роли';
 
 -- ctb.permission table
 create table ctb.permission (
     permission_id serial PRIMARY KEY,
-    name text
+    name text unique
 );
 
-comment on table ctb.permission IS '������ ���� (����������/��������)';
-comment on column ctb.permission.permission_id IS 'ID �����';
-comment on column ctb.permission.name IS '������������ ����� ';
+comment on table ctb.permission is 'Список прав (разрешений/доступов)';
+comment on column ctb.permission.permission_id is 'ID права';
+comment on column ctb.permission.nameis 'Наименование права ';
 
 -- ctb.role_permission table
 create table ctb.role_permission (
+	role_permission_id serial PRIMARY KEY,
     role_id integer NOT NULL,
-    permission_id integer NOT NULL
+    permission_id integer NOT NULL,
+	unique (role_id, prtmission_id)
 );
 
-comment on table ctb.role_permission IS '������� ����� ���� � ������������';
-comment on column ctb.role_permission.role_id IS 'ID ����';
-comment on column ctb.role_permission.permission_id IS 'ID ����������';
+comment on table ctb.role_permission is 'Таблица связи роли с разрешениями';
+comment on column role_permission_id is 'ID соотношения';
+comment on column ctb.role_permission.role_id is 'ID роли';
+comment on column ctb.role_permission.permission_id is 'ID разрешения';
 
 -- ctb.volunteer_role table
 create table ctb.volunteer_role (
@@ -42,16 +45,16 @@ create table ctb.volunteer_role (
 -- foreign keys 
 -- FK in role_permission 
 alter table ctb.role_permission
-	ADD FOREIGN KEY (role_id) 
-		REFERENCES ctb.role(role_id);
+	add FOREIGN KEY (role_id) 
+		references ctb.role(role_id);
 alter table ctb.role_permission
-	ADD FOREIGN KEY (permission_id) 
-		REFERENCES ctb.permission(permission_id);
+	add FOREIGN KEY (permission_id) 
+		references ctb.permission(permission_id);
 
 -- FK in volunteer_role
 alter table ctb.volunteer_role
-	ADD FOREIGN KEY (role_id) 
-		REFERENCES ctb.role(role_id);
+	add FOREIGN KEY (role_id) 
+		references ctb.role(role_id);
 alter table ctb.volunteer_role
-	ADD FOREIGN KEY (volunteer_id) 
-		REFERENCES ctb.volunteer(volunteer_id);
+	add FOREIGN KEY (volunteer_id) 
+		references ctb.volunteer(volunteer_id);
