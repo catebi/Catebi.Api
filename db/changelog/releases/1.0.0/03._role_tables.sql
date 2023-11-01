@@ -38,11 +38,13 @@ comment on column ctb.role_permission.permission_id is 'ID разрешения'
 
 -- ctb.volunteer_role table
 create table ctb.volunteer_role (
+    volunteer_role_id serial PRIMARY KEY,
     role_id integer NOT NULL,
     volunteer_id integer NOT NULL
 );
 
 comment on table ctb.volunteer_role is 'Таблица связи "волонтёр-роль"';
+comment on column ctb.volunteer_role.volunteer_role_id is 'ID соотношения';
 comment on column ctb.volunteer_role.role_id is 'ID роли';
 comment on column ctb.volunteer_role.volunteer_id is 'ID волонтёра';
 
