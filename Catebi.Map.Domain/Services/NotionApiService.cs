@@ -183,7 +183,9 @@ public class NotionApiService : INotionApiService
 
     private async Task SaveCatsToDb(List<CatDto> catsResult)
     {
-        var cats = catsResult.Select(x => new Cat
+        var cats = catsResult
+        .OrderBy(x => int.Parse(x.NotionCatId.Replace("CAT-", "")))
+        .Select(x => new Cat
         {
             NotionCatId = x.NotionCatId,
             Name = x.Name,
@@ -212,7 +214,7 @@ public class NotionApiService : INotionApiService
             ChangedDate = x.ChangedDate.ToUniversalTime()
         });
 
-        _context.Cat.AddRange(cats);
+        await _context.Cat.AddRangeAsync(cats);
         await _context.SaveChangesAsync();
     }
 
