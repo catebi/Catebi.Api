@@ -150,7 +150,7 @@ create table ctb.volunteer (
     volunteer_id serial primary key,
     notion_volunteer_id text unique,
     name text not null,
-    notion_user_id integer unique,
+    notion_user_id text unique,
     telegram_account text,
     address text,
     geo_location text,

@@ -26,7 +26,7 @@ public partial class Volunteer
     /// <summary>
     /// Id аккаунта волонтёра в Notion
     /// </summary>
-    public int? NotionUserId { get; set; }
+    public string? NotionUserId { get; set; }
 
     /// <summary>
     /// Telegram username волонтёра
@@ -54,4 +54,6 @@ public partial class Volunteer
     public DateTime ChangedDate { get; set; }
 
     public virtual ICollection<Cat> Cat { get; set; } = new List<Cat>();
+
+    public virtual ICollection<VolunteerRole> VolunteerRole { get; set; } = new List<VolunteerRole>();
 }
