@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+
+  <ItemGroup>
+    <PackageReference Include="Notion.Net" Version="4.2.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Catebi.Map.Data\Catebi.Map.Data.csproj" />
   </ItemGroup>

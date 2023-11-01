@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.13" />
-    <PackageReference Include="Notion.Net" Version="4.2.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Autofac" Version="7.1.0" />
@@ -19,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Catebi.Map.Data\Catebi.Map.Data.csproj" />
     <ProjectReference Include="..\Catebi.Map.Domain\Catebi.Map.Domain.csproj" />
   </ItemGroup>
 

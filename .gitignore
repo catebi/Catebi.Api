@@ -39,7 +39,6 @@ testem.log
 
 # System files
 .DS_Store
-Thumbs.db
 
 .fake
 
@@ -59,7 +58,6 @@ Thumbs.db
 [Dd]ebug/
 [Dd]ebugPublic/
 [Rr]elease/
-
 x64/
 x86/
 build/

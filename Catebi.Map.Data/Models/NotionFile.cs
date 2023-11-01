@@ -1,3 +1,5 @@
+namespace Catebi.Map.Data.Models;
+
 public class NotionFile
 {
     public string Name { get; set; }

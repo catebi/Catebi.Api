@@ -1,6 +1,6 @@
 using Notion.Client;
 
-namespace Catebi.Map.WebApi.Interfaces;
+namespace Catebi.Map.Domain.Interfaces;
 
 public interface INotionApiService
 {

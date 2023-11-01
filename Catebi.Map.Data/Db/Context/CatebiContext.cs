@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Catebi.Map.Data.Db.Entities;
-using Microsoft.EntityFrameworkCore;
-
-namespace Catebi.Map.Data.Db.Context;
+﻿namespace Catebi.Map.Data.Db.Context;
 
 public partial class CatebiContext : DbContext
 {
