@@ -1,8 +1,8 @@
 {
 	"nodes":[
 		{"id":"ad69a0b3f34040fa","type":"group","x":-480,"y":-80,"width":2320,"height":1960,"color":"#ffffff","label":"catebi_db"},
-		{"id":"337e49642a8d6252","type":"group","x":-420,"y":1120,"width":1240,"height":680,"label":"dictionaries related to CAT entity"},
-		{"id":"aea7e51ceda75e46","type":"group","x":800,"y":400,"width":980,"height":560,"label":"dictionaries related to VOLUNTEER entity"},
+		{"id":"337e49642a8d6252","type":"group","x":-420,"y":1120,"width":1240,"height":680,"label":"cat dictionaries"},
+		{"id":"aea7e51ceda75e46","type":"group","x":800,"y":400,"width":980,"height":560,"label":"basic role model"},
 		{"id":"6addc1a943f59415","type":"text","text":"**cat**\n\n- cat_id integer\n- name text\n- notion_cat_id text\n- address text\n- geo_location text\n- notion_page_url text\n- <span style=\"color:lightgreen\">cat_sex_id</span>\n- <span style=\"color:lightgreen\">cat_collar_id</span>\n- <span style=\"color:lightgreen\">cat_house_space_id</span>\n- in_date\n- out_date\n- neutered_date\n- <span style=\"color: lightgreen;\">responsible_volunteer_id</mark> (notion name 'deliverer') \n- comment text \n- created_date timestamp\n- changed_date timestamp","x":-120,"y":-40,"width":480,"height":520,"color":"4"},
 		{"id":"ebda520793f3c6f9","type":"text","text":"**cat_cat_tag**\n\n- cat_cat_tag_id\n- <span style=\"color:lightgreen\">cat_id</span>\n- <span style=\"color:lightgreen\">cat_tag_id</span>\n\n\n\n\n","x":374,"y":740,"width":213,"height":168,"color":"#4a4a4a"},
 		{"id":"ae01b2a1dd76989f","type":"text","text":"**cat_tag**\n\n\n- cat_tag_id\n- name\n- <span style=\"color:lightgreen\">color_id</span>\n\n","x":541,"y":1160,"width":246,"height":205,"color":"#ffffff"},
@@ -10,12 +10,12 @@
 		{"id":"aa7189f066544dd9","type":"text","text":"**cat_collar**\n\n\n- cat_collar_id\n- name\n- <span style=\"color:lightgreen\">color_id</span> \n\n","x":-40,"y":1160,"width":240,"height":205,"color":"#ffffff"},
 		{"id":"7482cc64e0462ac3","type":"text","text":"**cat_house_space**\n\n\n- cat_house_space_id\n- name\n- <span style=\"color:lightgreen\">color_id</span>\n","x":225,"y":1160,"width":255,"height":205,"color":"#ffffff"},
 		{"id":"3397615e50d844d8","type":"text","text":"**color**\n\n- color_id\n- rgb_code\n- hex_code\n- color_name","x":100,"y":1560,"width":250,"height":200,"color":"#ffffff"},
-		{"id":"f7f50f23c916d22b","type":"text","text":"cat_image_url\n\n- cat_image_url_id\n- <span style=\"color:lightgreen\">cat_id</span>\n- name\n- url\n- type","x":481,"y":240,"width":290,"height":240,"color":"4"},
+		{"id":"f7f50f23c916d22b","type":"text","text":"cat_image_url\n\n- cat_image_url_id\n- <span style=\"color:lightgreen\">cat_id</span>\n- name\n- url\n- type","x":481,"y":240,"width":290,"height":240,"color":"#ffffff"},
 		{"id":"13f951f56ef3053a","type":"text","text":"**volunteer**\n\n- volunteer_id\n- notion_volunteer_id\n- name\n- notion_user_id\n- telegram_account\n- address\n- geo_location\n- created_date timestamp\n- changed_date timestamp\n","x":838,"y":-40,"width":290,"height":340,"color":"4"},
-		{"id":"4e5371170690456e","type":"text","text":"**volunteer_role**\n\n\n- volunteer_id\n- role_id\n\n\n","x":860,"y":420,"width":246,"height":205,"color":"#4a4a4a"},
-		{"id":"d49e2ce2e55b33b9","type":"text","text":"**role**\n\n\n- role_id\n- name\n\n\n","x":860,"y":680,"width":246,"height":205,"color":"#ffffff"},
+		{"id":"4e5371170690456e","type":"text","text":"**volunteer_role**\n\n\n- volunteer_role_id\n- volunteer_id\n- role_id\n\n\n","x":860,"y":420,"width":246,"height":205},
+		{"id":"d49e2ce2e55b33b9","type":"text","text":"**role**\n\n\n- role_id\n- name\n\n\n","x":860,"y":680,"width":246,"height":205,"color":"4"},
 		{"id":"2f3b427e31f32139","type":"text","text":"**role_permission**\n\n\n- role_permission_id\n- role_id\n- permission_id\n\n\n","x":1180,"y":680,"width":246,"height":205,"color":"#4a4a4a"},
-		{"id":"69322472385a9295","type":"text","text":"permission\n\n\n- permission_id\n- name\n\n\n","x":1480,"y":680,"width":246,"height":205,"color":"#ffffff"}
+		{"id":"69322472385a9295","type":"text","text":"permission\n\n\n- permission_id\n- name\n\n\n","x":1480,"y":680,"width":246,"height":205,"color":"4"}
 	],
 	"edges":[
 		{"id":"c101e92ddb22ac15","fromNode":"6addc1a943f59415","fromSide":"right","toNode":"f7f50f23c916d22b","toSide":"left","toEnd":"none","label":"1:N"},
