@@ -1,4 +1,9 @@
-﻿namespace Catebi.Map.Data.Db.Context;
+﻿using System;
+using System.Collections.Generic;
+using Catebi.Map.Data.Db.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace Catebi.Map.Data.Db.Context;
 
 public partial class CatebiContext : DbContext
 {
@@ -23,7 +28,15 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<Color> Color { get; set; }
 
+    public virtual DbSet<Permission> Permission { get; set; }
+
+    public virtual DbSet<Role> Role { get; set; }
+
+    public virtual DbSet<RolePermission> RolePermission { get; set; }
+
     public virtual DbSet<Volunteer> Volunteer { get; set; }
+
+    public virtual DbSet<VolunteerRole> VolunteerRole { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -295,6 +308,70 @@ public partial class CatebiContext : DbContext
                 .HasColumnName("rgb_code");
         });
 
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(e => e.PermissionId).HasName("permission_pkey");
+
+            entity.ToTable("permission", "ctb", tb => tb.HasComment("Список прав (разрешений/доступов)"));
+
+            entity.HasIndex(e => e.Name, "permission_name_key").IsUnique();
+
+            entity.Property(e => e.PermissionId)
+                .HasDefaultValueSql("nextval('permission_permission_id_seq'::regclass)")
+                .HasComment("ID права")
+                .HasColumnName("permission_id");
+            entity.Property(e => e.Name)
+                .HasComment("Наименование права")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.RoleId).HasName("role_pkey");
+
+            entity.ToTable("role", "ctb", tb => tb.HasComment("Список ролей волонтёров"));
+
+            entity.HasIndex(e => e.Name, "role_name_key").IsUnique();
+
+            entity.Property(e => e.RoleId)
+                .HasDefaultValueSql("nextval('role_role_id_seq'::regclass)")
+                .HasComment("ID роли")
+                .HasColumnName("role_id");
+            entity.Property(e => e.Name)
+                .HasComment("Наименование роли")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(e => e.RolePermissionId).HasName("role_permission_pkey");
+
+            entity.ToTable("role_permission", "ctb", tb => tb.HasComment("Таблица связи роли с разрешениями"));
+
+            entity.HasIndex(e => new { e.RoleId, e.PermissionId }, "role_permission_role_id_permission_id_key").IsUnique();
+
+            entity.Property(e => e.RolePermissionId)
+                .HasDefaultValueSql("nextval('role_permission_role_permission_id_seq'::regclass)")
+                .HasComment("ID соотношения")
+                .HasColumnName("role_permission_id");
+            entity.Property(e => e.PermissionId)
+                .HasComment("ID разрешения")
+                .HasColumnName("permission_id");
+            entity.Property(e => e.RoleId)
+                .HasComment("ID роли")
+                .HasColumnName("role_id");
+
+            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermission)
+                .HasForeignKey(d => d.PermissionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("role_permission_permission_id_fkey");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.RolePermission)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("role_permission_role_id_fkey");
+        });
+
         modelBuilder.Entity<Volunteer>(entity =>
         {
             entity.HasKey(e => e.VolunteerId).HasName("volunteer_pkey");
@@ -337,6 +414,34 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.TelegramAccount)
                 .HasComment("Telegram username волонтёра")
                 .HasColumnName("telegram_account");
+        });
+
+        modelBuilder.Entity<VolunteerRole>(entity =>
+        {
+            entity.HasKey(e => e.VolunteerRoleId).HasName("volunteer_role_pkey");
+
+            entity.ToTable("volunteer_role", "ctb", tb => tb.HasComment("Таблица связи \"волонтёр-роль\""));
+
+            entity.Property(e => e.VolunteerRoleId)
+                .HasDefaultValueSql("nextval('volunteer_role_volunteer_role_id_seq'::regclass)")
+                .HasComment("ID соотношения")
+                .HasColumnName("volunteer_role_id");
+            entity.Property(e => e.RoleId)
+                .HasComment("ID роли")
+                .HasColumnName("role_id");
+            entity.Property(e => e.VolunteerId)
+                .HasComment("ID волонтёра")
+                .HasColumnName("volunteer_id");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.VolunteerRole)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("volunteer_role_role_id_fkey");
+
+            entity.HasOne(d => d.Volunteer).WithMany(p => p.VolunteerRole)
+                .HasForeignKey(d => d.VolunteerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("volunteer_role_volunteer_id_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);
