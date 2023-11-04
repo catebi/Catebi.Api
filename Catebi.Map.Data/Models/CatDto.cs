@@ -18,6 +18,6 @@ public class CatDto
     public LookupDto Sex { get; set; } = null!;
     public LookupDto? Space { get; set; }
     public LookupDto? Collar { get; set; }
-    public List<NotionFile>? Images { get; set; }
+    public List<NotionImage> Images { get; set; } = null!;
     public List<LookupDto>? Tags { get; set; }
 }

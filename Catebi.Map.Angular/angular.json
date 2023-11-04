@@ -64,7 +64,9 @@
               "node_modules/leaflet.markercluster/dist/MarkerCluster.Default.css",
               "node_modules/leaflet.markercluster/dist/MarkerCluster.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ],
             "allowedCommonJsDependencies": [
               "rxjs",
               "leaflet",

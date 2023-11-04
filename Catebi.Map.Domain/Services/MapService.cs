@@ -9,11 +9,14 @@ namespace Catebi.Map.Domain.Services;
 
 public class MapService : IMapService
 {
+    private readonly CatebiContext _context;
     private readonly ILogger<MapService> _logger;
     private readonly IMemoryCache _cache;
 
-    public MapService(IMemoryCache cache)
+    public MapService(CatebiContext context, IMemoryCache cache, ILogger<MapService> logger)
     {
+        _context = context;
+        _logger = logger;
         _cache = cache;
     }
 
@@ -36,16 +39,93 @@ public class MapService : IMapService
     private async Task<List<CatDto>> GetCatsInternal()
     {
         // Optionally, you could cache this key list as well.
-        // _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
-        // cachedCatKeys ??= [];
+        _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
+        cachedCatKeys ??= [];
 
-        // var catsResult = GetAllCatsFromCache(cachedCatKeys);
-        // catsResult = await GetCatsFromDb(queryParams);
+        var catsResult = GetAllCatsFromCache(cachedCatKeys);
 
-        // // Save individual cats in the cache
-        // CacheCats(catsResult);
-        throw new NotImplementedException();
+        if (!catsResult.Any())
+        {
+            catsResult = await GetCatsFromDb();
+            CacheCats(catsResult);
+        }
+
+        return catsResult;
     }
+
+    private async Task<List<CatDto>> GetCatsFromDb()
+    {
+        var cats = await _context.Cat
+                                 .Include(x => x.CatSex)
+                                    .ThenInclude(x => x.Color)
+                                 .Include(x => x.CatCollar)
+                                    .ThenInclude(x => x.Color)
+                                 .Include(x => x.CatHouseSpace)
+                                    .ThenInclude(x => x.Color)
+                                 .Include(x => x.CatCatTag)
+                                    .ThenInclude(x => x.CatTag)
+                                        .ThenInclude(x => x.Color)
+                                 .Include(x => x.CatImageUrl)
+                                 .Include(x => x.ResponsibleVolunteer)
+                                 .Where(x => x.OutDate.HasValue)
+                                 .ToListAsync();
+
+        return cats.Select(GetCatDto).ToList();
+    }
+
+    private CatDto GetCatDto(Cat cat) =>
+    new()
+    {
+        Id = cat.CatId,
+        NotionCatId = cat.NotionCatId,
+        Name = cat.Name,
+        Address = cat.Address,
+        GeoLocation = cat.GeoLocation,
+        NotionPageUrl = cat.NotionPageUrl,
+        InDate = cat.InDate,
+        OutDate = cat.OutDate,
+        NeuteredDate = cat.NeuteredDate,
+        Comment = cat.Comment,
+        CreatedDate = cat.CreatedDate,
+        ResponsibleVolunteer = cat.ResponsibleVolunteerId.HasValue ?
+        new VolunteerDto
+        {
+            Id = cat.ResponsibleVolunteer.VolunteerId,
+            Name = cat.ResponsibleVolunteer.Name,
+            TelegramAccount = cat.ResponsibleVolunteer.TelegramAccount,
+            NotionVolunteerId = cat.ResponsibleVolunteer.NotionVolunteerId
+        }
+        : null,
+        Sex =
+            new LookupDto
+            {
+                Id = cat.CatSex.CatSexId,
+                Name = cat.CatSex.Name,
+                Color = cat.CatSex.Color!.HexCode
+            },
+        Space = cat.CatHouseSpaceId.HasValue ?
+            new LookupDto
+            {
+                Id = cat.CatHouseSpace!.CatHouseSpaceId,
+                Name = cat.CatHouseSpace.Name,
+                Color = cat.CatHouseSpace.Color!.HexCode
+            } : null,
+        Collar = cat.CatCollarId.HasValue ?
+            new LookupDto
+            {
+                Id = cat.CatCollar!.CatCollarId,
+                Name = cat.CatCollar.Name,
+                Color = cat.CatCollar.Color!.HexCode
+            } : null,
+        Images = cat.CatImageUrl.Select(x => new NotionImage { Url = x.Url }).ToList(),
+        Tags = cat.CatCatTag.Select(x => new LookupDto
+        {
+            Id = x.CatTag.CatTagId,
+            Name = x.CatTag.Name,
+            Color = x.CatTag.Color!.HexCode
+        }).ToList()
+    };
+
 
     public Task<IEnumerable<CatDto>> GetVolunteers()
     {

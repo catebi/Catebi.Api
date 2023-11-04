@@ -42,6 +42,7 @@ services.AddNotionClient(options =>
 });
 
 services.AddScoped<INotionApiService, NotionApiService>();
+services.AddScoped<IMapService, MapService>();
 
 var app = builder.Build();
 

@@ -42,7 +42,7 @@ export class MapComponent implements OnInit, OnDestroy {
   public loading$ = this.notionService.loading.asObservable()
 
   options = {
-    zoom: 15,
+    zoom: 13,
     center: L.latLng([this.tbilisiLat, this.tbilisiLon])
   };
 

@@ -1,87 +1,22 @@
-<header id="stickyHeader">
-
-  <div class="social-buttons">
-    <a href="https://www.facebook.com/CatebiTbilisi" target="_blank" rel="noopener"
-      class="social-button social-button--facebook">
-      <svg class="svg-icon icon-facebook" fill="#000000" viewBox="0 0 15 32" xml:space="preserve">
-        <g id="XMLID_834_">
-          <path
-            d="M14.66 10.216H9.667V6.94c0-1.23.815-1.516 1.39-1.516h3.523V.019L9.727 0C4.341 0 3.115 4.032 3.115 6.612v3.604H0v5.57h3.115V31.55h6.552V15.786h4.421l.572-5.57z" />
-        </g>
-      </svg>
-      <!-- <span class="screen-reader-text">Facebook</span> -->
+<nav class="navbar header-panel navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <img src="/assets/img/header-logo.svg" alt="">
     </a>
-    <a href="https://twitter.com/catebi_" target="_blank" rel="noopener" class="social-button social-button--twitter">
-      <svg class="svg-icon icon-twitter" fill="#000000" viewBox="0 0 32 26" xml:space="preserve">
-        <g id="XMLID_834_">
-          <path
-            d="M31.528 3.033a12.87 12.87 0 01-3.715 1.018A6.48 6.48 0 0030.657.472a12.948 12.948 0 01-4.107 1.57 6.468 6.468 0 00-11.021 5.9A18.366 18.366 0 012.194 1.184a6.435 6.435 0 00-.875 3.252A6.465 6.465 0 004.197 9.82a6.45 6.45 0 01-2.93-.81v.082a6.473 6.473 0 005.189 6.343 6.503 6.503 0 01-2.922.11 6.475 6.475 0 006.042 4.492 12.976 12.976 0 01-8.033 2.77c-.522 0-1.037-.031-1.543-.091a18.304 18.304 0 009.916 2.906c11.898 0 18.403-9.856 18.403-18.404 0-.28-.005-.56-.018-.838a13.1 13.1 0 003.227-3.347z" />
-        </g>
-      </svg>
-      <!-- <span class="screen-reader-text">Twitter</span> -->
-    </a>
-    <a href="https://www.instagram.com/catebi_tbilisi" target="_blank" rel="noopener"
-      class="social-button social-button--instagram">
-      <svg class="svg-icon icon-instagram" fill="#000000" viewBox="0 0 20 20" xml:space="preserve">
-        <g id="XMLID_834_">
-          <path
-            d="M5.8 0h8.4C17.4 0 20 2.6 20 5.8v8.4a5.8 5.8 0 01-5.8 5.8H5.8C2.6 20 0 17.4 0 14.2V5.8A5.8 5.8 0 015.8 0zm-.2 2A3.6 3.6 0 002 5.6v8.8C2 16.39 3.61 18 5.6 18h8.8a3.6 3.6 0 003.6-3.6V5.6C18 3.61 16.39 2 14.4 2H5.6zm9.65 1.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5zM10 5a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6z" />
-        </g>
-      </svg>
-      <!-- <span class="screen-reader-text">Instagram</span> -->
-    </a>
-    <a href="https://t.me/catebi" target="_blank" rel="noopener" class="social-button social-button--telegram">
-      <svg class="svg-icon icon-telegram" fill="#000000" viewBox="0 0 32 27" xml:space="preserve">
-        <g id="XMLID_834_">
-          <path
-            d="M29.84.177L1.494 11.11c-1.935.777-1.923 1.856-.353 2.337l7.07 2.206 2.705 8.294c.329.907.166 1.267 1.12 1.267.735 0 1.061-.335 1.471-.735.26-.255 1.808-1.76 3.535-3.438l7.353 5.433c1.353.746 2.33.36 2.667-1.257L31.89 2.47c.494-1.981-.756-2.88-2.05-2.293zM9.32 15.147L25.255 5.092c.795-.482 1.525-.223.926.309l-13.644 12.31-.532 5.667-2.685-8.233z" />
-        </g>
-      </svg>
-    </a>
-  </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-  <div class="d-none d-md-flex flex-grow-1 align-items-start margin-3">
-    <button type="button" class="ml-2 mr-2 m-1 btn border-0 font-weight-bold"
-      [class.active]="isActive(item)"
-      *ngFor="let item of menuItems"
-      [routerLink]="(isHome$ | async) ? item.homePath : item.pagePath"
-      [fragment]="(isHome$ | async) ? item.fragment : ''"
-      [ngClass]="[isButtonActive, item.cssButton]"
-      >{{item.title}}</button>
-  </div>
-
-
-  <div id="languageLinks">
-    <a id="georgianLink" href="#georgian" class="lang" data-lang="ge">ge</a> |
-    <a id="englishLink" href="#english" class="lang" data-lang="en">eng</a> |
-    <a id="russianLink" href="#russian" class="lang" data-lang="ru">ru</a>
-  </div>
-</header>
-
-<!-- <div class="d-flex min-vh-10 w-100 justify-content-center pb-3 pt-3 pr-4 pl-4">
-  <div class="d-flex justify-content-start" routerLink="/">
-
-        <h2 class="font-weight-bold">sasha</h2>
-        <h2 class="font-weight-light">karpov</h2>
-
-  </div>
-  <div class="d-none d-md-flex flex-grow-1 justify-content-end align-items-start">
-    <button type="button" class="ml-2 mr-2 btn btn-outline-dark border-0 font-weight-bold"
-      *ngFor="let item of menuItems"
-      [routerLink]="(isHome$ | async) ? item.homePath : item.pagePath"
-      [fragment]="(isHome$ | async) ? item.fragment : ''"
-      >{{item.title}}</button>
-  </div>
-  <div class="d-flex d-md-none justify-content-end flex-grow-1">
-    <div ngbDropdown class="d-inline-block" display="dynamic" container="body">
-      <button class="btn btn-outline-dark border-0" ngbDropdownToggle>
-        <i class="fas fa-lg fa-bars"></i>
-      </button>
-      <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right">
-        <button ngbDropdownItem *ngFor="let item of menuItems"
-          [routerLink]="(isHome$ | async) ? item.homePath : item.pagePath"
-          [fragment]="(isHome$ | async) ? item.fragment : ''">{{item.title}}</button>
-      </div>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item" *ngFor="let item of menuItems">
+          <button type="button" class="btn btn-outline-light font-weight-bold"
+            [class.active]="isActive(item)"
+            [routerLink]="(isHome$ | async) ? item.homePath : item.pagePath"
+            [fragment]="(isHome$ | async) ? item.fragment : ''"
+          >{{item.title}}</button>
+        </li>
+      </ul>
     </div>
   </div>
-</div> -->
+</nav>
