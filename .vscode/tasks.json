@@ -12,6 +12,66 @@
         "/consoleloggerparameters:NoSummary"
       ],
       "problemMatcher": "$msCompile"
+    },
+    {
+      "type": "docker-build",
+      "label": "docker-build: debug",
+      "dependsOn": [
+        "build"
+      ],
+      "dockerBuild": {
+        "tag": "catebimap:dev",
+        "target": "base",
+        "dockerfile": "${workspaceFolder}/Catebi.Map.WebApi/Dockerfile",
+        "context": "${workspaceFolder}",
+        "pull": true
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
+      }
+    },
+    {
+      "type": "docker-build",
+      "label": "docker-build: release",
+      "dependsOn": [
+        "build"
+      ],
+      "dockerBuild": {
+        "tag": "catebimap:latest",
+        "dockerfile": "${workspaceFolder}/Catebi.Map.WebApi/Dockerfile",
+        "context": "${workspaceFolder}",
+        "platform": {
+          "os": "linux",
+          "architecture": "amd64"
+        },
+        "pull": true
+      },
+      "netCore": {
+        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: debug",
+      "dependsOn": [
+        "docker-build: debug"
+      ],
+      "dockerRun": {},
+      "netCore": {
+        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj",
+        "enableDebugging": true
+      }
+    },
+    {
+      "type": "docker-run",
+      "label": "docker-run: release",
+      "dependsOn": [
+        "docker-build: release"
+      ],
+      "dockerRun": {},
+      "netCore": {
+        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
+      }
     }
   ]
 }
