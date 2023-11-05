@@ -24,10 +24,9 @@ public class NotionApiService : INotionApiService
     public NotionApiService
     (
         INotionClient client,
-        CatebiContext context,
         IOptions<NotionApiSettings> notionSettings,
-        ILogger<NotionApiService> logger,
-        IMemoryCache memoryCache) // Inject the IMemoryCache
+        CatebiContext context,
+        ILogger<NotionApiService> logger)
     {
         _client = client;
         _context = context;
@@ -311,7 +310,7 @@ public class NotionApiService : INotionApiService
             Tags = tags.Select(x => new LookupDto { Id = x.CatTagId, Name = x.Name, Color = x.Color!.HexCode }).ToList(),
             Images = ((FilesPropertyValue)x.Properties["Files & media"])
                         .Files
-                        .Select(f => new NotionFile { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
+                        .Select(f => new NotionImage { Name = f.Name, Url = ((UploadedFileWithName)f).File.Url, Type = f.Type })
                         .ToList(),
             CreatedDate = x.CreatedTime,
             ChangedDate = x.LastEditedTime

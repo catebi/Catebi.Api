@@ -6,7 +6,7 @@ import { Cat } from '@core/models/cat';
 
 // ACCESS CONSTANTS
 export const NOTION = {
-  catsApiUrl: 'https://localhost:7294/api/notion/getcats'
+  catsApiUrl: 'https://localhost:7294/api/map/getcats'
 };
 
 // HEADERS

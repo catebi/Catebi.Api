@@ -1,6 +1,6 @@
 namespace Catebi.Map.Data.Models;
 
-public class NotionFile
+public class NotionImage
 {
     public string Name { get; set; }
     public string Url { get; set; }
