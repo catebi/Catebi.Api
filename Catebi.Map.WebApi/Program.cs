@@ -43,6 +43,7 @@ services.AddNotionClient(options =>
 
 services.AddScoped<INotionApiService, NotionApiService>();
 services.AddScoped<IMapService, MapService>();
+services.AddScoped<IDutyScheduleService, DutyScheduleService>();
 
 var app = builder.Build();
 
