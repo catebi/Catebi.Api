@@ -1,0 +1,13 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+version: '3.4'
+
+services:
+  catebimapwebapi:
+    image: catebimapwebapi
+    build:
+      context: .
+      dockerfile: Catebi.Map.WebApi/Dockerfile
+    ports:
+      - 5176:5176
+      - 8080:8080
