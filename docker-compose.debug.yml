@@ -1,19 +1,40 @@
-# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
-
 version: '3.4'
 
+networks:
+  dev:
+    driver: bridge
+
 services:
-  catebimapwebapi:
-    image: catebimapwebapi
+  catebi_api:
+    image: catebimap-catebi_api:latest
+    platform: linux/amd64
+    depends_on:
+      - catebi_db
+    container_name: catebi_api
+    ports:
+      - "8080:8080"
     build:
       context: .
-      dockerfile: Catebi.Map.WebApi/Dockerfile
-      args:
-        - configuration=Debug
-    ports:
-      - 5176:5176
-      - 8080:8080
+      dockerfile: ci/docker/Dockerfile.catebi.webapi
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=password;Include Error Detail=True;
+    networks:
+      - dev
+
+  catebi_db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Q1w2e3r4
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    restart: always
     volumes:
-      - ~/.vsdbg:/remote_debugger:rw
+      - postgres-data:/var/lib/postgresql/data/
+    networks:
+      - dev
+
+volumes:
+  postgres-data:

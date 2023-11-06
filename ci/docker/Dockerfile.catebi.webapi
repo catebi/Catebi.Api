@@ -1,13 +1,13 @@
 # FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine as base
 # FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-build
 LABEL "Author" = "sasha.karpov@catebi.team"
-
+ARG TARGETARCH
 WORKDIR /src
 
 COPY . .
 
-RUN dotnet restore \
+RUN dotnet restore -a $TARGETARCH \
         --configfile "./nuget.build.config" \
         -r linux-musl-x64 \
         /p:PublishReadyToRun=true \
@@ -16,8 +16,8 @@ RUN dotnet restore \
         /p:UseSharedCompilation=false
 
 WORKDIR /src
-RUN dotnet publish Catebi.Map.WebApi/Catebi.Map.WebApi.csproj -c Release -o /app/publish \
-    -r linux-musl-x64         \
+RUN dotnet publish Catebi.Map.WebApi/Catebi.Map.WebApi.csproj -c Release -a $TARGETARCH -o /app/publish \
+    # -r linux-musl-x64         \
     --no-restore              \
     --self-contained false    \
     /p:RunAnalyzers=false \
