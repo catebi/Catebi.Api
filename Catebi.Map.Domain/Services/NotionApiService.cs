@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
 
 using Notion.Client;
 
