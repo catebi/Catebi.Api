@@ -17,6 +17,6 @@ public class ScheduleController : ControllerBase
     public async Task<List<DutyScheduleUser>> GetAdminsCleaning() => await _scheduleService.GetAdminsCleaning();
 
     [HttpGet]
-    public async Task<List<DutyScheduleUser>> GetDutyVolunteersCleaning() => await _scheduleService.GetDutyVolunteersCleaning();
+    public async Task<List<DutyScheduleUser>> GetVolunteersCleaning() => await _scheduleService.GetVolunteersCleaning();
 
 }

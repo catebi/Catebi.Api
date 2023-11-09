@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-
 namespace Catebi.Map.Domain.Services;
 
 public class DutyScheduleService : IDutyScheduleService
@@ -34,8 +27,7 @@ public class DutyScheduleService : IDutyScheduleService
         return result;
     }
 
-
-    public async Task<List<DutyScheduleUser>> GetDutyVolunteersCleaning()
+    public async Task<List<DutyScheduleUser>> GetVolunteersCleaning()
     {
         var result = new List<DutyScheduleUser>();
         try
@@ -52,7 +44,6 @@ public class DutyScheduleService : IDutyScheduleService
     }
 
     #region Private
-
 
     private async Task<List<DutyScheduleUser>> GetAdminsCleaningInternal() =>
         await _context.VolunteerRole
