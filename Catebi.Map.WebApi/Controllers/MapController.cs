@@ -15,6 +15,7 @@ public class MapController : ControllerBase
 
     [HttpGet]
     public async Task<IEnumerable<CatDto>> GetCats() => await _mapService.GetCats();
+    public async Task<IEnumerable<CatDtoShort>> GetCatsShort() => await _mapService.GetCatsShort();
     public async Task<IEnumerable<CatDto>> GetVolunteers() => await _mapService.GetVolunteers();
 
 }
