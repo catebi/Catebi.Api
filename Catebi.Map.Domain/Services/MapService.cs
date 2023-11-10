@@ -4,6 +4,8 @@ namespace Catebi.Map.Domain.Services;
 
 public class MapService : IMapService
 {
+    private const string CatsShortKey = "CachedCatShort";
+    private const string CachedCatKeysKey = "CachedCatKeys";
     private readonly CatebiContext _context;
     private readonly ILogger<MapService> _logger;
     private readonly IMemoryCache _cache;
@@ -31,10 +33,26 @@ public class MapService : IMapService
         return result;
     }
 
+    public async Task<IEnumerable<CatDtoShort>> GetCatsShort()
+    {
+        var result = new List<CatDtoShort>();
+        try
+        {
+            result = await GetCatsShortInternal();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error getting cats");
+            throw;
+        }
+
+        return result;
+    }
+
     private async Task<List<CatDto>> GetCatsInternal()
     {
         // Optionally, you could cache this key list as well.
-        _cache.TryGetValue("CachedCatKeys", out List<string> cachedCatKeys);
+        _cache.TryGetValue(CachedCatKeysKey, out List<string> cachedCatKeys);
         cachedCatKeys ??= [];
 
         var catsResult = GetAllCatsFromCache(cachedCatKeys);
@@ -46,6 +64,45 @@ public class MapService : IMapService
         }
 
         return catsResult;
+    }
+
+    private async Task<List<CatDtoShort>> GetCatsShortInternal()
+    {
+        // Optionally, you could cache this key list as well.
+        _cache.TryGetValue(CatsShortKey, out List<CatDtoShort> cachedCats);
+        cachedCats ??= [];
+
+        if (!cachedCats.Any())
+        {
+            cachedCats = await GetCatsShortFromDb();
+            CacheCatsShort(cachedCats);
+        }
+
+        return cachedCats;
+    }
+
+    private void CacheCatsShort(List<CatDtoShort> catsResult)
+    {
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(60)
+        };
+
+        _cache.Set(CatsShortKey, catsResult, cacheOptions);
+    }
+
+    private List<CatDtoShort> GetAllCatsShortFromCache(List<string> cachedCatKeys)
+    {
+        var cats = new List<CatDtoShort>();
+        foreach (var key in cachedCatKeys)
+        {
+            if (_cache.TryGetValue(key, out CatDtoShort? cachedCat))
+            {
+                cats.Add(cachedCat!);
+            }
+        }
+
+        return cats;
     }
 
     private async Task<List<CatDto>> GetCatsFromDb()
@@ -66,6 +123,16 @@ public class MapService : IMapService
                                  .ToListAsync();
 
         return cats.Select(GetCatDto).ToList();
+    }
+
+    private async Task<List<CatDtoShort>> GetCatsShortFromDb()
+    {
+        var cats = await _context.Cat
+                                 .Where(x => !string.IsNullOrEmpty(x.GeoLocation))
+                                 .ToListAsync();
+
+        return cats.Select(x => new CatDtoShort(x.CatId, x.GeoLocation))
+                   .ToList();
     }
 
     private CatDto GetCatDto(Cat cat) =>
@@ -150,7 +217,7 @@ public class MapService : IMapService
         }
 
         // Optionally, you could cache this key list as well.
-        _cache.Set("CachedCatKeys", cachedCatKeys, cacheOptions);
+        _cache.Set(CachedCatKeysKey, cachedCatKeys, cacheOptions);
     }
 
     public List<CatDto> GetAllCatsFromCache(List<string> cachedCatKeys)
