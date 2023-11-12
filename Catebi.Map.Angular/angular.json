@@ -103,15 +103,15 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "Catebi.Map.Angular:build",
-            "proxyConfig": "proxy.config.json"
+            "proxyConfig": "proxy.config.json",
+            "buildTarget": "Catebi.Map.Angular:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "Catebi.Map.Angular:build:production"
+              "buildTarget": "Catebi.Map.Angular:build:production"
             },
             "development": {
-              "browserTarget": "Catebi.Map.Angular:build:development"
+              "buildTarget": "Catebi.Map.Angular:build:development"
             }
           },
           "defaultConfiguration": "development",
@@ -122,7 +122,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Catebi.Map.Angular:build"
+            "buildTarget": "Catebi.Map.Angular:build"
           }
         },
         "test": {
