@@ -1,3 +1,3 @@
 {
-    "dotnet.defaultSolution": "Catebi.Map.WebApi.sln"
+    "dotnet.defaultSolution": "Catebi.Api.sln"
 }

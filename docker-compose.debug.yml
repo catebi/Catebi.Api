@@ -6,7 +6,7 @@ networks:
 
 services:
   catebi_api:
-    image: catebimap-catebi_api:latest
+    image: catebi_api:latest
     platform: linux/amd64
     depends_on:
       - catebi_db
@@ -15,7 +15,7 @@ services:
       - "8080:8080"
     build:
       context: .
-      dockerfile: ci/docker/Dockerfile.catebi.webapi
+      dockerfile: ci/docker/Dockerfile.catebi.api
     environment:
       - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=password;Include Error Detail=True;
     networks:
@@ -26,7 +26,7 @@ services:
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Q1w2e3r4
+      - POSTGRES_PASSWORD=password
       - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
