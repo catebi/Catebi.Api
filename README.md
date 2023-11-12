@@ -19,7 +19,7 @@ docker save catebimap-catebi_api > catebi_api.tar
 docker save -o ~/Documents/_personnel/catebi/vps/catebi_api/catebi_api.tar catebimap-catebi_api
 
 # copy image to vps
-scp -i /Users/aleksandrkarpov/Documents/_personnel/catebi/vps/catebi_ssh_vps /Users/aleksandrkarpov/Documents/_personnel/catebi/vps/catebi_api/catebi_api.tar root@VPS_IP_ADDRESS:/_catebi/api/
+scp -i /Users/aleksandrkarpov/Documents/_personnel/catebi/vps/catebi_ssh_vps /Users/../catebi_api/catebi_api.tar root@VPS_IP_ADDRESS:/_catebi/api/
 
 # connect to vps via ssh
 ssh root@VPS_IP_ADDRESS -i ~/Users/../catebi_ssh_vps
