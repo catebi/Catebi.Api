@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj",
+        "${workspaceFolder}/Catebi.Api/Catebi.Api.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
@@ -20,34 +20,14 @@
         "build"
       ],
       "dockerBuild": {
-        "tag": "catebimap:dev",
+        "tag": "catebiapi:dev",
         "target": "base",
-        "dockerfile": "${workspaceFolder}/Catebi.Map.WebApi/Dockerfile",
+        "dockerfile": "${workspaceFolder}/Catebi.Api/ci/docker/Dockerfile.catebi.api",
         "context": "${workspaceFolder}",
         "pull": true
       },
       "netCore": {
-        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
-      }
-    },
-    {
-      "type": "docker-build",
-      "label": "docker-build: release",
-      "dependsOn": [
-        "build"
-      ],
-      "dockerBuild": {
-        "tag": "catebimap:latest",
-        "dockerfile": "${workspaceFolder}/Catebi.Map.WebApi/Dockerfile",
-        "context": "${workspaceFolder}",
-        "platform": {
-          "os": "linux",
-          "architecture": "amd64"
-        },
-        "pull": true
-      },
-      "netCore": {
-        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
+        "appProject": "${workspaceFolder}/Catebi.Api/Catebi.Api.csproj"
       }
     },
     {
@@ -58,19 +38,8 @@
       ],
       "dockerRun": {},
       "netCore": {
-        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj",
+        "appProject": "${workspaceFolder}/Catebi.Api/Catebi.Api.csproj",
         "enableDebugging": true
-      }
-    },
-    {
-      "type": "docker-run",
-      "label": "docker-run: release",
-      "dependsOn": [
-        "docker-build: release"
-      ],
-      "dockerRun": {},
-      "netCore": {
-        "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
       }
     }
   ]

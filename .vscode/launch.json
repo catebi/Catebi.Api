@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Catebi.Map.WebApi",
+            "name": "Catebi.Api",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Catebi.Map.WebApi/bin/Debug/net8.0/Catebi.Map.WebApi.dll",
+            "program": "${workspaceFolder}/Catebi.Api/bin/Debug/net8.0/Catebi.Api.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Catebi.Map.WebApi",
+            "cwd": "${workspaceFolder}/Catebi.Api",
             "stopAtEntry": false,
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
@@ -30,7 +30,7 @@
             "request": "launch",
             "preLaunchTask": "docker-run: debug",
             "netCore": {
-                "appProject": "${workspaceFolder}/Catebi.Map.WebApi/Catebi.Map.WebApi.csproj"
+                "appProject": "${workspaceFolder}/Catebi.Api/Catebi.Api.csproj"
             }
         }
     ]
