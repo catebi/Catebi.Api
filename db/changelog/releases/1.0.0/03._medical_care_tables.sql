@@ -104,7 +104,7 @@ alter table ctb.prescription
 	add FOREIGN KEY (clinic_visit_id)
 		references ctb.clinic_visit(clinic_visit_id);
 alter table ctb.prescription
-	add FOREIGN KEY (time_unit_id)
+	add FOREIGN KEY (periodicity_unit_id)
 		references ctb.time_unit(time_unit_id);
 
 -- med_schedule fk
