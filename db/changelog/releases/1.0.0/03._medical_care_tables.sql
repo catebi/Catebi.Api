@@ -7,11 +7,12 @@ drop table if exists ctb.clinic_visit;
 
 -- clinic_visit table
 create table ctb.clinic_visit (
-	clinic_visit_id serial PRIMARY KEY,
-	cat_id int not null,
-	visit_date date,
-	clinic_name text,
-	doctor_name text
+    clinic_visit_id serial primary key,
+    cat_id int not null,
+    visit_date date,
+    companion_volunteer_id int not null,
+    clinic_name text,
+    doctor_name text
 );
 
 comment on table ctb.clinic_visit is 'Посещение врача/ветеринарной клиники';
@@ -24,10 +25,10 @@ comment on column ctb.clinic_visit.doctor_name is 'Имя врача';
 
 -- clinic_visit_file table
 create table ctb.clinic_visit_file(
-	clinic_visit_file_id serial PRIMARY KEY,
-	clinic_visit_id int,
-	file_name text,
-	file_url text
+    clinic_visit_file_id serial primary key,
+    clinic_visit_id int,
+    file_name text not null,
+    file_url text not null
 );
 
 comment on table ctb.clinic_visit_file is 'Файлы посещений';
@@ -39,24 +40,24 @@ comment on column ctb.clinic_visit_file.file_url is 'URL файла';
 
 -- time_unit table
 create table ctb.time_unit(
-	time_unit_id serial PRIMARY KEY,
-	time_unit_name varchar (10) not null unique
+    time_unit_id serial primary key,
+    name text not null unique
 );
 
 comment on table ctb.time_unit is 'Единицы измерения времени';
 comment on column ctb.time_unit.time_unit_id is 'ID единицы измерения';
-comment on column ctb.time_unit.time_unit_name is 'Наименование единицы измерения';
+comment on column ctb.time_unit.name is 'Наименование единицы измерения';
 
 -- prescription table
 create table ctb.prescription(
-	prescription_id serial PRIMARY KEY,
-	clinic_visit_id int not null,
-	prescription_text text not null,
-	start_date date,
-	duration int,
-	one_time_procedure bool not null,
-	periodicity_unit_id int,
-	periodicity_value int	
+    prescription_id serial primary key,
+    clinic_visit_id int not null,
+    prescription_text text not null,
+    start_date date not null,
+    duration int,
+    one_time_procedure bool not null,
+    periodicity_unit_id int,
+    periodicity_value int
 );
 comment on table ctb.prescription is 'Назначения по медицинскому уходу';
 
@@ -70,13 +71,13 @@ comment on column ctb.prescription.periodicity_unit_id is 'Периодично�
 comment on column ctb.prescription.periodicity_value is 'Периодичность, значение';
 
 -- med_schedule table
-create table ctb.med_schedule(	
-	med_schedule_record_id serial PRIMARY KEY,
-	cat_id int not null,
-	prescription_id int not null,
-	procedure_time timestamp not null,
-	done bool not null,
-	volunteer_id int
+create table ctb.med_schedule(
+    med_schedule_record_id serial primary key,
+    cat_id int not null,
+    prescription_id int not null,
+    procedure_time timestamp not null,
+    done bool not null,
+    volunteer_id int
 );
 
 comment on table ctb.med_schedule is 'График медицинского ухода';
@@ -89,31 +90,35 @@ comment on column ctb.med_schedule.done is 'Процедура выполнен�
 comment on column ctb.med_schedule.volunteer_id is 'Волонтёр-исполнитель';
 
 -- foreign keys
+
 --clinic_visit fk
 alter table ctb.clinic_visit
-    add FOREIGN KEY (cat_id)
-		references ctb.cat(cat_id);
-		
---clinic_visit_file fk		
+    add foreign key (cat_id)
+        references ctb.cat(cat_id);
+alter table ctb.clinic_visit
+    add foreign key (companion_volunteer_id)
+        references ctb.volunteer(volunteer_id);
+
+--clinic_visit_file fk
 alter table ctb.clinic_visit_file
-	add FOREIGN KEY (clinic_visit_id)
-		references ctb.clinic_visit(clinic_visit_id);
+    add foreign key (clinic_visit_id)
+        references ctb.clinic_visit(clinic_visit_id);
 
 --prescription fk
 alter table ctb.prescription
-	add FOREIGN KEY (clinic_visit_id)
-		references ctb.clinic_visit(clinic_visit_id);
+    add foreign key (clinic_visit_id)
+        references ctb.clinic_visit(clinic_visit_id);
 alter table ctb.prescription
-	add FOREIGN KEY (periodicity_unit_id)
-		references ctb.time_unit(time_unit_id);
+    add foreign key (periodicity_unit_id)
+        references ctb.time_unit(time_unit_id);
 
 -- med_schedule fk
 alter table ctb.med_schedule
-    add FOREIGN KEY (cat_id)
-		references ctb.cat(cat_id);
+    add foreign key (cat_id)
+        references ctb.cat(cat_id);
 alter table ctb.med_schedule
-    add FOREIGN KEY (prescription_id)
-		references ctb.prescription(prescription_id);
+    add foreign key (prescription_id)
+        references ctb.prescription(prescription_id);
 alter table ctb.med_schedule
-    add FOREIGN KEY (volunteer_id)
-		references ctb.volunteer(volunteer_id);
+    add foreign key (volunteer_id)
+        references ctb.volunteer(volunteer_id);
