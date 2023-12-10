@@ -1,3 +1,9 @@
+--medical care related tables
+drop table if exists ctb.med_schedule;
+drop table if exists ctb.prescription;
+drop table if exists ctb.time_unit;
+drop table if exists ctb.clinic_visit_file;
+drop table if exists ctb.clinic_visit;
 -- volunteer role model tables
 drop table if exists ctb.volunteer_role;
 drop table if exists ctb.role_permission;

@@ -1,0 +1,49 @@
+%% <comments>
+%% https://mermaid.js.org/syntax/entityRelationshipDiagram.html
+%% </comments>
+
+erDiagram
+    clinic_visit {
+        clinic_visit_id int PK
+        cat_id int FK "nn"
+        visit_date date
+        companion_volunteer_id int FK "nn"
+        clinic_name text
+        doctor_name text
+    }
+    clinic_visit_file {
+        clinic_visit_file_id int PK
+        clinic_visit_id int FK
+        file_name text "nn"
+        file_url text "nn"
+    }
+    time_unit {
+        time_unit_id int PK
+        name text "nn u"
+    }
+    prescription {
+        prescription_id int PK
+        clinic_visit_id int FK "nn"
+        prescription_text text "nn"
+        start_date date "nn"
+        duration int
+        one_time_procedure bool "nn"
+        periodicity_unit_id int FK
+        periodicity_value int
+    }
+    med_schedule {
+        med_schedule_record_id int PK
+        cat_id int FK "nn"
+        prescription_id int FK "nn"
+        procedure_time timestamp "nn"
+        done bool "nn"
+        volunteer_id int FK
+    }
+    %%clinic_visit ||--o{ cat : " "
+    %%clinic_visit ||--o{ volunteer : " "
+    clinic_visit_file ||--o{ clinic_visit : " "
+    prescription ||--o{ clinic_visit : " "
+    prescription ||--o{ time_unit : " "
+    %%med_schedule ||--o{ cat : " "
+    med_schedule ||--o{ prescription : " "
+    %%med_schedule ||--o{ volunteer : " "
