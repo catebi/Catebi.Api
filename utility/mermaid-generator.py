@@ -1,15 +1,19 @@
 import os
 import re
 
-def sql_to_mermaid(file_path):
+def sql_to_mermaid(file_path, schema_name):
+
     # Read SQL script from the file
     with open(file_path, 'r') as file:
         sql_script = file.read()
 
+    # Escape special characters in schema name for regex
+    escaped_schema_name = re.escape(schema_name)
+
     # Regex patterns to extract table, column, and foreign key information
-    table_pattern = r"create table ctb\.(\w+)\s*\(([^;]+)\);"
+    table_pattern = rf"create table {escaped_schema_name}\.(\w+)\s*\(([^;]+)\);"
     column_pattern = r"(\w+)\s+([\w\s]+)(?:,|$)"
-    fk_pattern = r"alter table ctb\.(\w+)\s+add FOREIGN KEY \((\w+)\)\s+references ctb\.(\w+)\((\w+)\);"
+    fk_pattern = rf"alter table {escaped_schema_name}\.(\w+)\s+add FOREIGN KEY \((\w+)\)\s+references {escaped_schema_name}\.(\w+)\((\w+)\);"
 
     # Find all table definitions in the SQL script
     tables = re.findall(table_pattern, sql_script, re.IGNORECASE)
@@ -71,10 +75,13 @@ script_dir = os.path.dirname(script_path)
 
 # File path of the SQL script
 file_path = script_dir + "/../db/changelog/releases/1.0.0/03._medical_care_tables.sql"
+# "/../db/changelog/releases/1.0.0/04._freegan_tables.sql"
+# "/../db/changelog/releases/1.0.0/03._medical_care_tables.sql"
 # print("file Path:", file_path)
 
 # Convert SQL to Mermaid
-mermaid_script = sql_to_mermaid(file_path)
+schema_name = "ctb"
+mermaid_script = sql_to_mermaid(file_path, schema_name)
 
 # Print the Mermaid script
 print(mermaid_script)

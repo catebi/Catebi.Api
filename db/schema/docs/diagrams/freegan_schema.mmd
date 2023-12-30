@@ -1,0 +1,56 @@
+%% <comments>
+%% https://mermaid.js.org/syntax/entityRelationshipDiagram.html
+%% </comments>
+
+erDiagram
+    chat {
+        chat_id int PK
+        chat_url text "nn u"
+    }
+
+    chat_group {
+        chat_group_id int PK
+        name text "nn u"
+    }
+
+    chat_group_chat {
+        chat_group_chat_id int PK
+        chat_id int FK "nn"
+        chat_group_id int FK "nn"
+    }
+
+    keyword {
+        keyword_id int PK
+        text text "nn u"
+        rule_id int FK
+    }
+
+    keyword_group {
+        keyword_group_id int PK
+        name text "nn u"
+    }
+
+    group_chat_keyword_group {
+        chat_keygroup_id int PK
+        chat_id int FK "nn"
+        keygroup_id int FK "nn"
+        additional_keygroup_id int FK "nn"
+    }
+
+    keygroup_keyword {
+        keygroup_keyword_id int PK
+        keyword_id int FK "nn"
+        keygroup_id int FK "nn"
+        name text "nn u"
+    }
+
+    spellchecker_word {
+        spellchecker_word_id int PK
+        word text "nn u"
+    }
+
+    group_chat ||--o{ chat : " "
+    chat_group_chat ||--o{ group_chat : " "
+    chat_keygroup ||--o{ keygroup : "additional"
+    chat_keygroup ||--o{ keygroup : "main"
+    keyword_group_keyword ||--o{ keygroup : " "
