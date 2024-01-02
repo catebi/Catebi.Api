@@ -1,4 +1,4 @@
-namespace Catebi.Api.Domain.Interfaces;
+namespace Catebi.Api.Domain.Contracts.Services;
 
 public interface IDutyScheduleService
 {
