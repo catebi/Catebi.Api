@@ -1,64 +1,15 @@
-  AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+using Microsoft.AspNetCore;
 
-var builder = WebApplication.CreateBuilder(args);
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-// Add services to the container.
+var builder = WebHost.CreateDefaultBuilder(args)
+                     .UseStartup<Startup>()
+                     .ConfigureAppConfiguration(
+                        (hostingContext, config) => {
+                            config.AddUserSecrets<Program>();
+                            // var builtConfig = config.Build();
+                            // config.AddJsonFile(builtConfig["VaultSettingsFilePath"], true, false);
+                        })
+                     .Build();
 
-var services = builder.Services;
-
-// Register CORS policy
-services
-  .AddCors(options =>
-  {
-    options.AddPolicy(
-        "CorsPolicy",
-        builder =>
-        {
-          builder
-              .AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .Build();
-        }
-    );
-  });
-
-services.AddControllers();
-services.AddEndpointsApiExplorer();
-services.AddSwaggerGen();
-
-services.AddMemoryCache();
-
-services.AddDbContext<CatebiContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Pgsql")));
-
-services.Configure<NotionApiSettings>(builder.Configuration.GetSection("NotionApi"));
-
-var notionAuthToken = builder.Configuration.GetSection("NotionApi:AuthToken").Value;
-
-services.AddNotionClient(options =>
-{
-  options.AuthToken = notionAuthToken;
-});
-
-services.AddScoped<INotionApiService, NotionApiService>();
-services.AddScoped<IMapService, MapService>();
-services.AddScoped<IDutyScheduleService, DutyScheduleService>();
-
-var app = builder.Build();
-
-app.UseCors("CorsPolicy");
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-  app.UseSwagger();
-  app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-app.Run();
+builder.Run();

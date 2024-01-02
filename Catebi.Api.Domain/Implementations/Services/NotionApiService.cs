@@ -1,15 +1,18 @@
 using Microsoft.Extensions.Options;
-
 using Notion.Client;
 
-namespace Catebi.Api.Domain.Services;
+namespace Catebi.Api.Domain.Implementations.Services;
 
-public class NotionApiService : INotionApiService
+public class NotionApiService(
+    INotionClient client,
+    IOptions<NotionApiSettings> notionSettings,
+    CatebiContext context,
+    ILogger<NotionApiService> logger) : INotionApiService
 {
-    private readonly INotionClient _client;
-    private readonly CatebiContext _context;
-    private readonly NotionApiSettings _notionSettings;
-    private readonly ILogger<NotionApiService> _logger;
+    private readonly INotionClient _client = client;
+    private readonly CatebiContext _context = context;
+    private readonly NotionApiSettings _notionSettings = notionSettings.Value;
+    private readonly ILogger<NotionApiService> _logger = logger;
 
     private List<CatSex> _sexes;
     private List<CatCollar> _collars;
@@ -19,20 +22,7 @@ public class NotionApiService : INotionApiService
     private List<CatDto> _catDtos;
     private Dictionary<string, string> _notionVolunteerPageDict = [];
 
-    public NotionApiService
-    (
-        INotionClient client,
-        IOptions<NotionApiSettings> notionSettings,
-        CatebiContext context,
-        ILogger<NotionApiService> logger)
-    {
-        _client = client;
-        _context = context;
-        _notionSettings = notionSettings.Value;
-        _logger = logger;
-    }
-
-#region Public
+    #region Public
 
     public async Task<bool> SyncDicts()
     {
