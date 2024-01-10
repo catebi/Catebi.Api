@@ -41,12 +41,12 @@ alter default privileges for role catebi_admin_role in schema ctb grant all on f
 alter default privileges for role catebi_admin_role in schema ctb grant all on sequences to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema ctb grant all on types to catebi_user_role;
 
-create schema freegan authorization catebi_admin_role;
-comment on schema freegan is 'Схема, включающая объекты, связанные с ботом-барахольщиком "Freegan Bot"';
-grant usage on schema freegan to catebi_admin_role, catebi_user_role, catebi_support_role;
+create schema frgn authorization catebi_admin_role;
+comment on schema frgn is 'Схема, включающая объекты, связанные с ботом-барахольщиком "Freegan Bot"';
+grant usage on schema frgn to catebi_admin_role, catebi_user_role, catebi_support_role;
 
-alter default privileges for role catebi_admin_role in schema freegan grant all on tables to catebi_user_role;
-alter default privileges for role catebi_admin_role in schema freegan grant select on tables to catebi_support_role;
-alter default privileges for role catebi_admin_role in schema freegan grant all on functions to catebi_user_role;
-alter default privileges for role catebi_admin_role in schema freegan grant all on sequences to catebi_user_role;
-alter default privileges for role catebi_admin_role in schema freegan grant all on types to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema frgn grant all on tables to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema frgn grant select on tables to catebi_support_role;
+alter default privileges for role catebi_admin_role in schema frgn grant all on functions to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema frgn grant all on sequences to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema frgn grant all on types to catebi_user_role;
