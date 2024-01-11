@@ -5,7 +5,7 @@ drop table if exists ctb.permission;
 
 -- ctb.role table
 create table ctb.role (
-    role_id serial PRIMARY KEY,
+    role_id serial primary key,
     name text unique
 );	
 
@@ -15,7 +15,7 @@ comment on column ctb.role.name is 'Наименование роли';
 
 -- ctb.permission table
 create table ctb.permission (
-    permission_id serial PRIMARY KEY,
+    permission_id serial primary key,
     name text unique
 );
 
@@ -25,9 +25,9 @@ comment on column ctb.permission.name is 'Наименование права';
 
 -- ctb.role_permission table
 create table ctb.role_permission (
-	role_permission_id serial PRIMARY KEY,
-    role_id integer NOT NULL,
-    permission_id integer NOT NULL,
+	role_permission_id serial primary key,
+    role_id integer not null,
+    permission_id integer not null,
 	unique (role_id, permission_id)
 );
 
@@ -38,9 +38,9 @@ comment on column ctb.role_permission.permission_id is 'ID разрешения'
 
 -- ctb.volunteer_role table
 create table ctb.volunteer_role (
-    volunteer_role_id serial PRIMARY KEY,
-    role_id integer NOT NULL,
-    volunteer_id integer NOT NULL
+    volunteer_role_id serial primary key,
+    role_id integer not null,
+    volunteer_id integer not null
 );
 
 comment on table ctb.volunteer_role is 'Таблица связи "волонтёр-роль"';
@@ -51,16 +51,16 @@ comment on column ctb.volunteer_role.volunteer_id is 'ID волонтёра';
 -- foreign keys 
 -- FK in role_permission 
 alter table ctb.role_permission
-	add FOREIGN KEY (role_id) 
+	add foreign key (role_id) 
 		references ctb.role(role_id);
 alter table ctb.role_permission
-	add FOREIGN KEY (permission_id) 
+	add foreign key (permission_id) 
 		references ctb.permission(permission_id);
 
 -- FK in volunteer_role
 alter table ctb.volunteer_role
-	add FOREIGN KEY (role_id) 
+	add foreign key (role_id) 
 		references ctb.role(role_id);
 alter table ctb.volunteer_role
-	add FOREIGN KEY (volunteer_id) 
+	add foreign key (volunteer_id) 
 		references ctb.volunteer(volunteer_id);
