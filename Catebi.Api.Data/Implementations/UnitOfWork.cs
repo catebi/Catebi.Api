@@ -7,18 +7,22 @@ namespace Catebi.Api.Data.Implementations;
 /// UnitOfWork
 /// </summary>
 public class UnitOfWork (   CatebiContext context,
+                            FreeganContext freeganContext,
                             //IClaimsProvider claimsProvider,
                             ICatRepository catRepo,
-                            IVolunteerRepository volunteerRepo
+                            IVolunteerRepository volunteerRepo,
+                            IFreeganMessageRepository freeganRepo
                         ) : IUnitOfWork
 {
     #region Cstor
     private bool disposed = false;
     public CatebiContext Context { get; } = context;
+    public FreeganContext FreeganContext { get; } = freeganContext;
 
     //private readonly IClaimsProvider ClaimsProvider;
 
     public ICatRepository CatRepository { get; private set; } = catRepo;
+    public IFreeganMessageRepository FreeganRepository { get; private set; } = freeganRepo;
     public IVolunteerRepository VolunteerRepository { get; private set; } = volunteerRepo;
     #endregion
 
@@ -44,6 +48,7 @@ public class UnitOfWork (   CatebiContext context,
     {
         //AuditEntities(userId);
         await Context.SaveChangesAsync();
+        await FreeganContext.SaveChangesAsync();
     }
 
 /*

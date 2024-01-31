@@ -17,7 +17,12 @@ public class NotionSyncController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet]
     public async Task<bool> SyncDicts() => await _notionService.SyncDicts();
+
+    [HttpGet]
     public async Task<bool> SyncVolunteers() => await _notionService.SyncVolunteers();
+
+    [HttpGet]
     public async Task<bool> SyncCats() => await _notionService.SyncCats();
 }
