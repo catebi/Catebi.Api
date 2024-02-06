@@ -1,5 +1,5 @@
 drop table if exists frgn.message;
-drop table if exists frgn.reaction_statistics;
+drop table if exists frgn.donation_message_reaction;
 
 -- freegan_bot_archive
 
@@ -18,18 +18,18 @@ comment on column frgn.message.lemmatized_text is 'Текст сообщения
 comment on column frgn.message.chat_link is 'Ссылка на чат, откуда бот сообщение взял';
 comment on column frgn.message.accepted is 'Принято ли сообщение по текущему набору правил';
 
--- freegan_reaction_statistics
-create table frgn.reaction_statistics(
-    reaction_statistics_id serial primary key,
-    tg_message_id int not null unique,
-    message_content text not null,
-    count_of_likes int not null,
-    count_of_dislikes int not null
+-- freegan_donation_message_reaction
+create table frgn.donation_message_reaction(
+    donation_message_reaction_id serial primary key,
+    message_id int not null unique,
+    content text not null,
+    like_count int not null,
+    dislike_count int not null
 );
 
-comment on table frgn.reaction_statistics is 'Статистика реакций на сообщения';
-comment on column frgn.reaction_statistics.reaction_statistics_id is 'ID';
-comment on column frgn.reaction_statistics.tg_message_id is 'ID сообщения в telegram';
-comment on column frgn.reaction_statistics.message_content is 'Текст сообщения';
-comment on column frgn.reaction_statistics.count_of_likes is 'Количество реакций 👍';
-comment on column frgn.reaction_statistics.count_of_dislikes is 'Количество реакций 👎';
+comment on table frgn.donation_message_reaction is 'Таблица для сбора статисти реакций на сообщения';
+comment on column frgn.donation_message_reaction.donation_message_reaction_id is 'ID';
+comment on column frgn.donation_message_reaction.message_id is 'ID сообщения (в чате после фильтрации)';
+comment on column frgn.donation_message_reaction.content is 'Текст сообщения';
+comment on column frgn.donation_message_reaction.like_count is 'Количество реакций 👍';
+comment on column frgn.donation_message_reaction.dislike_count is 'Количество реакций 👎';
