@@ -10,7 +10,7 @@ public interface IUnitOfWork : IDisposable
     CatebiContext Context { get; }
     Task SaveAsync(int? userId = null);
 
+    IFreeganMessageRepository FreeganRepository { get; }
     ICatRepository CatRepository { get; }
     IVolunteerRepository VolunteerRepository { get; }
-
 }

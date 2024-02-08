@@ -9,7 +9,8 @@ namespace Catebi.Api.Data.Implementations;
 public class UnitOfWork (   CatebiContext context,
                             //IClaimsProvider claimsProvider,
                             ICatRepository catRepo,
-                            IVolunteerRepository volunteerRepo
+                            IVolunteerRepository volunteerRepo,
+                            IFreeganMessageRepository freeganRepo
                         ) : IUnitOfWork
 {
     #region Cstor
@@ -19,6 +20,7 @@ public class UnitOfWork (   CatebiContext context,
     //private readonly IClaimsProvider ClaimsProvider;
 
     public ICatRepository CatRepository { get; private set; } = catRepo;
+    public IFreeganMessageRepository FreeganRepository { get; private set; } = freeganRepo;
     public IVolunteerRepository VolunteerRepository { get; private set; } = volunteerRepo;
     #endregion
 

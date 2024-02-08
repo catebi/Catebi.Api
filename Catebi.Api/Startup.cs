@@ -56,6 +56,7 @@ public class Startup
         // Register other services
         builder.RegisterType<NotionApiService>().As<INotionApiService>().InstancePerLifetimeScope();
         builder.RegisterType<CatService>().As<ICatService>().InstancePerLifetimeScope();
+        builder.RegisterType<FreeganMessageService>().As<IFreeganMessageService>().InstancePerLifetimeScope();
         builder.RegisterType<DutyScheduleService>().As<IDutyScheduleService>().InstancePerLifetimeScope();
 
         var container = builder.Build();
@@ -71,7 +72,7 @@ public class Startup
         if (env.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
         }
         app.UseRouting();
         app.UseHttpsRedirection();
