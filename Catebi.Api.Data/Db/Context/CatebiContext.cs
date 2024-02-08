@@ -26,13 +26,25 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<CatTag> CatTag { get; set; }
 
+    public virtual DbSet<ClinicVisit> ClinicVisit { get; set; }
+
+    public virtual DbSet<ClinicVisitFile> ClinicVisitFile { get; set; }
+
     public virtual DbSet<Color> Color { get; set; }
 
+    public virtual DbSet<MedSchedule> MedSchedule { get; set; }
+
+    public virtual DbSet<Message> Message { get; set; }
+
     public virtual DbSet<Permission> Permission { get; set; }
+
+    public virtual DbSet<Prescription> Prescription { get; set; }
 
     public virtual DbSet<Role> Role { get; set; }
 
     public virtual DbSet<RolePermission> RolePermission { get; set; }
+
+    public virtual DbSet<TimeUnit> TimeUnit { get; set; }
 
     public virtual DbSet<Volunteer> Volunteer { get; set; }
 
@@ -279,6 +291,66 @@ public partial class CatebiContext : DbContext
                 .HasConstraintName("cat_tag_color_id_fkey");
         });
 
+        modelBuilder.Entity<ClinicVisit>(entity =>
+        {
+            entity.HasKey(e => e.ClinicVisitId).HasName("clinic_visit_pkey");
+
+            entity.ToTable("clinic_visit", "ctb", tb => tb.HasComment("Посещение врача/ветеринарной клиники"));
+
+            entity.Property(e => e.ClinicVisitId)
+                .HasDefaultValueSql("nextval('clinic_visit_clinic_visit_id_seq'::regclass)")
+                .HasComment("ID посещения")
+                .HasColumnName("clinic_visit_id");
+            entity.Property(e => e.CatId)
+                .HasComment("ID кошки")
+                .HasColumnName("cat_id");
+            entity.Property(e => e.ClinicName)
+                .HasComment("Название клиники")
+                .HasColumnName("clinic_name");
+            entity.Property(e => e.CompanionVolunteerId).HasColumnName("companion_volunteer_id");
+            entity.Property(e => e.DoctorName)
+                .HasComment("Имя врача")
+                .HasColumnName("doctor_name");
+            entity.Property(e => e.VisitDate)
+                .HasComment("Дата визита")
+                .HasColumnName("visit_date");
+
+            entity.HasOne(d => d.Cat).WithMany(p => p.ClinicVisit)
+                .HasForeignKey(d => d.CatId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("clinic_visit_cat_id_fkey");
+
+            entity.HasOne(d => d.CompanionVolunteer).WithMany(p => p.ClinicVisit)
+                .HasForeignKey(d => d.CompanionVolunteerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("clinic_visit_companion_volunteer_id_fkey");
+        });
+
+        modelBuilder.Entity<ClinicVisitFile>(entity =>
+        {
+            entity.HasKey(e => e.ClinicVisitFileId).HasName("clinic_visit_file_pkey");
+
+            entity.ToTable("clinic_visit_file", "ctb", tb => tb.HasComment("Файлы посещений"));
+
+            entity.Property(e => e.ClinicVisitFileId)
+                .HasDefaultValueSql("nextval('clinic_visit_file_clinic_visit_file_id_seq'::regclass)")
+                .HasComment("ID файла")
+                .HasColumnName("clinic_visit_file_id");
+            entity.Property(e => e.ClinicVisitId)
+                .HasComment("ID посещения")
+                .HasColumnName("clinic_visit_id");
+            entity.Property(e => e.FileName)
+                .HasComment("Имя файла")
+                .HasColumnName("file_name");
+            entity.Property(e => e.FileUrl)
+                .HasComment("URL файла")
+                .HasColumnName("file_url");
+
+            entity.HasOne(d => d.ClinicVisit).WithMany(p => p.ClinicVisitFile)
+                .HasForeignKey(d => d.ClinicVisitId)
+                .HasConstraintName("clinic_visit_file_clinic_visit_id_fkey");
+        });
+
         modelBuilder.Entity<Color>(entity =>
         {
             entity.HasKey(e => e.ColorId).HasName("color_pkey");
@@ -308,6 +380,71 @@ public partial class CatebiContext : DbContext
                 .HasColumnName("rgb_code");
         });
 
+        modelBuilder.Entity<MedSchedule>(entity =>
+        {
+            entity.HasKey(e => e.MedScheduleRecordId).HasName("med_schedule_pkey");
+
+            entity.ToTable("med_schedule", "ctb", tb => tb.HasComment("График медицинского ухода"));
+
+            entity.Property(e => e.MedScheduleRecordId)
+                .HasDefaultValueSql("nextval('med_schedule_med_schedule_record_id_seq'::regclass)")
+                .HasComment("ID записи в графике(журнале) мед. ухода")
+                .HasColumnName("med_schedule_record_id");
+            entity.Property(e => e.CatId)
+                .HasComment("ID кошки")
+                .HasColumnName("cat_id");
+            entity.Property(e => e.Done)
+                .HasComment("Процедура выполнена")
+                .HasColumnName("done");
+            entity.Property(e => e.PrescriptionId)
+                .HasComment("ID назначения")
+                .HasColumnName("prescription_id");
+            entity.Property(e => e.ProcedureTime)
+                .HasComment("Дата и время назначенной процедуры")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("procedure_time");
+            entity.Property(e => e.VolunteerId)
+                .HasComment("Волонтёр-исполнитель")
+                .HasColumnName("volunteer_id");
+
+            entity.HasOne(d => d.Cat).WithMany(p => p.MedSchedule)
+                .HasForeignKey(d => d.CatId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("med_schedule_cat_id_fkey");
+
+            entity.HasOne(d => d.Prescription).WithMany(p => p.MedSchedule)
+                .HasForeignKey(d => d.PrescriptionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("med_schedule_prescription_id_fkey");
+
+            entity.HasOne(d => d.Volunteer).WithMany(p => p.MedSchedule)
+                .HasForeignKey(d => d.VolunteerId)
+                .HasConstraintName("med_schedule_volunteer_id_fkey");
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.MessageId).HasName("message_pkey");
+
+            entity.ToTable("message", "frgn", tb => tb.HasComment("Архив сообщений, прошедших через бот для разметки"));
+
+            entity.Property(e => e.MessageId)
+                .HasComment("ID записи")
+                .HasColumnName("message_id");
+            entity.Property(e => e.Accepted)
+                .HasComment("Принято ли сообщение по текущему набору правил")
+                .HasColumnName("accepted");
+            entity.Property(e => e.ChatLink)
+                .HasComment("Ссылка на чат, откуда бот сообщение взял")
+                .HasColumnName("chat_link");
+            entity.Property(e => e.LemmatizedText)
+                .HasComment("Текст сообщения после лемматизации")
+                .HasColumnName("lemmatized_text");
+            entity.Property(e => e.OriginalText)
+                .HasComment("Исходный текст сообщения")
+                .HasColumnName("original_text");
+        });
+
         modelBuilder.Entity<Permission>(entity =>
         {
             entity.HasKey(e => e.PermissionId).HasName("permission_pkey");
@@ -323,6 +460,48 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.Name)
                 .HasComment("Наименование права")
                 .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<Prescription>(entity =>
+        {
+            entity.HasKey(e => e.PrescriptionId).HasName("prescription_pkey");
+
+            entity.ToTable("prescription", "ctb", tb => tb.HasComment("Назначения по медицинскому уходу"));
+
+            entity.Property(e => e.PrescriptionId)
+                .HasDefaultValueSql("nextval('prescription_prescription_id_seq'::regclass)")
+                .HasComment("ID назначения")
+                .HasColumnName("prescription_id");
+            entity.Property(e => e.ClinicVisitId)
+                .HasComment("ID визита к врачу")
+                .HasColumnName("clinic_visit_id");
+            entity.Property(e => e.Duration)
+                .HasComment("Длительность лечения в днях")
+                .HasColumnName("duration");
+            entity.Property(e => e.OneTimeProcedure)
+                .HasComment("Процедура одноразовая")
+                .HasColumnName("one_time_procedure");
+            entity.Property(e => e.PeriodicityUnitId)
+                .HasComment("Периодичность, ед. изм.")
+                .HasColumnName("periodicity_unit_id");
+            entity.Property(e => e.PeriodicityValue)
+                .HasComment("Периодичность, значение")
+                .HasColumnName("periodicity_value");
+            entity.Property(e => e.PrescriptionText)
+                .HasComment("Текст назначения")
+                .HasColumnName("prescription_text");
+            entity.Property(e => e.StartDate)
+                .HasComment("Дата начала лечения")
+                .HasColumnName("start_date");
+
+            entity.HasOne(d => d.ClinicVisit).WithMany(p => p.Prescription)
+                .HasForeignKey(d => d.ClinicVisitId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("prescription_clinic_visit_id_fkey");
+
+            entity.HasOne(d => d.PeriodicityUnit).WithMany(p => p.Prescription)
+                .HasForeignKey(d => d.PeriodicityUnitId)
+                .HasConstraintName("prescription_periodicity_unit_id_fkey");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -370,6 +549,23 @@ public partial class CatebiContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("role_permission_role_id_fkey");
+        });
+
+        modelBuilder.Entity<TimeUnit>(entity =>
+        {
+            entity.HasKey(e => e.TimeUnitId).HasName("time_unit_pkey");
+
+            entity.ToTable("time_unit", "ctb", tb => tb.HasComment("Единицы измерения времени"));
+
+            entity.HasIndex(e => e.Name, "time_unit_name_key").IsUnique();
+
+            entity.Property(e => e.TimeUnitId)
+                .HasDefaultValueSql("nextval('time_unit_time_unit_id_seq'::regclass)")
+                .HasComment("ID единицы измерения")
+                .HasColumnName("time_unit_id");
+            entity.Property(e => e.Name)
+                .HasComment("Наименование единицы измерения")
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<Volunteer>(entity =>

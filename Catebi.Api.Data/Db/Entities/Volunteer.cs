@@ -55,5 +55,9 @@ public partial class Volunteer
 
     public virtual ICollection<Cat> Cat { get; set; } = new List<Cat>();
 
+    public virtual ICollection<ClinicVisit> ClinicVisit { get; set; } = new List<ClinicVisit>();
+
+    public virtual ICollection<MedSchedule> MedSchedule { get; set; } = new List<MedSchedule>();
+
     public virtual ICollection<VolunteerRole> VolunteerRole { get; set; } = new List<VolunteerRole>();
 }

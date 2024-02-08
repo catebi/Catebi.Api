@@ -31,9 +31,6 @@ public class Startup
         services.AddDbContext<CatebiContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
 
-        services.AddDbContext<FreeganContext>(options =>
-            options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
-
         services.Configure<NotionApiSettings>(Configuration.GetSection("NotionApi"));
         var notionAuthToken = Configuration.GetSection("NotionApi:AuthToken").Value;
 

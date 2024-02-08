@@ -1,4 +1,3 @@
-
 namespace Catebi.Api.Domain.Implementations.Services;
 
 public class FreeganMessageService(  IUnitOfWork unitOfWork,

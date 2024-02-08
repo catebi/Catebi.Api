@@ -98,5 +98,9 @@ public partial class Cat
 
     public virtual CatSex CatSex { get; set; } = null!;
 
+    public virtual ICollection<ClinicVisit> ClinicVisit { get; set; } = new List<ClinicVisit>();
+
+    public virtual ICollection<MedSchedule> MedSchedule { get; set; } = new List<MedSchedule>();
+
     public virtual Volunteer? ResponsibleVolunteer { get; set; }
 }

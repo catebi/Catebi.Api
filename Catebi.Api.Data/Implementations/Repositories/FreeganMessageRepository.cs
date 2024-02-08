@@ -3,6 +3,6 @@ using Catebi.Api.Data.Implementations.Repositories;
 
 namespace Catebi.Api.Data.Implementations.Repositories;
 
-public class FreeganMessageRepository(FreeganContext context) : BaseFreeganRepository<Message>(context), IFreeganMessageRepository
+public class FreeganMessageRepository(CatebiContext context) : BaseRepository<Message>(context), IFreeganMessageRepository
 {
 }

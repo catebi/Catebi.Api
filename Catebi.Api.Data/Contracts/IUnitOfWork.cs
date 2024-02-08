@@ -8,7 +8,6 @@ namespace Catebi.Api.Data.Contracts;
 public interface IUnitOfWork : IDisposable
 {
     CatebiContext Context { get; }
-    FreeganContext FreeganContext { get; }
     Task SaveAsync(int? userId = null);
 
     IFreeganMessageRepository FreeganRepository { get; }
