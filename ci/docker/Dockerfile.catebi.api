@@ -1,4 +1,6 @@
 # https://github.com/dotnet/dotnet-docker/issues/4388
+# https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp
+
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-build
 LABEL "Author" = "sasha.karpov@catebi.team"
 ARG TARGETARCH

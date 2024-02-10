@@ -1,6 +1,4 @@
 using System.Reflection;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 
@@ -13,7 +11,7 @@ public class Startup
         Configuration = configuration;
     }
 
-    public IServiceProvider ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         services.AddCors(options =>
         {
@@ -52,32 +50,24 @@ public class Startup
             options.AuthToken = notionAuthToken;
         });
 
-        var builder = new ContainerBuilder();
-
-        // Pull the .net core dependencies into the container, like controllers
-        builder.Populate(services);
-
-        // Register repositories
         var assembly = Assembly.GetAssembly(typeof(BaseRepository<>));
-        builder.RegisterAssemblyTypes(assembly)
-               .Where(t => t.Name.EndsWith("Repository"))
-               .AsImplementedInterfaces()
-               .InstancePerLifetimeScope();
 
-        builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+        foreach (var type in assembly.GetTypes())
+        {
+            if (type.Name.EndsWith("Repository") && !type.IsAbstract)
+            {
+                foreach (var interfaceType in type.GetInterfaces())
+                {
+                    services.AddScoped(interfaceType, type);
+                }
+            }
+        }
 
-        // Register other services
-        builder.RegisterType<NotionApiService>().As<INotionApiService>().InstancePerLifetimeScope();
-        builder.RegisterType<CatService>().As<ICatService>().InstancePerLifetimeScope();
-        builder.RegisterType<FreeganMessageService>().As<IFreeganMessageService>().InstancePerLifetimeScope();
-        builder.RegisterType<DutyScheduleService>().As<IDutyScheduleService>().InstancePerLifetimeScope();
-
-        var container = builder.Build();
-
-        // Diagnostic tracer for autofac
-        // container.EnableAutofacDiagnosticTracer();
-
-        return new AutofacServiceProvider(container);
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<INotionApiService, NotionApiService>();
+        services.AddScoped<ICatService, CatService>();
+        services.AddScoped<IFreeganMessageService, FreeganMessageService>();
+        services.AddScoped<IDutyScheduleService, DutyScheduleService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -87,6 +77,13 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
         }
+
+        if (!env.IsDevelopment())
+        {
+            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            app.UseHsts();
+        }
+
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseCors("CorsPolicy");

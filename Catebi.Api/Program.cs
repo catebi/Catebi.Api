@@ -1,13 +1,18 @@
-using Microsoft.AspNetCore;
+using System.Reflection;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-var builder = WebHost.CreateDefaultBuilder(args)
-                     .UseStartup<Startup>()
-                     .ConfigureAppConfiguration(
-                        (hostingContext, config) => {
-                            config.AddUserSecrets<Program>();
-                        })
-                     .Build();
+var builder = WebApplication.CreateBuilder(args);
 
-builder.Run();
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+var startup = new Startup(builder.Configuration);
+startup.ConfigureServices(builder.Services);
+
+var app = builder.Build();
+
+startup.Configure(app, builder.Environment);
+app.Run();
