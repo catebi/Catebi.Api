@@ -1,6 +1,8 @@
 using System.Reflection;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
 
 public class Startup
 {
@@ -27,6 +29,17 @@ public class Startup
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddMemoryCache();
+
+        services.AddLogging((loggingBuilder) => loggingBuilder
+        .SetMinimumLevel(LogLevel.Debug)
+        .AddOpenTelemetry(options =>
+            options
+                .AddConsoleExporter()
+                .SetResourceBuilder(
+                    ResourceBuilder.CreateDefault()
+                        .AddService("Catebi.Api"))
+            )
+        );
 
         services.AddDbContext<CatebiContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
