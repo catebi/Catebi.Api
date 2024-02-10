@@ -7,8 +7,6 @@ var builder = WebHost.CreateDefaultBuilder(args)
                      .ConfigureAppConfiguration(
                         (hostingContext, config) => {
                             config.AddUserSecrets<Program>();
-                            // var builtConfig = config.Build();
-                            // config.AddJsonFile(builtConfig["VaultSettingsFilePath"], true, false);
                         })
                      .Build();
 
