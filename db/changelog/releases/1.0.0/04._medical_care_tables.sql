@@ -4,6 +4,13 @@ drop table if exists ctb.prescription;
 drop table if exists ctb.time_unit;
 drop table if exists ctb.clinic_visit_file;
 drop table if exists ctb.clinic_visit;
+drop table if exists ctb.clinic;
+
+create table ctb.clinic(
+    clinic_id serial primary key,
+    clinic_name text unique not null,
+    neutering_price numeric(7,2)
+);
 
 -- clinic_visit table
 create table ctb.clinic_visit (
@@ -11,7 +18,7 @@ create table ctb.clinic_visit (
     cat_id int not null,
     visit_date date,
     companion_volunteer_id int not null,
-    clinic_name text,
+    clinic_id int not null,
     doctor_name text
 );
 
@@ -20,7 +27,7 @@ comment on table ctb.clinic_visit is 'Посещение врача/ветери
 comment on column ctb.clinic_visit.clinic_visit_id is 'ID посещения';
 comment on column ctb.clinic_visit.cat_id is 'ID кошки';
 comment on column ctb.clinic_visit.visit_date is 'Дата визита';
-comment on column ctb.clinic_visit.clinic_name is 'Название клиники';
+comment on column ctb.clinic_visit.clinic_id is 'ID клиники';
 comment on column ctb.clinic_visit.doctor_name is 'Имя врача';
 
 -- clinic_visit_file table
@@ -98,6 +105,9 @@ alter table ctb.clinic_visit
 alter table ctb.clinic_visit
     add foreign key (companion_volunteer_id)
         references ctb.volunteer(volunteer_id);
+alter table ctb.clinic_visit
+    add foreign key (clinic_id)
+        references ctb.clinic(clinic_id);
 
 --clinic_visit_file fk
 alter table ctb.clinic_visit_file
