@@ -11,6 +11,10 @@ create table ctb.clinic(
     clinic_name text unique not null,
     neutering_price numeric(7,2)
 );
+comment on table ctb.clinic is 'Информация о ветеринарной клинике';
+comment on column ctb.clinic.clinic_id  is 'ID клиники';
+comment on column ctb.clinic.clinic_name  is 'Название клиники';
+comment on column ctb.clinic.neutering_price  is 'Стоимость стерилизации кошки';
 
 -- clinic_visit table
 create table ctb.clinic_visit (
