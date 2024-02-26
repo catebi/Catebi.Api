@@ -11,6 +11,7 @@ create table ctb.neutering_request(
     pregnant_included bool not null, 
     unhealthy_included bool not null, 
     cat_sex_id int, 
+    
     need_help_catch bool not null, 
     need_help_deliver bool not null, 
     need_carrier_count int,    
@@ -34,8 +35,8 @@ comment on column ctb.neutering_request.unhealthy_included  is 'Среди ко�
 comment on column ctb.neutering_request.cat_sex_id  is 'Пол кошек.';	-- 1="Все М", 2="Все Ж", NULL = "разные/не знаю"
 comment on column ctb.neutering_request.need_help_catch  is 'Нужна помощь волонтёров с поимкой кошек';
 comment on column ctb.neutering_request.need_help_deliver  is 'Нужна помощь волонтёров с доставкой кошек в КК/клинику';
-comment on column ctb.neutering_request.needed_carrier_count  is 'Сколько нужно переносок (если нужны)';
-comment on column ctb.neutering_request.needed_catcher_count  is 'Сколько нужно котоловок (если нужны)';
+comment on column ctb.neutering_request.need_carrier_count  is 'Сколько нужно переносок (если нужны)';
+comment on column ctb.neutering_request.need_catcher_count  is 'Сколько нужно котоловок (если нужны)';
 comment on column ctb.neutering_request.neutering_sponsor_id  is 'Платит ли заполнитель за стерилизацию'; 
 comment on column ctb.neutering_request.clinic_id  is 'id вет.клиники, где будет стерилизация (если это важно)';
 comment on column ctb.neutering_request.cat_count_foster  is 'Сколько кошек пользователь может взять себе на передержку после стерилизации';
