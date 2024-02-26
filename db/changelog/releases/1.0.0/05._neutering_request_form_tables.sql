@@ -11,11 +11,10 @@ create table ctb.neutering_request(
     pregnant_included bool not null, 
     unhealthy_included bool not null, 
     cat_sex_id int, 
-    
     need_help_catch bool not null, 
     need_help_deliver bool not null, 
-    needed_carrier_count int,    
-    needed_catcher_count int,    
+    need_carrier_count int,    
+    need_catcher_count int,    
     neutering_sponsor_id int not null, 
     clinic_id int,
     cat_count_foster int, 
