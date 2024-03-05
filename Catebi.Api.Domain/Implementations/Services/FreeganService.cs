@@ -1,11 +1,12 @@
 namespace Catebi.Api.Domain.Implementations.Services;
 
-public class FreeganMessageService(  IUnitOfWork unitOfWork,
-                                     ILogger<FreeganMessageService> logger
-                                 ) : IFreeganMessageService
+public class FreeganService(  IUnitOfWork unitOfWork,
+                                     ILogger<FreeganService> logger
+                                 ) : IFreeganService
 {
-    private readonly ILogger<FreeganMessageService> _logger = logger;
+    private readonly ILogger<FreeganService> _logger = logger;
     private readonly IFreeganMessageRepository _freeganRepo = unitOfWork.FreeganRepository;
+    private readonly IDonationChatRepository _chatRepo = unitOfWork.DonationChatRepository;
 
     public async Task<bool> SaveMessage(FreeganMessageDto message)
     {
@@ -29,6 +30,13 @@ public class FreeganMessageService(  IUnitOfWork unitOfWork,
             _logger.LogError(ex, "Error saving message");
             return false;
         }
+    }
+
+    public async Task<List<DonationChatDto>> GetDonationChats()
+    {
+        var result = await _chatRepo.GetAsync(filter: x => x.IsActual);
+        return result.Select(x => new DonationChatDto(x.DonationChatId, x.ChatUrl, x.IsConnected))
+            .ToList();
     }
 
     #region Public
