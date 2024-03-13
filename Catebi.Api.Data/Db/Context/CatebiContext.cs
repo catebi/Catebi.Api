@@ -32,6 +32,8 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<Color> Color { get; set; }
 
+    public virtual DbSet<DonationChat> DonationChat { get; set; }
+
     public virtual DbSet<MedSchedule> MedSchedule { get; set; }
 
     public virtual DbSet<Message> Message { get; set; }
@@ -378,6 +380,29 @@ public partial class CatebiContext : DbContext
                 .HasMaxLength(15)
                 .HasComment("Запись в формате \"(255, 255, 255)\"")
                 .HasColumnName("rgb_code");
+        });
+
+        modelBuilder.Entity<DonationChat>(entity => 
+        {
+            entity.HasKey(e => e.DonationChatId).HasName("donation_chat_pkey");
+
+            entity.ToTable("donation_chat", "frgn", tb => tb.HasComment("Чаты барахолок для фригана"));
+
+            entity.Property(e => e.DonationChatId)
+                .HasComment("id")
+                .HasColumnName("donation_chat_id");
+            entity.Property(e => e.ChatUrl)
+                .HasComment("Ссылка на чат")
+                .HasColumnName("chat_url");
+            entity.Property(e => e.IsActual)
+                .HasComment("Признак актуальности")
+                .HasColumnName("is_actual");
+            entity.Property(e => e.IsConnected)
+                .HasComment("Признак подключения Мисс Марпл к чату")
+                .HasColumnName("is_connected");
+            entity.Property(e => e.CreatedDate)
+                .HasComment("Дата создания барахолки")
+                .HasColumnName("created_date");
         });
 
         modelBuilder.Entity<MedSchedule>(entity =>
