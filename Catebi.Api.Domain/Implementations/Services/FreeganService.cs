@@ -44,17 +44,26 @@ public class FreeganService(  IUnitOfWork unitOfWork,
     {
         try
         {
-            var donationMessageReaction = new DonationMessageReaction
+            var donation = await _reactionRepo.SingleOrDefaultAsync(filter: x => x.MessageId.Equals(reaction.MessageId));
+
+            if (donation != null) 
             {
-                MessageId = reaction.MessageId,
-                Content = reaction.Content,
-                LikeCount = reaction.LikeCount,
-                DislikeCount = reaction.DislikeCount
-            };
-
-            await _reactionRepo.InsertAsync(donationMessageReaction);
+                donation.LikeCount = reaction.LikeCount;
+                donation.DislikeCount = reaction.DislikeCount;
+                _reactionRepo.Update(donation);
+            }
+            else
+            {
+                var donationMessageReaction = new DonationMessageReaction
+                {
+                    MessageId = reaction.MessageId,
+                    Content = reaction.Content,
+                    LikeCount = reaction.LikeCount,
+                    DislikeCount = reaction.DislikeCount
+                };
+                await _reactionRepo.InsertAsync(donationMessageReaction);
+            }
             await unitOfWork.SaveAsync();
-
             return true;
         }
         catch (Exception ex)
