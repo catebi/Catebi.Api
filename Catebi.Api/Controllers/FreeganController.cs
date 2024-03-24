@@ -18,4 +18,7 @@ public class FreeganController : ControllerBase
 
     [HttpGet]
     public async Task<List<DonationChatDto>> GetDonationChats() => await _freeganService.GetDonationChats();
+
+    [HttpPost]
+    public async Task<bool> SaveReaction(DonationMessageReactionDto data) => await _freeganService.SaveReaction(data);
 }

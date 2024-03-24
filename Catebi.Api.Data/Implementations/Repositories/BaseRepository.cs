@@ -132,14 +132,14 @@ public abstract class BaseRepository<T>(CatebiContext context) : IRepository<T> 
     public async Task<T> SingleAsync
     (
         Expression<Func<T, bool>> filter,
-        params Expression<Func<T, object>>[] includes
+        Func<IQueryable<T>, IIncludableQueryable<T, object?>>? include = null
     )
     {
         IQueryable<T> query = DbSet;
 
-        foreach (var include in includes)
+        if (include != null)
         {
-            query = query.Include(include);
+            query = include(query);
         }
 
         return await query.SingleAsync(filter);
