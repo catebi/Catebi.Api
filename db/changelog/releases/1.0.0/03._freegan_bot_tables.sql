@@ -1,6 +1,7 @@
 drop table if exists frgn.message;
 drop table if exists frgn.donation_message_reaction;
 drop table if exists frgn.donation_chat;
+drop table if exists frgn.donation_chat;
 
 -- freegan_bot_archive
 
