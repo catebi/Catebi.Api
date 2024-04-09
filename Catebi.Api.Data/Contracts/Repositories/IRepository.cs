@@ -61,7 +61,7 @@ public interface IRepository<T> where T : class
     /// Get single entity
     /// </summary>
     /// <param name="filter">Filter</param>
-    Task<T> SingleAsync(Expression<Func<T, bool>> filter, params Expression<Func<T, object>>[] includes);
+    Task<T> SingleAsync(Expression<Func<T, bool>> filter, Func<IQueryable<T>, IIncludableQueryable<T, object?>>? include = null);
 
     /// <summary>
     /// Get single entity or default

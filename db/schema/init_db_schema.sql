@@ -50,3 +50,13 @@ alter default privileges for role catebi_admin_role in schema frgn grant select 
 alter default privileges for role catebi_admin_role in schema frgn grant all on functions to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema frgn grant all on sequences to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema frgn grant all on types to catebi_user_role;
+
+create schema schdl authorization catebi_admin_role;
+comment on schema schdl is 'Схема, включающая объекты, связанные c ботом-дежурником';
+grant usage on schema schdl to catebi_admin_role, catebi_user_role, catebi_support_role;
+
+alter default privileges for role catebi_admin_role in schema schdl grant all on tables to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema schdl grant select on tables to catebi_support_role;
+alter default privileges for role catebi_admin_role in schema schdl grant all on functions to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema schdl grant all on sequences to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema schdl grant all on types to catebi_user_role;

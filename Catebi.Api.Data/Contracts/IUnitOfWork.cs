@@ -13,4 +13,6 @@ public interface IUnitOfWork : IDisposable
     IFreeganMessageRepository FreeganRepository { get; }
     ICatRepository CatRepository { get; }
     IVolunteerRepository VolunteerRepository { get; }
+    IDonationChatRepository DonationChatRepository { get; }
+    IDonationMessageReactionRepository DonationMessageReactionRepository { get; }
 }

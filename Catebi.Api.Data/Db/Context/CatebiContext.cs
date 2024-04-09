@@ -32,6 +32,10 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<Color> Color { get; set; }
 
+    public virtual DbSet<DonationChat> DonationChat { get; set; }
+
+    public virtual DbSet<DonationMessageReaction> DonationMessageReaction { get; set; }
+
     public virtual DbSet<MedSchedule> MedSchedule { get; set; }
 
     public virtual DbSet<Message> Message { get; set; }
@@ -378,6 +382,56 @@ public partial class CatebiContext : DbContext
                 .HasMaxLength(15)
                 .HasComment("Запись в формате \"(255, 255, 255)\"")
                 .HasColumnName("rgb_code");
+        });
+
+        modelBuilder.Entity<DonationChat>(entity =>
+        {
+            entity.HasKey(e => e.DonationChatId).HasName("donation_chat_pkey");
+
+            entity.ToTable("donation_chat", "frgn", tb => tb.HasComment("Чаты барахолок для фригана"));
+
+            entity.Property(e => e.DonationChatId)
+                .HasComment("id")
+                .HasColumnName("donation_chat_id");
+            entity.Property(e => e.ChatUrl)
+                .HasComment("Ссылка на чат")
+                .HasColumnName("chat_url");
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("timezone('utc'::text, now())")
+                .HasComment("Дата создания барахолки")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_date");
+            entity.Property(e => e.IsActual)
+                .HasComment("Признак актуальности")
+                .HasColumnName("is_actual");
+            entity.Property(e => e.IsConnected)
+                .HasComment("Признак подключения Мисс Марпл к чату")
+                .HasColumnName("is_connected");
+        });
+
+        modelBuilder.Entity<DonationMessageReaction>(entity =>
+        {
+            entity.HasKey(e => e.DonationMessageReactionId).HasName("donation_message_reaction_pkey");
+
+            entity.ToTable("donation_message_reaction", "frgn", tb => tb.HasComment("Таблица для сбора статисти реакций на сообщения"));
+
+            entity.HasIndex(e => e.MessageId, "donation_message_reaction_message_id_key").IsUnique();
+
+            entity.Property(e => e.DonationMessageReactionId)
+                .HasComment("ID")
+                .HasColumnName("donation_message_reaction_id");
+            entity.Property(e => e.Content)
+                .HasComment("Текст сообщения")
+                .HasColumnName("content");
+            entity.Property(e => e.DislikeCount)
+                .HasComment("Количество реакций 👎")
+                .HasColumnName("dislike_count");
+            entity.Property(e => e.LikeCount)
+                .HasComment("Количество реакций 👍")
+                .HasColumnName("like_count");
+            entity.Property(e => e.MessageId)
+                .HasComment("ID сообщения (в чате после фильтрации)")
+                .HasColumnName("message_id");
         });
 
         modelBuilder.Entity<MedSchedule>(entity =>

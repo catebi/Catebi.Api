@@ -10,7 +10,9 @@ public class UnitOfWork (   CatebiContext context,
                             //IClaimsProvider claimsProvider,
                             ICatRepository catRepo,
                             IVolunteerRepository volunteerRepo,
-                            IFreeganMessageRepository freeganRepo
+                            IFreeganMessageRepository freeganRepo,
+                            IDonationChatRepository chatRepo,
+                            IDonationMessageReactionRepository reactionRepo
                         ) : IUnitOfWork
 {
     #region Cstor
@@ -22,6 +24,8 @@ public class UnitOfWork (   CatebiContext context,
     public ICatRepository CatRepository { get; private set; } = catRepo;
     public IFreeganMessageRepository FreeganRepository { get; private set; } = freeganRepo;
     public IVolunteerRepository VolunteerRepository { get; private set; } = volunteerRepo;
+    public IDonationChatRepository DonationChatRepository { get; private set; } = chatRepo;
+    public IDonationMessageReactionRepository DonationMessageReactionRepository { get; private set; } = reactionRepo;
     #endregion
 
     protected virtual void Dispose(bool disposing)
