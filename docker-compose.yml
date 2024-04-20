@@ -18,6 +18,9 @@ services:
       dockerfile: ci/docker/Dockerfile.catebi.api
     environment:
       - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=password;Include Error Detail=True;
+      - NotionApi__AuthToken=notion_auth_toket
+      - NotionApi__DatabaseIds__Cats=catdb_id
+      - NotionApi__DatabaseIds__Volunteers=volunteerdb_id
     networks:
       - dev
 
