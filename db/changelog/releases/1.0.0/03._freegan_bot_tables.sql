@@ -6,7 +6,6 @@ drop table if exists frgn.search_group_excluded_keywords;
 drop table if exists frgn.keywords;
 drop table if exists frgn.search_groups;
 
-
 -- freegan_bot_archive
 
 create table frgn.message(
