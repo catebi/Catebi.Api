@@ -55,16 +55,17 @@ comment on column frgn.donation_chat.is_actual is 'Признак актуаль
 comment on column frgn.donation_chat.is_connected is 'Признак подключения Мисс Марпл к чату';
 comment on column frgn.donation_chat.created_date is 'Дата создания барахолки';
 
-
 -- Groups table
 create table frgn.search_groups (
     group_id serial primary key,
-    name text not null
+    name text not null,
+    is_actual bool not null
 );
 
 comment on table frgn.search_groups is 'Таблица групп слов';
 comment on column frgn.search_groups.group_id is 'ID группы';
 comment on column frgn.search_groups.name is 'Название группы';
+comment on column frgn.search_groups.is_actual is 'Признак актуальности группы';
 
 -- Keywords table
 create table frgn.keywords (
