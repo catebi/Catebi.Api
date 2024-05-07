@@ -60,3 +60,13 @@ alter default privileges for role catebi_admin_role in schema schdl grant select
 alter default privileges for role catebi_admin_role in schema schdl grant all on functions to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema schdl grant all on sequences to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema schdl grant all on types to catebi_user_role;
+
+create schema tasks authorization catebi_admin_role;
+comment on schema tasks is 'Схема, включающая объекты, связанные c tasks ботом';
+grant usage on schema tasks to catebi_admin_role, catebi_user_role, catebi_support_role;
+
+alter default privileges for role catebi_admin_role in schema tasks grant all on tables to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema tasks grant select on tables to catebi_support_role;
+alter default privileges for role catebi_admin_role in schema tasks grant all on functions to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema tasks grant all on sequences to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema tasks grant all on types to catebi_user_role;
