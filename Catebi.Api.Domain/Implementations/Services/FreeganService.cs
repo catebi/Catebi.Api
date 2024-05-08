@@ -8,6 +8,7 @@ public class FreeganService(  IUnitOfWork unitOfWork,
     private readonly IFreeganMessageRepository _freeganRepo = unitOfWork.FreeganRepository;
     private readonly IDonationChatRepository _chatRepo = unitOfWork.DonationChatRepository;
     private readonly IDonationMessageReactionRepository _reactionRepo = unitOfWork.DonationMessageReactionRepository;
+    private readonly IKeywordGroupRepository _keywordGroupRepo = unitOfWork.KeywordGroupRepository;
 
     public async Task<bool> SaveMessage(FreeganMessageDto message)
     {
@@ -73,6 +74,19 @@ public class FreeganService(  IUnitOfWork unitOfWork,
         }
     }
 
+    public async Task<List<KeywordGroupDto>> GetSearchConfig()
+    {
+        var result = await _keywordGroupRepo.GetAsync
+        (
+            filter: x => x.IsActual,
+            include: x => x.Include(y => y.Keyword)
+                        .Include(y => y.GroupIncludedKeyword)
+                        .Include(y => y.GroupExcludedKeyword)
+        );
+        Console.WriteLine(result);
+        return result.Select(GetKeywordsDto).ToList();
+    }
+
     #region Public
 
 
@@ -80,6 +94,15 @@ public class FreeganService(  IUnitOfWork unitOfWork,
     #endregion
 
     #region Private
+
+    private KeywordGroupDto GetKeywordsDto(Group group) =>
+        new()
+        {
+            Name = group.Name,
+            Keywords = group.Keyword.Select(kw => kw.Keyword1).ToList(),
+            IncludeKeywords = group.GroupIncludedKeyword.Select(gik => gik.Keyword).ToList(),
+            ExcludeKeywords = group.GroupExcludedKeyword.Select(gek => gek.Keyword).ToList(),
+        };
 
     #endregion
 
