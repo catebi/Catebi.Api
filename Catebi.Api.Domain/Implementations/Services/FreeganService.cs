@@ -83,7 +83,6 @@ public class FreeganService(  IUnitOfWork unitOfWork,
                         .Include(y => y.GroupIncludedKeyword)
                         .Include(y => y.GroupExcludedKeyword)
         );
-        Console.WriteLine(result);
         return result.Select(GetKeywordsDto).ToList();
     }
 
