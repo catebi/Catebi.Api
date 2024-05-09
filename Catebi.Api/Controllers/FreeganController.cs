@@ -21,4 +21,7 @@ public class FreeganController : ControllerBase
 
     [HttpPost]
     public async Task<bool> SaveReaction(DonationMessageReactionDto data) => await _freeganService.SaveReaction(data);
+
+    [HttpGet]
+    public async Task<List<KeywordGroupDto>> GetSearchConfig() => await _freeganService.GetSearchConfig();
 }

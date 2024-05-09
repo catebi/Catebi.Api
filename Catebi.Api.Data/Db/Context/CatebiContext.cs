@@ -36,6 +36,14 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<DonationMessageReaction> DonationMessageReaction { get; set; }
 
+    public virtual DbSet<Group> Group { get; set; }
+
+    public virtual DbSet<GroupExcludedKeyword> GroupExcludedKeyword { get; set; }
+
+    public virtual DbSet<GroupIncludedKeyword> GroupIncludedKeyword { get; set; }
+
+    public virtual DbSet<Keyword> Keyword { get; set; }
+
     public virtual DbSet<MedSchedule> MedSchedule { get; set; }
 
     public virtual DbSet<Message> Message { get; set; }
@@ -432,6 +440,89 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.MessageId)
                 .HasComment("ID сообщения (в чате после фильтрации)")
                 .HasColumnName("message_id");
+        });
+
+        modelBuilder.Entity<Group>(entity =>
+        {
+            entity.HasKey(e => e.GroupId).HasName("group_pkey");
+
+            entity.ToTable("group", "frgn", tb => tb.HasComment("Таблица групп слов"));
+
+            entity.Property(e => e.GroupId)
+                .HasComment("ID группы")
+                .HasColumnName("group_id");
+            entity.Property(e => e.IsActual)
+                .HasComment("Признак актуальности группы")
+                .HasColumnName("is_actual");
+            entity.Property(e => e.Name)
+                .HasComment("Название группы")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<GroupExcludedKeyword>(entity =>
+        {
+            entity.HasKey(e => e.ExcludedKeywordId).HasName("group_excluded_keyword_pkey");
+
+            entity.ToTable("group_excluded_keyword", "frgn", tb => tb.HasComment("Таблица исключенных ключевых слов для группы"));
+
+            entity.Property(e => e.ExcludedKeywordId)
+                .HasComment("ID исключенного ключевого слова")
+                .HasColumnName("excluded_keyword_id");
+            entity.Property(e => e.GroupId)
+                .HasComment("ID группы")
+                .HasColumnName("group_id");
+            entity.Property(e => e.Keyword)
+                .HasComment("Исключенное ключевое слово")
+                .HasColumnName("keyword");
+
+            entity.HasOne(d => d.Group).WithMany(p => p.GroupExcludedKeyword)
+                .HasForeignKey(d => d.GroupId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("group_excluded_keyword_group_id_fkey");
+        });
+
+        modelBuilder.Entity<GroupIncludedKeyword>(entity =>
+        {
+            entity.HasKey(e => e.IncludedKeywordId).HasName("group_included_keyword_pkey");
+
+            entity.ToTable("group_included_keyword", "frgn", tb => tb.HasComment("Таблица включенных ключевых слов для группы"));
+
+            entity.Property(e => e.IncludedKeywordId)
+                .HasComment("ID включенного ключевого слова")
+                .HasColumnName("included_keyword_id");
+            entity.Property(e => e.GroupId)
+                .HasComment("ID группы")
+                .HasColumnName("group_id");
+            entity.Property(e => e.Keyword)
+                .HasComment("Включенное ключевое слово")
+                .HasColumnName("keyword");
+
+            entity.HasOne(d => d.Group).WithMany(p => p.GroupIncludedKeyword)
+                .HasForeignKey(d => d.GroupId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("group_included_keyword_group_id_fkey");
+        });
+
+        modelBuilder.Entity<Keyword>(entity =>
+        {
+            entity.HasKey(e => e.KeywordId).HasName("keyword_pkey");
+
+            entity.ToTable("keyword", "frgn", tb => tb.HasComment("Таблица ключевых слов"));
+
+            entity.Property(e => e.KeywordId)
+                .HasComment("ID ключевого слова")
+                .HasColumnName("keyword_id");
+            entity.Property(e => e.GroupId)
+                .HasComment("ID группы, к которой относится ключевое слово")
+                .HasColumnName("group_id");
+            entity.Property(e => e.Keyword1)
+                .HasComment("Ключевое слово")
+                .HasColumnName("keyword");
+
+            entity.HasOne(d => d.Group).WithMany(p => p.Keyword)
+                .HasForeignKey(d => d.GroupId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("keyword_group_id_fkey");
         });
 
         modelBuilder.Entity<MedSchedule>(entity =>

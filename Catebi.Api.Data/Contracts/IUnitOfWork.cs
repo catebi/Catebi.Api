@@ -15,4 +15,5 @@ public interface IUnitOfWork : IDisposable
     IVolunteerRepository VolunteerRepository { get; }
     IDonationChatRepository DonationChatRepository { get; }
     IDonationMessageReactionRepository DonationMessageReactionRepository { get; }
+    IKeywordGroupRepository KeywordGroupRepository { get; }
 }
