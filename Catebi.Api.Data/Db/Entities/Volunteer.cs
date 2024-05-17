@@ -60,4 +60,12 @@ public partial class Volunteer
     public virtual ICollection<MedSchedule> MedSchedule { get; set; } = new List<MedSchedule>();
 
     public virtual ICollection<VolunteerRole> VolunteerRole { get; set; } = new List<VolunteerRole>();
+
+    public virtual ICollection<WorkTask> WorkTaskChangedBy { get; set; } = new List<WorkTask>();
+
+    public virtual ICollection<WorkTask> WorkTaskCreatedBy { get; set; } = new List<WorkTask>();
+
+    public virtual ICollection<WorkTaskReminder> WorkTaskReminder { get; set; } = new List<WorkTaskReminder>();
+
+    public virtual ICollection<WorkTaskResponsible> WorkTaskResponsible { get; set; } = new List<WorkTaskResponsible>();
 }

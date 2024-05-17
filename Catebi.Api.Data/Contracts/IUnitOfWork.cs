@@ -1,5 +1,3 @@
-using Catebi.Api.Data.Contracts.Repositories;
-
 namespace Catebi.Api.Data.Contracts;
 
 /// <summary>
@@ -11,6 +9,8 @@ public interface IUnitOfWork : IDisposable
     Task SaveAsync(int? userId = null);
 
     IFreeganMessageRepository FreeganRepository { get; }
+    IWorkTaskRepository WorkTaskRepository { get; }
+    IWorkTopicRepository WorkTopicRepository { get; }
     ICatRepository CatRepository { get; }
     IVolunteerRepository VolunteerRepository { get; }
     IDonationChatRepository DonationChatRepository { get; }
