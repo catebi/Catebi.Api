@@ -1,8 +1,6 @@
 namespace Catebi.Api.Domain.Implementations.Services;
 
-public class FreeganService(  IUnitOfWork unitOfWork,
-                                     ILogger<FreeganService> logger
-                                 ) : IFreeganService
+public class FreeganService(IUnitOfWork unitOfWork, ILogger<FreeganService> logger) : IFreeganService
 {
     private readonly ILogger<FreeganService> _logger = logger;
     private readonly IFreeganMessageRepository _freeganRepo = unitOfWork.FreeganRepository;
@@ -47,7 +45,7 @@ public class FreeganService(  IUnitOfWork unitOfWork,
         {
             var donation = await _reactionRepo.SingleOrDefaultAsync(filter: x => x.MessageId.Equals(reaction.MessageId));
 
-            if (donation != null) 
+            if (donation != null)
             {
                 donation.LikeCount = reaction.LikeCount;
                 donation.DislikeCount = reaction.DislikeCount;

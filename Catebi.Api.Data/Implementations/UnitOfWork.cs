@@ -1,6 +1,3 @@
-using Catebi.Api.Data.Contracts;
-using Catebi.Api.Data.Contracts.Repositories;
-
 namespace Catebi.Api.Data.Implementations;
 
 /// <summary>
@@ -11,12 +8,15 @@ public class UnitOfWork (   CatebiContext context,
                             ICatRepository catRepo,
                             IVolunteerRepository volunteerRepo,
                             IFreeganMessageRepository freeganRepo,
+                            IWorkTaskRepository workTaskRepo,
+                            IWorkTopicRepository workTopicRepo,
                             IDonationChatRepository chatRepo,
                             IDonationMessageReactionRepository reactionRepo,
                             IKeywordGroupRepository keywordGroupRepo
                         ) : IUnitOfWork
 {
     #region Cstor
+
     private bool disposed = false;
     public CatebiContext Context { get; } = context;
 
@@ -24,10 +24,13 @@ public class UnitOfWork (   CatebiContext context,
 
     public ICatRepository CatRepository { get; private set; } = catRepo;
     public IFreeganMessageRepository FreeganRepository { get; private set; } = freeganRepo;
+    public IWorkTaskRepository WorkTaskRepository { get; private set; } = workTaskRepo;
+    public IWorkTopicRepository WorkTopicRepository { get; private set; } = workTopicRepo;
     public IVolunteerRepository VolunteerRepository { get; private set; } = volunteerRepo;
     public IDonationChatRepository DonationChatRepository { get; private set; } = chatRepo;
     public IDonationMessageReactionRepository DonationMessageReactionRepository { get; private set; } = reactionRepo;
     public IKeywordGroupRepository KeywordGroupRepository { get; private set; } = keywordGroupRepo;
+
     #endregion
 
     protected virtual void Dispose(bool disposing)

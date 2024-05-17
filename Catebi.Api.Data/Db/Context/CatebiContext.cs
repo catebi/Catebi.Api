@@ -62,6 +62,16 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<VolunteerRole> VolunteerRole { get; set; }
 
+    public virtual DbSet<WorkTask> WorkTask { get; set; }
+
+    public virtual DbSet<WorkTaskReminder> WorkTaskReminder { get; set; }
+
+    public virtual DbSet<WorkTaskResponsible> WorkTaskResponsible { get; set; }
+
+    public virtual DbSet<WorkTaskStatus> WorkTaskStatus { get; set; }
+
+    public virtual DbSet<WorkTopic> WorkTopic { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cat>(entity =>
@@ -397,6 +407,8 @@ public partial class CatebiContext : DbContext
             entity.HasKey(e => e.DonationChatId).HasName("donation_chat_pkey");
 
             entity.ToTable("donation_chat", "frgn", tb => tb.HasComment("Чаты барахолок для фригана"));
+
+            entity.HasIndex(e => e.ChatUrl, "unq_donation_chat_chat_url").IsUnique();
 
             entity.Property(e => e.DonationChatId)
                 .HasComment("id")
@@ -783,6 +795,174 @@ public partial class CatebiContext : DbContext
                 .HasForeignKey(d => d.VolunteerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("volunteer_role_volunteer_id_fkey");
+        });
+
+        modelBuilder.Entity<WorkTask>(entity =>
+        {
+            entity.HasKey(e => e.WorkTaskId).HasName("work_task_pkey");
+
+            entity.ToTable("work_task", "tasks", tb => tb.HasComment("Таблица для хранения задач в чате Catebi"));
+
+            entity.Property(e => e.WorkTaskId)
+                .HasComment("ID записи")
+                .HasColumnName("work_task_id");
+            entity.Property(e => e.ChangedById)
+                .HasComment("ID волонтёра, изменившего задачу")
+                .HasColumnName("changed_by_id");
+            entity.Property(e => e.ChangedDate)
+                .HasComment("Дата изменения")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("changed_date");
+            entity.Property(e => e.CreatedById)
+                .HasComment("ID волонтёра-автора задачи")
+                .HasColumnName("created_by_id");
+            entity.Property(e => e.CreatedDate)
+                .HasComment("Дата создания")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_date");
+            entity.Property(e => e.Description)
+                .HasComment("описание задачи")
+                .HasColumnName("description");
+            entity.Property(e => e.StatusId)
+                .HasComment("ID статуса задачи")
+                .HasColumnName("status_id");
+            entity.Property(e => e.WorkTopicId)
+                .HasComment("ID топика, в котором создана задача")
+                .HasColumnName("work_topic_id");
+
+            entity.HasOne(d => d.ChangedBy).WithMany(p => p.WorkTaskChangedBy)
+                .HasForeignKey(d => d.ChangedById)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_changed_by_id_fkey");
+
+            entity.HasOne(d => d.CreatedBy).WithMany(p => p.WorkTaskCreatedBy)
+                .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_created_by_id_fkey");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.WorkTask)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_status_id_fkey");
+
+            entity.HasOne(d => d.WorkTopic).WithMany(p => p.WorkTask)
+                .HasForeignKey(d => d.WorkTopicId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_work_topic_id_fkey");
+        });
+
+        modelBuilder.Entity<WorkTaskReminder>(entity =>
+        {
+            entity.HasKey(e => e.WorkTaskReminderId).HasName("work_task_reminder_pkey");
+
+            entity.ToTable("work_task_reminder", "tasks", tb => tb.HasComment("Информация для оповещений по задачам"));
+
+            entity.Property(e => e.WorkTaskReminderId)
+                .HasComment("ID записи")
+                .HasColumnName("work_task_reminder_id");
+            entity.Property(e => e.Created)
+                .HasComment("дата создания")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created");
+            entity.Property(e => e.CreatedById)
+                .HasComment("ID волонтёра-создателя задачи")
+                .HasColumnName("created_by_id");
+            entity.Property(e => e.ReminderDate)
+                .HasComment("дата оповещения")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("reminder_date");
+            entity.Property(e => e.WorkTaskId)
+                .HasComment("ID задачи")
+                .HasColumnName("work_task_id");
+
+            entity.HasOne(d => d.CreatedBy).WithMany(p => p.WorkTaskReminder)
+                .HasForeignKey(d => d.CreatedById)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_reminder_created_by_id_fkey");
+
+            entity.HasOne(d => d.WorkTask).WithMany(p => p.WorkTaskReminder)
+                .HasForeignKey(d => d.WorkTaskId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_reminder_work_task_id_fkey");
+        });
+
+        modelBuilder.Entity<WorkTaskResponsible>(entity =>
+        {
+            entity.HasKey(e => e.WorkTaskResponsibleId).HasName("work_task_responsible_pkey");
+
+            entity.ToTable("work_task_responsible", "tasks", tb => tb.HasComment("Информация о волонтёре, ответственном за задачу"));
+
+            entity.Property(e => e.WorkTaskResponsibleId)
+                .HasComment("ID записи")
+                .HasColumnName("work_task_responsible_id");
+            entity.Property(e => e.VolunteerId)
+                .HasComment("ID волонтёра, ответственного за задачу")
+                .HasColumnName("volunteer_id");
+            entity.Property(e => e.WorkTaskId)
+                .HasComment("ID задачи")
+                .HasColumnName("work_task_id");
+
+            entity.HasOne(d => d.Volunteer).WithMany(p => p.WorkTaskResponsible)
+                .HasForeignKey(d => d.VolunteerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_responsible_volunteer_id_fkey");
+
+            entity.HasOne(d => d.WorkTask).WithMany(p => p.WorkTaskResponsible)
+                .HasForeignKey(d => d.WorkTaskId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("work_task_responsible_work_task_id_fkey");
+        });
+
+        modelBuilder.Entity<WorkTaskStatus>(entity =>
+        {
+            entity.HasKey(e => e.WorkTaskStatusId).HasName("work_task_status_pkey");
+
+            entity.ToTable("work_task_status", "tasks", tb => tb.HasComment("Справочная таблица, содержащая возможные статусы задачек"));
+
+            entity.Property(e => e.WorkTaskStatusId)
+                .HasComment("ID записи")
+                .HasColumnName("work_task_status_id");
+            entity.Property(e => e.Code)
+                .HasComment("Код статуса")
+                .HasColumnName("code");
+            entity.Property(e => e.Name)
+                .HasComment("Статусы задачек")
+                .HasColumnName("name");
+        });
+
+        modelBuilder.Entity<WorkTopic>(entity =>
+        {
+            entity.HasKey(e => e.WorkTopicId).HasName("work_topic_pkey");
+
+            entity.ToTable("work_topic", "tasks", tb => tb.HasComment("Таблица для хранения инфоромации о топиках в чате Catebi"));
+
+            entity.HasIndex(e => e.TelegramThreadId, "work_topic_telegram_thread_id_key").IsUnique();
+
+            entity.Property(e => e.WorkTopicId)
+                .HasComment("ID записи")
+                .HasColumnName("work_topic_id");
+            entity.Property(e => e.Created)
+                .HasComment("Дата создания")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created");
+            entity.Property(e => e.CreatedById)
+                .HasComment("ID волонтёра-автора топика")
+                .HasColumnName("created_by_id");
+            entity.Property(e => e.Description)
+                .HasComment("описание топика")
+                .HasColumnName("description");
+            entity.Property(e => e.IsActual)
+                .HasComment("Флаг актуальности")
+                .HasColumnName("is_actual");
+            entity.Property(e => e.IsMain)
+                .HasComment("топик для напоминаний об активных задачах")
+                .HasColumnName("is_main");
+            entity.Property(e => e.Name)
+                .HasComment("Название топика")
+                .HasColumnName("name");
+            entity.Property(e => e.TelegramThreadId)
+                .HasComment("ID топика в tg")
+                .HasColumnName("telegram_thread_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

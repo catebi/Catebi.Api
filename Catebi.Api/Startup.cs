@@ -67,6 +67,7 @@ public class Startup
         services.AddScoped<INotionApiService, NotionApiService>();
         services.AddScoped<ICatService, CatService>();
         services.AddScoped<IFreeganService, FreeganService>();
+        services.AddScoped<IWorkTaskService, WorkTaskService>();
         services.AddScoped<IDutyScheduleService, DutyScheduleService>();
     }
 

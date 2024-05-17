@@ -1,0 +1,28 @@
+POST https://localhost:7294/api/Freegan/SaveReaction HTTP/1.1
+content-type: application/json
+
+{
+  "messageId": 1,
+  "content": "",
+  "likeCount": 4,
+  "dislikeCount": 9
+}
+
+#region GetTopics
+GET https://localhost:7294/api/WorkTask/GetTopics?userTg=@lejafo HTTP/1.1
+content-type: application/json
+#endregion
+
+
+#region GetTasks
+GET https://localhost:7294/api/WorkTask/GetTasks?userTg=@lejafo&topicId=1&onlyDone=true HTTP/1.1
+content-type: application/json
+
+GET https://localhost:7294/api/WorkTask/GetTasks?userTg=@lejafo HTTP/1.1
+content-type: application/json
+#endregion
+
+#region GetVolunteerTasks
+GET https://localhost:7294/api/WorkTask/GetVolunteerTasks?userTg=@lejafo&onlyDone=false HTTP/1.1
+content-type: application/json
+#endregion
