@@ -1,3 +1,5 @@
+using Catebi.Api.Data.Implementations.Repositories;
+
 namespace Catebi.Api.Domain.Implementations.Services;
 
 public class WorkTaskService(IUnitOfWork unitOfWork, ILogger<WorkTaskService> logger) : IWorkTaskService
@@ -43,14 +45,16 @@ public class WorkTaskService(IUnitOfWork unitOfWork, ILogger<WorkTaskService> lo
         throw new NotImplementedException();
     }
 
-    public Task<bool> RemoveTask(int taskId)
+    public async Task<bool> RemoveTask(int id, string? userTg)
     {
-        throw new NotImplementedException();
+        var volId = !string.IsNullOrEmpty(userTg) ? await GetVolunteerId(userTg) : (int?)null;
+        return await ChangeStatus(id, WorkTaskStatuses.Deleted, volId);
     }
 
-    public Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus)
+    public async Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus, string? userTg)
     {
-        throw new NotImplementedException();
+        var volId = !string.IsNullOrEmpty(userTg) ? await GetVolunteerId(userTg) : (int?)null;
+        return await ChangeStatus(id, newStatus, volId);
     }
 
     #region Private
@@ -93,6 +97,36 @@ public class WorkTaskService(IUnitOfWork unitOfWork, ILogger<WorkTaskService> lo
         }).ToList();
 
         return result;
+    }
+
+    private async Task<bool> ChangeStatus(int id, WorkTaskStatuses newStatus, int? volId = null)
+    {
+        try
+        {
+            var task = await _workTaskRepository.GetByIdAsync(id);
+
+            if (task == null) return false;
+
+            if (volId.HasValue) task.ChangedById = volId.Value;
+
+            task.ChangedDate = DateTime.Now;
+            task.StatusId = (int)newStatus;
+            _workTaskRepository.Update(task);
+
+            await unitOfWork.SaveAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error changing task status");
+            return false;
+        }
+    }
+
+    private async Task<int> GetVolunteerId(string userTg)
+    {
+        var vol = await _volunteerRepository.SingleAsync(x => x.TelegramAccount == userTg);
+        return vol.VolunteerId;
     }
 
     #endregion

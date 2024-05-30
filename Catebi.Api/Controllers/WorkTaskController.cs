@@ -1,3 +1,4 @@
+using Catebi.Api.Data.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catebi.Api.Controllers;
@@ -24,4 +25,16 @@ public class WorkTaskController : ControllerBase
     [HttpGet]
     public async Task<List<WorkTaskDto>> GetVolunteerTasks(string userTg, int? topicId, bool onlyDone = false) =>
         await _workTaskService.GetVolunteerTasks(userTg, topicId, onlyDone);
+
+    [HttpPost]
+    public async Task<bool> CreateTask(WorkTaskDto task) =>
+        await _workTaskService.CreateTask(task);
+
+    [HttpPost]
+    public async Task<bool> RemoveTask(int id, string? userTg) =>
+        await _workTaskService.RemoveTask(id, userTg);
+
+    [HttpPost]
+    public async Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus, string? userTg) =>
+        await _workTaskService.ChangeTaskStatus(id, newStatus, userTg);
 }

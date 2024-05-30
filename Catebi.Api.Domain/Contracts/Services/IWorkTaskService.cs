@@ -7,6 +7,6 @@ public interface IWorkTaskService
     Task<List<WorkTaskDto>> GetVolunteerTasks(string userTg, int? topicId, bool onlyDone = false);
     Task<bool> CreateTask(WorkTaskDto task);
     Task<bool> UpdateTask(WorkTaskDto task);
-    Task<bool> RemoveTask(int taskId);
-    Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus);
+    Task<bool> RemoveTask(int id, string? userTg);
+    Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus, string? userTg);
 }
