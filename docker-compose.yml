@@ -39,5 +39,25 @@ services:
     networks:
       - dev
 
+  backups:
+    image: prodrigestivill/postgres-backup-local:16-debian-4d1f860
+    restart: always
+    depends_on:
+      - catebi_db
+    networks:
+      - dev
+    volumes:
+      - /var/opt/pgbackups:/backups
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=catebi
+      - POSTGRES_USER=catebi_app
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+
 volumes:
   postgres-data:
