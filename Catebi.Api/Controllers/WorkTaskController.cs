@@ -1,5 +1,6 @@
 using Catebi.Api.Data.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.VisualBasic;
 
 namespace Catebi.Api.Controllers;
 
@@ -27,14 +28,42 @@ public class WorkTaskController : ControllerBase
         await _workTaskService.GetVolunteerTasks(userTg, topicId, onlyDone);
 
     [HttpPost]
-    public async Task<bool> CreateTask(WorkTaskDto task) =>
-        await _workTaskService.CreateTask(task);
+    public async Task<ActionResult<bool>> CreateTopic(CreateWorkTopicDto topic)
+    {
+        var res = await _workTaskService.CreateTopic(topic);
+        if (res) return res;
+        return NotFound("This volunteer not found");
+    }
 
     [HttpPost]
-    public async Task<bool> RemoveTask(int id, string? userTg) =>
-        await _workTaskService.RemoveTask(id, userTg);
+    public async Task<ActionResult<bool>> CreateTask(CreateWorkTaskDto task)
+    {
+        var res = await _workTaskService.CreateTask(task);
+        if (res) return res;
+        return NotFound();
+    }
+
+    [HttpPatch]
+    public async Task<ActionResult<bool>> UpdateTask(int id, UpdateWorkTaskDto task)
+    {
+        var res = await _workTaskService.UpdateTask(id, task);
+        if (res) return res;
+        return NotFound();
+    }
 
     [HttpPost]
-    public async Task<bool> ChangeTaskStatus(int id, WorkTaskStatuses newStatus, string? userTg) =>
-        await _workTaskService.ChangeTaskStatus(id, newStatus, userTg);
+    public async Task<ActionResult<bool>> RemoveTask(int id, string? userTg)
+    {
+        var res = await _workTaskService.RemoveTask(id, userTg);
+        if (res) return res;
+        return NotFound();
+    }
+
+    [HttpPatch]
+    public async Task<ActionResult<bool>> ChangeTaskStatus(int id, WorkTaskStatuses newStatus, string? userTg)
+    {
+        var res = await _workTaskService.ChangeTaskStatus(id, newStatus, userTg);
+        if (res) return res;
+        return NotFound();
+    }
 }
