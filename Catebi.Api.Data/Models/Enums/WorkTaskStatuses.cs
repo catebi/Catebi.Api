@@ -4,5 +4,6 @@ public enum WorkTaskStatuses
 {
     New        = 1 ,
     InProgress = 2 ,
-    Done       = 3
+    Done       = 3,
+    Deleted    = 4
 }
