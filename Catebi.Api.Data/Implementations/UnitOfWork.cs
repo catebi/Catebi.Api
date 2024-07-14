@@ -1,3 +1,5 @@
+using Catebi.Api.Data.Implementations.Repositories;
+
 namespace Catebi.Api.Data.Implementations;
 
 /// <summary>
@@ -9,6 +11,7 @@ public class UnitOfWork (   CatebiContext context,
                             IVolunteerRepository volunteerRepo,
                             IFreeganMessageRepository freeganRepo,
                             IWorkTaskRepository workTaskRepo,
+                            IWorkTaskResponsibleRepository workTaskResponsibleRepo,
                             IWorkTopicRepository workTopicRepo,
                             IDonationChatRepository chatRepo,
                             IDonationMessageReactionRepository reactionRepo,
@@ -25,6 +28,7 @@ public class UnitOfWork (   CatebiContext context,
     public ICatRepository CatRepository { get; private set; } = catRepo;
     public IFreeganMessageRepository FreeganRepository { get; private set; } = freeganRepo;
     public IWorkTaskRepository WorkTaskRepository { get; private set; } = workTaskRepo;
+    public IWorkTaskResponsibleRepository WorkTaskResponsibleRepository { get; private set; } = workTaskResponsibleRepo;
     public IWorkTopicRepository WorkTopicRepository { get; private set; } = workTopicRepo;
     public IVolunteerRepository VolunteerRepository { get; private set; } = volunteerRepo;
     public IDonationChatRepository DonationChatRepository { get; private set; } = chatRepo;
