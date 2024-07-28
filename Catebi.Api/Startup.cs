@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Identity;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 
@@ -41,6 +42,14 @@ public class Startup
 
         services.AddDbContext<CatebiContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
+
+        services.AddDbContext<IdentityContext>(options =>
+            options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
+
+        services.AddAuthorization();
+
+        services.AddIdentityApiEndpoints<IdentityUser>()
+            .AddEntityFrameworkStores<IdentityContext>();
 
         services.Configure<NotionApiSettings>(Configuration.GetSection("NotionApi"));
         var notionAuthToken = Configuration.GetSection("NotionApi:AuthToken").Value;
@@ -88,7 +97,9 @@ public class Startup
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseCors("CorsPolicy");
+        app.UseAuthentication();
         app.UseAuthorization();
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllerRoute(
