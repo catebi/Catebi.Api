@@ -70,3 +70,13 @@ alter default privileges for role catebi_admin_role in schema tasks grant select
 alter default privileges for role catebi_admin_role in schema tasks grant all on functions to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema tasks grant all on sequences to catebi_user_role;
 alter default privileges for role catebi_admin_role in schema tasks grant all on types to catebi_user_role;
+
+-- identity schema
+create schema identity authorization catebi_admin_role;
+comment on schema identity is 'Схема для авторизации и аутентификации';
+grant usage on schema identity to catebi_admin_role, catebi_user_role;
+
+alter default privileges for role catebi_admin_role in schema identity grant all on tables to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema identity grant all on functions to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema identity grant all on sequences to catebi_user_role;
+alter default privileges for role catebi_admin_role in schema identity grant all on types to catebi_user_role;

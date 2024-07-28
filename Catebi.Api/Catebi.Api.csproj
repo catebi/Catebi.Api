@@ -1,19 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>b3f4b1f8-d610-423f-89af-e7bc8810863c</UserSecretsId>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-    <PackageReference Include="OpenTelemetry" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
+    <PackageReference Include="OpenTelemetry" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
