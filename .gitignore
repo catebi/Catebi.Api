@@ -82,7 +82,9 @@ TestResult.xml
 #vscode favorites extension config file
 .favorites.json
 .vscode/settings.json
-.vscode/
+.vscode/*.json
 
 # macos
 *.DS_Store
+.vscode/launch.json
+.vscode/*

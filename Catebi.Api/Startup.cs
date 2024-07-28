@@ -97,6 +97,7 @@ public class Startup
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseCors("CorsPolicy");
+
         app.UseAuthentication();
         app.UseAuthorization();
 
