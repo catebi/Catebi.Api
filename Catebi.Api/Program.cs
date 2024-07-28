@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.Mvc;
 
 internal class Program
 {
@@ -20,23 +20,6 @@ internal class Program
         var app = builder.Build();
 
         app.MapIdentityApi<IdentityUser>();
-
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-        {
-            var forecast = Enumerable.Range(1, 5).Select(index =>
-                new
-                {
-                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    TemperatureC = Random.Shared.Next(-20, 55),
-                    //Summary = summaries[Random.Shared.Next(summaries.Length)]
-                })
-                .ToArray();
-
-            return forecast;
-        })
-        .WithName("GetWeatherForecast")
-        .WithOpenApi()
-        .RequireAuthorization();
 
         startup.Configure(app, builder.Environment);
         app.Run();
