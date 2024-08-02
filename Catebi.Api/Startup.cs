@@ -48,8 +48,11 @@ public class Startup
 
         services.AddAuthorization();
 
-        services.AddIdentityApiEndpoints<IdentityUser>()
-            .AddEntityFrameworkStores<IdentityContext>();
+        services.AddIdentityApiEndpoints<IdentityUser>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = true;
+        })
+        .AddEntityFrameworkStores<IdentityContext>();
 
         services.Configure<NotionApiSettings>(Configuration.GetSection("NotionApi"));
         var notionAuthToken = Configuration.GetSection("NotionApi:AuthToken").Value;
@@ -78,6 +81,8 @@ public class Startup
         services.AddScoped<IFreeganService, FreeganService>();
         services.AddScoped<IWorkTaskService, WorkTaskService>();
         services.AddScoped<IDutyScheduleService, DutyScheduleService>();
+
+        services.AddTransient<IEmailSender, EmailSender>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
