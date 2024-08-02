@@ -2,6 +2,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="MailKit" Version="4.7.1.1" />
     <PackageReference Include="Notion.Net" Version="4.2.0" />
   </ItemGroup>
 

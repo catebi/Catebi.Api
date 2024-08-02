@@ -10,3 +10,5 @@ global using Catebi.Api.Data.Implementations.Repositories;
 
 global using Catebi.Api.Data.Db.Context;
 global using Catebi.Api.Data.Db.Entities;
+
+global using Catebi.Api.Models;
