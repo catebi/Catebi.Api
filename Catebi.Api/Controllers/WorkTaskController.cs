@@ -1,6 +1,5 @@
 using Catebi.Api.Data.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
 
 namespace Catebi.Api.Controllers;
 

@@ -5,17 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Catebi.Api.Controllers;
 
+[ApiController]
 [Route("api/[controller]/[action]")]
 public class AuthController : ControllerBase
 {
-    private readonly SignInManager<IdentityUser> _signInManager;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<User> _signInManager;
+    private readonly UserManager<User> _userManager;
     private readonly ILogger<AuthController> _logger;
     private readonly IEmailSender _emailSender;
 
     public AuthController(
-        SignInManager<IdentityUser> signInManager,
-        UserManager<IdentityUser> userManager,
+        SignInManager<User> signInManager,
+        UserManager<User> userManager,
         IEmailSender emailSender,
         ILogger<AuthController> logger)
     {
@@ -33,7 +34,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(ModelState);
         }
-        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+        var user = new User { UserName = model.Email, Email = model.Email };
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (result.Succeeded)
@@ -55,6 +56,19 @@ public class AuthController : ControllerBase
         {
             return BadRequest(result.Errors);
         }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Login([FromBody]LoginRequest loginDto)
+    {
+        var user = await _userManager.FindByNameAsync(loginDto.Username);
+        if (user != null && await _userManager.CheckPasswordAsync(user, loginDto.Password))
+        {
+            await _signInManager.SignInAsync(user, true);
+            return Ok();
+        }
+
+        return Unauthorized();
     }
 
     [HttpGet]
@@ -83,7 +97,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpPost("logout")]
+    [HttpPost]
     [Authorize] // Ensure this endpoint is protected
     public async Task<IActionResult> Logout()
     {

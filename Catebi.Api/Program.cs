@@ -19,8 +19,6 @@ internal class Program
 
         var app = builder.Build();
 
-        app.MapIdentityApi<IdentityUser>();
-
         startup.Configure(app, builder.Environment);
         app.Run();
     }

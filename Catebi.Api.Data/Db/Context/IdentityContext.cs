@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
-public class IdentityContext : IdentityDbContext<IdentityUser>
+public class IdentityContext : IdentityDbContext<User>
 {
     public IdentityContext(DbContextOptions<IdentityContext> options) :
         base(options)
@@ -18,7 +18,7 @@ public class IdentityContext : IdentityDbContext<IdentityUser>
         modelBuilder.HasDefaultSchema("identity");
 
         //Configure default schema
-        modelBuilder.Entity<IdentityUser>().ToTable("user");
+        modelBuilder.Entity<User>().ToTable("user");
         modelBuilder.Entity<IdentityUserToken<string>>().ToTable("user_token");
         modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("user_login");
         modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("user_claim");

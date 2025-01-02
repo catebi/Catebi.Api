@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.7.1.1" />
     <PackageReference Include="Notion.Net" Version="4.2.0" />
+    <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
   </ItemGroup>
 
   <ItemGroup>

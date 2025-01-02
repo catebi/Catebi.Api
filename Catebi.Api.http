@@ -1,4 +1,6 @@
-POST https://localhost:7294/api/Freegan/SaveReaction HTTP/1.1
+@Catebi.Api_HostAddress = https://localhost:7294
+
+POST {{TalentQ.SurveyConstructor_HostAddress}}/api/Freegan/SaveReaction HTTP/1.1
 content-type: application/json
 
 {
