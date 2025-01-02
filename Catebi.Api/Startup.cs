@@ -1,18 +1,14 @@
 using System.Reflection;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 
-public class Startup
-{
-    public IConfiguration Configuration { get; }
+namespace Catebi.Api;
 
-    public Startup(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
+public class Startup(IConfiguration configuration)
+{
+    public IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
     {

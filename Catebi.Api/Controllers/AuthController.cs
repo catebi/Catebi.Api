@@ -7,24 +7,16 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class AuthController : ControllerBase
+public class AuthController(
+    SignInManager<User> signInManager,
+    UserManager<User> userManager,
+    IEmailSender emailSender,
+    ILogger<AuthController> logger) : ControllerBase
 {
-    private readonly SignInManager<User> _signInManager;
-    private readonly UserManager<User> _userManager;
-    private readonly ILogger<AuthController> _logger;
-    private readonly IEmailSender _emailSender;
-
-    public AuthController(
-        SignInManager<User> signInManager,
-        UserManager<User> userManager,
-        IEmailSender emailSender,
-        ILogger<AuthController> logger)
-    {
-        _signInManager = signInManager;
-        _userManager = userManager;
-        _logger = logger;
-        _emailSender = emailSender;
-    }
+    private readonly SignInManager<User> _signInManager = signInManager;
+    private readonly UserManager<User> _userManager = userManager;
+    private readonly ILogger<AuthController> _logger = logger;
+    private readonly IEmailSender _emailSender = emailSender;
 
     [HttpPost]
     [AllowAnonymous]

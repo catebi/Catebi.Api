@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+namespace Catebi.Api;
 
 internal class Program
 {

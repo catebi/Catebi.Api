@@ -4,18 +4,12 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class NotionSyncController : ControllerBase
+public class NotionSyncController(
+    INotionApiService notionService,
+    ILogger<NotionSyncController> logger) : ControllerBase
 {
-    private readonly INotionApiService _notionService;
-    private readonly ILogger<NotionSyncController> _logger;
-
-    public NotionSyncController(
-        INotionApiService notionService,
-        ILogger<NotionSyncController> logger)
-    {
-        _notionService = notionService;
-        _logger = logger;
-    }
+    private readonly INotionApiService _notionService = notionService;
+    private readonly ILogger<NotionSyncController> _logger = logger;
 
     [HttpGet]
     public async Task<bool> SyncDicts() => await _notionService.SyncDicts();

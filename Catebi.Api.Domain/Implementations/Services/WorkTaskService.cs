@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Net.Http;
-using System.Reflection.Metadata.Ecma335;
 using System.Text.RegularExpressions;
-using Catebi.Api.Data.Implementations.Repositories;
 
 namespace Catebi.Api.Domain.Implementations.Services;
 
@@ -141,7 +137,7 @@ public class WorkTaskService(IUnitOfWork unitOfWork, ILogger<WorkTaskService> lo
             workTask.ChangedDate = DateTime.Now;
             workTask.ChangedById = volId;
 
-            _workTaskRepository.Update(workTask);            
+            _workTaskRepository.Update(workTask);
             await unitOfWork.SaveAsync();
 
             return true;

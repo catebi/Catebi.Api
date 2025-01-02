@@ -1,8 +1,5 @@
 using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-
-using Catebi.Api.Data.Contracts.Repositories;
 
 namespace Catebi.Api.Data.Implementations.Repositories;
 

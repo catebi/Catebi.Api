@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.7.1.1" />
+    <PackageReference Include="MailKit" Version="4.9.0" />
     <PackageReference Include="Notion.Net" Version="4.2.0" />
-    <PackageReference Include="Riok.Mapperly" Version="3.6.0" />
+    <PackageReference Include="Riok.Mapperly" Version="4.1.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>Preview</LangVersion>
+    <LangVersion>13.0</LangVersion>
   </PropertyGroup>
 
 </Project>

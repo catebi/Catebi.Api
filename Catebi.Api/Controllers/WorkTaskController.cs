@@ -5,14 +5,9 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class WorkTaskController : ControllerBase
+public class WorkTaskController(IWorkTaskService workTaskService) : ControllerBase
 {
-    private readonly IWorkTaskService _workTaskService;
-
-    public WorkTaskController(IWorkTaskService workTaskService)
-    {
-        _workTaskService = workTaskService;
-    }
+    private readonly IWorkTaskService _workTaskService = workTaskService;
 
     [HttpGet]
     public async Task<List<WorkTopicDto>> GetTopics(string userTg) =>

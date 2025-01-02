@@ -3,14 +3,9 @@ using MimeKit;
 
 namespace Catebi.Api.Domain.Implementations.Services;
 
-public class EmailSender : IEmailSender
+public class EmailSender(IConfiguration configuration) : IEmailSender
 {
-    private readonly IConfiguration _configuration;
-
-    public EmailSender(IConfiguration configuration)
-    {
-        _configuration = configuration;
-    }
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task SendEmailAsync(string email, string subject, string message)
     {

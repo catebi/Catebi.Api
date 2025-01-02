@@ -4,14 +4,9 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class FreeganController : ControllerBase
+public class FreeganController(IFreeganService freeganService) : ControllerBase
 {
-    private readonly IFreeganService _freeganService;
-
-    public FreeganController(IFreeganService freeganService)
-    {
-        _freeganService = freeganService;
-    }
+    private readonly IFreeganService _freeganService = freeganService;
 
     [HttpPost]
     public async Task<bool> SaveMessage(FreeganMessageDto data) => await _freeganService.SaveMessage(data);

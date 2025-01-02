@@ -4,14 +4,9 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class MapController : ControllerBase
+public class MapController(ICatService mapService) : ControllerBase
 {
-    private readonly ICatService _mapService;
-
-    public MapController(ICatService mapService)
-    {
-        _mapService = mapService;
-    }
+    private readonly ICatService _mapService = mapService;
 
     [HttpGet]
     public async Task<IEnumerable<CatDto>> GetCats() => await _mapService.GetCats();

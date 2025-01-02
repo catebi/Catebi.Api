@@ -4,14 +4,9 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class ScheduleController : ControllerBase
+public class ScheduleController(IDutyScheduleService scheduleService) : ControllerBase
 {
-    private readonly IDutyScheduleService _scheduleService;
-
-    public ScheduleController(IDutyScheduleService scheduleService)
-    {
-        _scheduleService = scheduleService;
-    }
+    private readonly IDutyScheduleService _scheduleService = scheduleService;
 
     [HttpGet]
     public async Task<List<DutyScheduleUser>> GetAdminsCleaning() => await _scheduleService.GetAdminsCleaning();

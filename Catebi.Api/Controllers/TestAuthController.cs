@@ -5,14 +5,9 @@ namespace Catebi.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class TestAuthController : ControllerBase
+public class TestAuthController(ILogger<TestAuthController> logger) : ControllerBase
 {
-    private readonly ILogger<TestAuthController> _logger;
-
-    public TestAuthController(ILogger<TestAuthController> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<TestAuthController> _logger = logger;
 
     [HttpGet]
     [Authorize]

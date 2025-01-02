@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
-public class IdentityContext : IdentityDbContext<User>
-{
-    public IdentityContext(DbContextOptions<IdentityContext> options) :
-        base(options)
-    { }
+namespace Catebi.Api.Data.Db.Context;
 
+public class IdentityContext(DbContextOptions<IdentityContext> options) : IdentityDbContext<User>(options)
+{
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder
             .UseSnakeCaseNamingConvention();
