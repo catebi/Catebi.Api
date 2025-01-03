@@ -10,6 +10,7 @@ internal class Program
 
         if (builder.Environment.IsDevelopment())
         {
+            builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true);
             builder.Configuration.AddUserSecrets<Program>();
         }
 

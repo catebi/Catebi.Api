@@ -1,8 +1,11 @@
 using System.Reflection;
+using AirtableApiClient;
+using Catebi.Api.Domain.Implementations.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
+using Telegram.Bot;
 
 namespace Catebi.Api;
 
@@ -24,12 +27,12 @@ public class Startup(IConfiguration configuration)
         // })
         // .AddEntityFrameworkStores<IdentityContext>();
 
-          services.AddIdentity<User, IdentityRole>(options =>
-            {
-                options.SignIn.RequireConfirmedAccount = true;
-            })
-			.AddEntityFrameworkStores<IdentityContext>()
-			.AddDefaultTokenProviders();
+        services.AddIdentity<User, IdentityRole>(options =>
+          {
+              options.SignIn.RequireConfirmedAccount = true;
+          })
+          .AddEntityFrameworkStores<IdentityContext>()
+          .AddDefaultTokenProviders();
 
         services.AddAuthentication();
         services.AddAuthorization();
@@ -61,8 +64,27 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IFreeganService, FreeganService>();
         services.AddScoped<IWorkTaskService, WorkTaskService>();
         services.AddScoped<IDutyScheduleService, DutyScheduleService>();
+        services.AddScoped<IAdoptionService, AdoptionService>();
 
         services.AddTransient<IEmailSender, EmailSender>();
+
+        // airtable initialization for AdoptionBot
+        services.AddScoped(provider =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var apiKey = configuration["AdoptionBot:Airtable:ApiKey"];
+            var baseId = configuration["AdoptionBot:Airtable:BaseId"];
+
+            return new AirtableBase(apiKey, baseId);
+        });
+
+        // telegram bot initialization for AdoptionBot
+        services.AddSingleton(provider =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var botToken = configuration["AdoptionBot:Telegram:BotToken"]!;
+            return new TelegramBotClient(botToken);
+        });
 
         services.AddCors(options =>
         {
