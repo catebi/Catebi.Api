@@ -88,3 +88,4 @@ TestResult.xml
 *.DS_Store
 .vscode/launch.json
 .vscode/*
+Catebi.Api/appsettings.Local.json
