@@ -21,6 +21,8 @@ services:
       dockerfile: ci/docker/Dockerfile.catebi.api
     environment:
       - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=${CATEBI_APP_DB_PASS};Include Error Detail=True;
+      - VersionInfo__Version=${VERSION}
+      - VersionInfo__Build=${BUILD}
       - AdoptionBot__Telegram__Token=${ADOPTIONBOT_TELEGRAM_TOKEN}
       - AdoptionBot__Airtable__ApiKey=${ADOPTIONBOT_AIRTABLE_APIKEY}
       - AdoptionBot__Airtable__BaseId=${ADOPTIONBOT_AIRTABLE_BASEID}
