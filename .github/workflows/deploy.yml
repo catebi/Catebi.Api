@@ -34,6 +34,11 @@ jobs:
         source: "."
         target: "~/Catebi.Api"
 
+    - name: Set Version Info
+      run: |
+        echo "COMMIT_SHA_SHORT=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+        echo "GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER" >> $GITHUB_ENV
+
     - name: Build and deploy using Docker on VPS
       uses: appleboy/ssh-action@master
       with:
@@ -43,6 +48,8 @@ jobs:
         port: 22
         script: |
           cd ~/Catebi.Api
+          echo "VERSION=${{ env.COMMIT_SHA_SHORT }}" >> .env
+          echo "BUILD=${{ env.GITHUB_RUN_NUMBER }}" >> .env
           echo "CATEBI_APP_DB_PASS=${{ secrets.CATEBI_APP_DB_PASS }}" > .env
           echo "POSTGRES_DB_PASS=${{ secrets.POSTGRES_DB_PASS }}" >> .env
           echo "ADOPTIONBOT_TELEGRAM_TOKEN=${{ secrets.ADOPTIONBOT_TELEGRAM_TOKEN }}" >> .env
