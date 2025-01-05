@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.8'
 
 networks:
   dev:
@@ -7,6 +7,9 @@ networks:
 services:
   catebi_api:
     image: catebi_api:latest
+    volumes:
+      - /etc/letsencrypt/live/api.catebi.ge/fullchain.pem:/app/certs/cert.pem
+      - /etc/letsencrypt/live/api.catebi.ge/privkey.pem:/app/certs/privkey.pem
     platform: linux/amd64
     depends_on:
       - catebi_db
@@ -17,10 +20,7 @@ services:
       context: .
       dockerfile: ci/docker/Dockerfile.catebi.api
     environment:
-      - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=password;Include Error Detail=True;
-      - NotionApi__AuthToken=notion_auth_toket
-      - NotionApi__DatabaseIds__Cats=catdb_id
-      - NotionApi__DatabaseIds__Volunteers=volunteerdb_id
+      - ConnectionStrings__Pgsql=Host=catebi_db;Port=5432;Database=catebi;Username=catebi_app;Password=${CATEBI_APP_DB_PASS};Include Error Detail=True;
     networks:
       - dev
 
@@ -29,7 +29,7 @@ services:
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
       - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
@@ -52,7 +52,7 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_DB=catebi
       - POSTGRES_USER=catebi_app
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=${CATEBI_APP_DB_PASS}
       - POSTGRES_EXTRA_OPTS=-Z1 --schema=public --blobs
       - SCHEDULE=@daily
       - BACKUP_KEEP_DAYS=7
