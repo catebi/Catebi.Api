@@ -43,7 +43,7 @@ jobs:
         port: 22
         script: |
           cd ~/Catebi.Api
-          echo "DB_PASS=${{ secrets.CATEBI_APP_DB_PASS }}" > .env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }}" >> .env
+          echo "CATEBI_APP_DB_PASS=${{ secrets.CATEBI_APP_DB_PASS }}" > .env
+          echo "POSTGRES_DB_PASS=${{ secrets.POSTGRES_DB_PASS }}" >> .env
           docker-compose down
           docker-compose up --build -d
