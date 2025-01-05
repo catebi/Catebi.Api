@@ -25,7 +25,7 @@ services:
       - dev
 
   catebi_db:
-    image: postgres:16
+    image: postgres:latest
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres
