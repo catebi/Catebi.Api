@@ -1,16 +1,24 @@
 using System.Reflection;
-using AirtableApiClient;
-using Catebi.Api.Domain.Implementations.Services;
+using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using AirtableApiClient;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using Telegram.Bot;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
+using Catebi.Api.HealthChecks;
 
 namespace Catebi.Api;
 
 public class Startup(IConfiguration configuration)
 {
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        WriteIndented = true
+    };
+
     public IConfiguration Configuration { get; } = configuration;
 
     public void ConfigureServices(IServiceCollection services)
@@ -47,7 +55,7 @@ public class Startup(IConfiguration configuration)
 
         var assembly = Assembly.GetAssembly(typeof(BaseRepository<>));
 
-        foreach (var type in assembly.GetTypes())
+        foreach (var type in assembly!.GetTypes())
         {
             if (type.Name.EndsWith("Repository") && !type.IsAbstract)
             {
@@ -96,6 +104,10 @@ public class Startup(IConfiguration configuration)
                        .AllowCredentials();
             });
         });
+
+        services.AddHealthChecks()
+                .AddDbContextCheck<CatebiContext>("Catebi Database Health Check")
+                .AddCheck<VersionInfoCheck>("VersionInfo");
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();
@@ -152,21 +164,40 @@ public class Startup(IConfiguration configuration)
             app.UseHsts();
         }
 
-        // app.UseHttpsRedirection();
         app.UseCors("CorsPolicy");
 
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // app.UseEndpoints(endpoints =>
-        // {
-        //     endpoints.MapControllerRoute(
-        //         name: "default",
-        //         pattern: "{controller=Home}/{action=Index}/{id?}"
-        //     );
-        // });
-        app.UseEndpoints(endpoints => endpoints.MapControllers());
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints
+                .MapHealthChecks("/api/hc", new HealthCheckOptions
+                {
+                    ResponseWriter = async (context, report) =>
+                    {
+                        context.Response.ContentType = "application/json";
 
+                        var result = new
+                        {
+                            status = report.Status.ToString(),
+                            hcRequestDuration = report.TotalDuration.ToString(),
+                            uptime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(),
+                            checks = report.Entries.ToDictionary(
+                                entry => entry.Key,
+                                entry => new
+                                {
+                                    status = entry.Value.Status.ToString(),
+                                    description = entry.Value.Description,
+                                    data = entry.Value.Data
+                                })
+                        };
+
+                        await context.Response.WriteAsync(JsonSerializer.Serialize(result, _jsonOptions));
+                    }
+                });
+            endpoints.MapControllers();
+        });
     }
 }
