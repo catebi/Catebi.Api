@@ -45,9 +45,5 @@ jobs:
           cd ~/Catebi.Api
           echo "DB_PASS=${{ secrets.CATEBI_APP_DB_PASS }}" > .env
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_DB_PASSWORD }}" >> .env
+          docker-compose down
           docker-compose up --build -d
-        # script: |
-        #   cd ~/Catebi.Api
-        #   docker-compose -f docker-compose.yml down
-        #   docker build -f ci/docker/Dockerfile.catebi.api -t catebi_api .
-        #   docker-compose -f docker-compose.yml up -d
