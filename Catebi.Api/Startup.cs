@@ -82,7 +82,7 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton(provider =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
-            var botToken = configuration["AdoptionBot:Telegram:BotToken"]!;
+            var botToken = configuration["AdoptionBot:Telegram:Token"]!;
             return new TelegramBotClient(botToken);
         });
 

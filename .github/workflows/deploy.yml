@@ -45,5 +45,8 @@ jobs:
           cd ~/Catebi.Api
           echo "CATEBI_APP_DB_PASS=${{ secrets.CATEBI_APP_DB_PASS }}" > .env
           echo "POSTGRES_DB_PASS=${{ secrets.POSTGRES_DB_PASS }}" >> .env
+          echo "ADOPTIONBOT_TELEGRAM_TOKEN=${{ secrets.ADOPTIONBOT_TELEGRAM_TOKEN }}" >> .env
+          echo "ADOPTIONBOT_AIRTABLE_APIKEY=${{ secrets.ADOPTIONBOT_AIRTABLE_APIKEY }}" >> .env
+          echo "ADOPTIONBOT_AIRTABLE_BASEID=${{ secrets.ADOPTIONBOT_AIRTABLE_BASEID }}" >> .env
           docker-compose down
           docker-compose up --build -d
