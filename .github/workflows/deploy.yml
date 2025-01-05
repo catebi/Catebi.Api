@@ -3,7 +3,7 @@ name: Build and Deploy to VPS
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main
 
 jobs:
   deploy:
