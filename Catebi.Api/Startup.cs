@@ -29,11 +29,11 @@ public class Startup(IConfiguration configuration)
         services.AddDbContext<IdentityContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
 
-        services.AddIdentityApiEndpoints<IdentityUser>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = true;
-        })
-        .AddEntityFrameworkStores<IdentityContext>();
+        // services.AddIdentityApiEndpoints<IdentityUser>(options =>
+        // {
+        //     options.SignIn.RequireConfirmedAccount = true;
+        // })
+        // .AddEntityFrameworkStores<IdentityContext>();
 
         services.AddIdentity<User, IdentityRole>(options =>
           {
