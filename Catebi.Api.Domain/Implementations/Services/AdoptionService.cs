@@ -32,12 +32,11 @@ public class AdoptionService(AirtableBase airtableBase, TelegramBotClient telegr
         }
 
         var userFields = userRecord.Record.Fields;
-        if (!userFields.ContainsKey("telegram_chat_id"))
+        if (!userFields.TryGetValue("telegram_chat_id", out var chatIdElement))
         {
             throw new Exception($"Telegram chat ID missing for user ID {recordId}.");
         }
 
-        var chatIdElement = userFields["telegram_chat_id"];
         var chatId = chatIdElement is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Number
             ? jsonElement.GetInt64()
             : throw new Exception("Invalid telegram_chat_id format.");
@@ -53,7 +52,7 @@ public class AdoptionService(AirtableBase airtableBase, TelegramBotClient telegr
         }
 
         // Send a Telegram message
-        var userName = userFields.TryGetValue("name", out object? value) ? value.ToString() : "User";
+        var userName = userFields.TryGetValue("name", out var value) ? value.ToString() : "User";
         var message = $"Hello {userName}, your account has been confirmed!";
         await _telegramBotClient.SendMessage(chatId, message);
 
