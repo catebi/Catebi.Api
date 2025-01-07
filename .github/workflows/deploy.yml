@@ -74,6 +74,7 @@ jobs:
           echo "ADOPTIONBOT_AIRTABLE_BASEID=${{ secrets.ADOPTIONBOT_AIRTABLE_BASEID }}" >> .env
           docker-compose down
           docker-compose up --build -d
+          sleep 10  # Wait for 10 seconds before performing health check
 
     - name: Verify Deployment Healthcheck
       run: |
