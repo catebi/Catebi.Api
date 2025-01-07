@@ -76,7 +76,6 @@ jobs:
     - name: Verify Deployment Healthcheck
       run: |
         json=$(curl -s https://api.catebi.ge/api/hc)
-        echo "API Response: $json"  # Debug output to see what the API is returning
         overall_status=$(echo "$json" | jq -r '.status')
         echo "overall_status=$overall_status" >> $GITHUB_ENV  # Set as an environment variable
         echo "Overall Status: $overall_status"
@@ -95,9 +94,9 @@ jobs:
         echo "Overall Status: $overall_status"
         if [[ "$overall_status" == "Healthy" ]]; then
           echo "Deployment and healthcheck passed"
-          msg="✅ Successful Deployment and Healthcheck Passed: ${{ github.repository }} at ${{ github.sha }}"
+          msg="✅ Successful Deployment and Healthcheck Passed: %0A🤖${{ github.repository }} at <code>${{ github.sha }}</code>"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.NOTIFY_BOT_TOKEN }}/sendMessage" \
-          -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}"
+          -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}&parse_mode=HTML"
         fi
 
     - name: Notify Deployment Failure
