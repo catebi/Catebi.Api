@@ -16,7 +16,9 @@ jobs:
         fetch-depth: 0
 
     - name: Extract commit message
-      run: echo "COMMIT_MESSAGE=$(git log -1 --pretty=%B)" >> $GITHUB_ENV
+      run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B | jq -sRr @uri)
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
 
     - name: Notify Deployment Start
       run: |
