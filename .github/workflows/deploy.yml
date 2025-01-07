@@ -15,9 +15,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Install jq
-      run: sudo apt-get install jq
-
     - name: Extract commit message
       run: |
           COMMIT_MESSAGE=$(git log -1 --pretty=%B | jq -sRr @uri)
@@ -81,6 +78,7 @@ jobs:
         json=$(curl -s https://api.catebi.ge/api/hc)
         echo "API Response: $json"  # Debug output to see what the API is returning
         overall_status=$(echo "$json" | jq -r '.status')
+        echo "overall_status=$overall_status" >> $GITHUB_ENV  # Set as an environment variable
         echo "Overall Status: $overall_status"
         if [[ "$overall_status" == "Healthy" ]]; then
           echo "Healthcheck passed"
