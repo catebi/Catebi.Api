@@ -94,6 +94,7 @@ jobs:
     - name: Notify Deployment and Healthcheck Result
       if: success()
       run: |
+        echo "Overall Status: $overall_status"
         if [[ "$overall_status" == "Healthy" ]]; then
           echo "Deployment and healthcheck passed"
           msg="✅ Successful Deployment and Healthcheck Passed: ${{ github.repository }} at ${{ github.sha }}"
