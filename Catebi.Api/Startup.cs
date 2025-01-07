@@ -99,7 +99,6 @@ public class Startup(IConfiguration configuration)
             options.AddPolicy("CorsPolicy", builder =>
             {
                 builder.WithOrigins("http://localhost:4200", "https://catebi.ge", "https://api.catebi.ge")
-                       .AllowAnyOrigin()
                        .AllowAnyMethod()
                        .AllowAnyHeader()
                        .AllowCredentials();
