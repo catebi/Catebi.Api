@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using AirtableApiClient;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using Telegram.Bot;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 using Catebi.Api.HealthChecks;
 
@@ -28,12 +28,6 @@ public class Startup(IConfiguration configuration)
 
         services.AddDbContext<IdentityContext>(options =>
             options.UseNpgsql(Configuration.GetConnectionString("Pgsql")));
-
-        // services.AddIdentityApiEndpoints<IdentityUser>(options =>
-        // {
-        //     options.SignIn.RequireConfirmedAccount = true;
-        // })
-        // .AddEntityFrameworkStores<IdentityContext>();
 
         services.AddIdentity<User, IdentityRole>(options =>
           {
