@@ -75,12 +75,15 @@ jobs:
   healthcheck:
     needs: deploy
     runs-on: ubuntu-latest
+    outputs:
+      overall_status: ${{ steps.healthcheck.outputs.overall_status }}
     steps:
     - name: Verify Deployment Healthcheck
+      id: healthcheck
       run: |
         json=$(curl -s https://api.catebi.ge/api/hc)
         overall_status=$(echo "$json" | jq -r '.status')
-        echo "overall_status=$overall_status" >> $GITHUB_ENV  # Set as an environment variable
+        echo "overall_status=$overall_status" >> $GITHUB_ENV
         echo "Overall Status: $overall_status"
         if [[ "$overall_status" == "Healthy" ]]; then
           echo "Healthcheck passed"
@@ -98,8 +101,8 @@ jobs:
     - name: Notify Deployment and Healthcheck Result
       if: success()
       run: |
-        echo "Overall Status: $overall_status"
-        if [[ "$overall_status" == "Healthy" ]]; then
+        echo "Overall Status: ${{ needs.healthcheck.outputs.overall_status }}"
+        if [[ "${{ needs.healthcheck.outputs.overall_status }}" == "Healthy" ]]; then
           echo "Deployment and healthcheck passed"
           msg="✅ Successful Deployment and Healthcheck Passed: %0A🤖${{ github.repository }} at <code>${{ github.sha }}</code>"
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.NOTIFY_BOT_TOKEN }}/sendMessage" \
