@@ -15,21 +15,15 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
     - name: Notify Deployment Start
       run: |
         start_msg="🚀 Deployment Start for: ${{ github.repository }} on branch ${{ github.ref_name }}%0A☑️Commit: ${{ env.COMMIT_MESSAGE }}"
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.NOTIFY_BOT_TOKEN }}/sendMessage" \
         -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${start_msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}"
 
-  deploy:
+  copy_source:
     needs: setup_and_notify
     runs-on: ubuntu-latest
-    env:
-      COMMIT_SHA: ${{ github.sha }}
-      GITHUB_RUN_NUMBER: ${{ github.run_number }}
-      BRANCH_NAME: ${{ github.ref_name }}
-
     steps:
     - name: Setup SSH and SCP files
       uses: appleboy/ssh-action@master
@@ -41,7 +35,6 @@ jobs:
         script: |
           mkdir -p ~/Catebi.Api
           rm -rf ~/Catebi.Api/*
-
     - name: Copy source and Docker configs
       uses: appleboy/scp-action@master
       with:
@@ -52,6 +45,14 @@ jobs:
         source: "."
         target: "~/Catebi.Api"
 
+  build_and_deploy:
+    needs: copy_source
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_SHA: ${{ github.sha }}
+      GITHUB_RUN_NUMBER: ${{ github.run_number }}
+      BRANCH_NAME: ${{ github.ref_name }}
+    steps:
     - name: Build and deploy using Docker on VPS
       uses: appleboy/ssh-action@master
       with:
@@ -73,7 +74,7 @@ jobs:
           sleep 10  # Wait for 10 seconds before performing health check
 
   healthcheck:
-    needs: deploy
+    needs: build_and_deploy
     runs-on: ubuntu-latest
     outputs:
       overall_status: ${{ steps.healthcheck.outputs.overall_status }}
@@ -96,7 +97,7 @@ jobs:
 
   notify:
     runs-on: ubuntu-latest
-    needs: [deploy, healthcheck]
+    needs: [build_and_deploy, healthcheck]
     steps:
     - name: Notify Deployment and Healthcheck Result
       if: success()
@@ -108,7 +109,6 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.NOTIFY_BOT_TOKEN }}/sendMessage" \
           -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}&parse_mode=HTML"
         fi
-
     - name: Notify Deployment Failure
       if: failure()
       run: |
