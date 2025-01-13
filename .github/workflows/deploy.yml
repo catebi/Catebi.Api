@@ -83,7 +83,7 @@ jobs:
       run: |
         json=$(curl -s https://api.catebi.ge/api/hc)
         overall_status=$(echo "$json" | jq -r '.status')
-        echo "overall_status=$overall_status" >> $GITHUB_ENV
+        echo "overall_status=$overall_status" >> $GITHUB_OUTPUT
         echo "Overall Status: $overall_status"
         if [[ "$overall_status" == "Healthy" ]]; then
           echo "Healthcheck passed"
