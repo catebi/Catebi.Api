@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using Telegram.Bot;
 
 using Catebi.Api.HealthChecks;
+using Catebi.Api.Domain.Features.AdoptionBot;
 
 namespace Catebi.Api;
 
@@ -66,7 +67,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IFreeganService, FreeganService>();
         services.AddScoped<IWorkTaskService, WorkTaskService>();
         services.AddScoped<IDutyScheduleService, DutyScheduleService>();
-        services.AddScoped<IAdoptionService, AdoptionService>();
+        services.AddScoped<IAdoptionBotActionService, AdoptionBotActionService>();
 
         services.AddTransient<IEmailSender, EmailSender>();
 
