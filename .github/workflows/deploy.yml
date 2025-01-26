@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  setup_and_notify:
+  checkout_and_notify:
     runs-on: ubuntu-latest
     env:
       COMMIT_MESSAGE: $(git log -1 --pretty=%B | jq -sRr @uri)
@@ -22,7 +22,7 @@ jobs:
         -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${start_msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}"
 
   copy_source:
-    needs: setup_and_notify
+    needs: checkout_and_notify
     runs-on: ubuntu-latest
     steps:
     - name: Setup SSH and SCP files
