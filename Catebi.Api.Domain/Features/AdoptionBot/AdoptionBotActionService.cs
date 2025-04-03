@@ -69,28 +69,33 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
 
         if (catModel.OwnerTelegramChatId == 0)
         {
-            throw new Exception($"Owner Telegram chat ID missing for cat ID {atCatId}.");
+            throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {atCatId}.");
         }
 
         if (catModel.Status != CatStatuses.ToConfirmPayment)
         {
-            throw new Exception($"Cat {atCatId} is not in ToConfirmPayment status.");
+            throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) is not in ✨ToConfirmPayment✨ status.");
         }
 
         if (catModel.AccountPaymentRecordId == null || catModel.AccountPaymentType != PaymentOptionTypes.Account)
         {
-            throw new Exception($"Cat payment info not found for the cat {atCatId}.");
+            throw new Exception($"❗️Cat payment info not found for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}).");
         }
 
         if (catModel.AccountPaymentStatus != CatPaymentStatuses.ToConfirm)
         {
-            throw new Exception($"Cat payment for cat ID {atCatId} must be in ToConfirm status.");
+            throw new Exception($"❗️Cat payment for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) must be in ✨ToConfirm✨ status.");
         }
 
         // update cat status
         var updatedFields = new Fields();
         updatedFields.AddField(StatusColumnName, CatStatuses.AdoptionProcess.ToString());
         var updateResponse = await _airtableBase.UpdateRecord(CatTableName, updatedFields, atCatId);
+
+        if (!updateResponse.Success)
+        {
+            throw new Exception($"Error updating status for cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
+        }
 
         // update cat payment status
         updatedFields = new Fields();
@@ -99,7 +104,7 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
 
         if (!updateResponse.Success)
         {
-            throw new Exception($"Error updating status for cat ID {atCatId}: {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
         // Send a Telegram message
