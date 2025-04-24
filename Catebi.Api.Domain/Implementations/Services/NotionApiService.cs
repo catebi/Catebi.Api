@@ -187,56 +187,56 @@ public class NotionApiService(
 
     private async Task GetVolunteersFromNotion()
     {
-        var queryParams = new DatabasesQueryParameters();
-        var volunteerResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Volunteers], queryParams);
-        var volunteerResult = volunteerResponse.Results.Select(GetVolunteerDto)
-                                             .ToList();
+        // var queryParams = new DatabasesQueryParameters();
+        // var volunteerResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Volunteers], queryParams);
+        // var volunteerResult = volunteerResponse.Results.Select(GetVolunteerDto)
+        //                                      .ToList();
 
-        while (volunteerResponse.HasMore)
-        {
-            queryParams.StartCursor = volunteerResponse.NextCursor;
-            volunteerResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Volunteers], queryParams);
-            volunteerResult.AddRange(volunteerResponse.Results.Select(GetVolunteerDto));
-        }
+        // while (volunteerResponse.HasMore)
+        // {
+        //     queryParams.StartCursor = volunteerResponse.NextCursor;
+        //     volunteerResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Volunteers], queryParams);
+        //     volunteerResult.AddRange(volunteerResponse.Results.Select(GetVolunteerDto));
+        // }
 
-        _volunteerDtos = volunteerResult;
+        // _volunteerDtos = volunteerResult;
     }
 
     private async Task GetCatsFromNotion()
     {
         var queryParams = new DatabasesQueryParameters();
         var catsResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Cats], queryParams);
-        var catsResult = catsResponse.Results.Select(GetCatDto)
-                                             .ToList();
+        // var catsResult = catsResponse.Results.Select(GetCatDto)
+        //                                      .ToList();
 
-        while (catsResponse.HasMore)
-        {
-            queryParams.StartCursor = catsResponse.NextCursor;
-            catsResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Cats], queryParams);
-            catsResult.AddRange(catsResponse.Results.Select(GetCatDto));
-        }
+        // while (catsResponse.HasMore)
+        // {
+        //     queryParams.StartCursor = catsResponse.NextCursor;
+        //     catsResponse = await _client.Databases.QueryAsync(_notionSettings.DatabaseIds[NotionDb.Cats], queryParams);
+        //     catsResult.AddRange(catsResponse.Results.Select(GetCatDto));
+        // }
 
-        foreach(var notionVolunteerPage in _notionVolunteerPageDict)
-        {
-            var cat = catsResult.Single(x => x.NotionCatId == notionVolunteerPage.Key);
-            var volunteerPage = await _client.Pages.RetrieveAsync(notionVolunteerPage.Value);
-            var volunteerId =  ((UniqueIdPropertyValue)volunteerPage.Properties["id"]).UniqueId;
-            var volunteer = _volunteers.SingleOrDefault(x => x.NotionVolunteerId == volunteerId.Prefix + "-" + volunteerId.Number);
-            if (volunteer != null)
-            {
-                cat.ResponsibleVolunteer = new VolunteerDto
-                {
-                    Id = volunteer.VolunteerId,
-                    Name = volunteer.Name,
-                    TelegramAccount = volunteer.TelegramAccount,
-                    Address = volunteer.Address,
-                    GeoLocation = volunteer.GeoLocation,
-                    NotionVolunteerId = volunteer.NotionVolunteerId
-                };
-            }
-        }
+        // foreach(var notionVolunteerPage in _notionVolunteerPageDict)
+        // {
+        //     var cat = catsResult.Single(x => x.NotionCatId == notionVolunteerPage.Key);
+        //     var volunteerPage = await _client.Pages.RetrieveAsync(notionVolunteerPage.Value);
+        //     var volunteerId =  ((UniqueIdPropertyValue)volunteerPage.Properties["id"]).UniqueId;
+        //     var volunteer = _volunteers.SingleOrDefault(x => x.NotionVolunteerId == volunteerId.Prefix + "-" + volunteerId.Number);
+        //     if (volunteer != null)
+        //     {
+        //         cat.ResponsibleVolunteer = new VolunteerDto
+        //         {
+        //             Id = volunteer.VolunteerId,
+        //             Name = volunteer.Name,
+        //             TelegramAccount = volunteer.TelegramAccount,
+        //             Address = volunteer.Address,
+        //             GeoLocation = volunteer.GeoLocation,
+        //             NotionVolunteerId = volunteer.NotionVolunteerId
+        //         };
+        //     }
+        // }
 
-        _catDtos = catsResult;
+        // _catDtos = catsResult;
     }
 
     private VolunteerDto GetVolunteerDto(Page x)
@@ -288,9 +288,9 @@ public class NotionApiService(
             GeoLocation = ((RichTextPropertyValue)x.Properties["geo_location"]).RichText.FirstOrDefault()?.PlainText,
             Address = ((RichTextPropertyValue)x.Properties["address"]).RichText.FirstOrDefault()?.PlainText,
             NotionPageUrl = x.Url,
-            InDate = ((DatePropertyValue)x.Properties["in_date"]).Date?.Start.ToDateOnly(),
-            OutDate = ((DatePropertyValue)x.Properties["out_date"]).Date?.Start.ToDateOnly(),
-            NeuteredDate = ((DatePropertyValue)x.Properties["Neutered"]).Date?.Start.ToDateOnly(),
+            // InDate = ((DatePropertyValue)x.Properties["in_date"]).Date?.Start.ToDateOnly(),
+            // OutDate = ((DatePropertyValue)x.Properties["out_date"]).Date?.Start.ToDateOnly(),
+            // NeuteredDate = ((DatePropertyValue)x.Properties["Neutered"]).Date?.Start.ToDateOnly(),
             Comment = ((RichTextPropertyValue)x.Properties["comment"]).RichText.FirstOrDefault()?.PlainText,
             Sex = new LookupDto { Id = catSex.CatSexId, Name = catSex.Name, Color = catSex.Color!.HexCode },
             Collar = collar != null ? new LookupDto { Id = collar.CatCollarId, Name = collar.Name, Color = collar.Color!.HexCode } : null,
