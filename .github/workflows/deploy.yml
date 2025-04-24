@@ -26,7 +26,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
 
       - name: Archive project files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: project-files
           path: .
@@ -46,9 +46,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download project files
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: project-files
+          pattern: project-files
+          merge-multiple: true
 
       - name: Copy project files
         uses: appleboy/scp-action@v0.1.7
