@@ -96,7 +96,7 @@ jobs:
     - name: Verify Deployment Healthcheck
       id: healthcheck
       run: |
-        json=$(curl -s https://api.catebi.ge/api/hc)
+        json=$(curl -s https://api.catebi.ge/hc)
         overall_status=$(echo "$json" | jq -r '.status')
         echo "overall_status=$overall_status" >> $GITHUB_OUTPUT
         echo "Overall Status: $overall_status"

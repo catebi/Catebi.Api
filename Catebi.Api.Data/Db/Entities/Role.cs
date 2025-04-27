@@ -3,22 +3,17 @@ using System.Collections.Generic;
 
 namespace Catebi.Api.Data.Db.Entities;
 
-/// <summary>
-/// Список ролей волонтёров
-/// </summary>
 public partial class Role
 {
-    /// <summary>
-    /// ID роли
-    /// </summary>
-    public int RoleId { get; set; }
+    public string Id { get; set; } = null!;
 
-    /// <summary>
-    /// Наименование роли
-    /// </summary>
     public string? Name { get; set; }
 
-    public virtual ICollection<RolePermission> RolePermission { get; set; } = new List<RolePermission>();
+    public string? NormalizedName { get; set; }
 
-    public virtual ICollection<VolunteerRole> VolunteerRole { get; set; } = new List<VolunteerRole>();
+    public string? ConcurrencyStamp { get; set; }
+
+    public virtual ICollection<RoleClaim> RoleClaim { get; set; } = new List<RoleClaim>();
+
+    public virtual ICollection<User> User { get; set; } = new List<User>();
 }

@@ -26,15 +26,13 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<CatTag> CatTag { get; set; }
 
-    public virtual DbSet<ClinicVisit> ClinicVisit { get; set; }
-
-    public virtual DbSet<ClinicVisitFile> ClinicVisitFile { get; set; }
-
     public virtual DbSet<Color> Color { get; set; }
 
     public virtual DbSet<DonationChat> DonationChat { get; set; }
 
     public virtual DbSet<DonationMessageReaction> DonationMessageReaction { get; set; }
+
+    public virtual DbSet<FileStorage> FileStorage { get; set; }
 
     public virtual DbSet<Group> Group { get; set; }
 
@@ -44,33 +42,21 @@ public partial class CatebiContext : DbContext
 
     public virtual DbSet<Keyword> Keyword { get; set; }
 
-    public virtual DbSet<MedSchedule> MedSchedule { get; set; }
-
     public virtual DbSet<Message> Message { get; set; }
-
-    public virtual DbSet<Permission> Permission { get; set; }
-
-    public virtual DbSet<Prescription> Prescription { get; set; }
 
     public virtual DbSet<Role> Role { get; set; }
 
-    public virtual DbSet<RolePermission> RolePermission { get; set; }
+    public virtual DbSet<RoleClaim> RoleClaim { get; set; }
 
-    public virtual DbSet<TimeUnit> TimeUnit { get; set; }
+    public virtual DbSet<User> User { get; set; }
+
+    public virtual DbSet<UserClaim> UserClaim { get; set; }
+
+    public virtual DbSet<UserLogin> UserLogin { get; set; }
+
+    public virtual DbSet<UserToken> UserToken { get; set; }
 
     public virtual DbSet<Volunteer> Volunteer { get; set; }
-
-    public virtual DbSet<VolunteerRole> VolunteerRole { get; set; }
-
-    public virtual DbSet<WorkTask> WorkTask { get; set; }
-
-    public virtual DbSet<WorkTaskReminder> WorkTaskReminder { get; set; }
-
-    public virtual DbSet<WorkTaskResponsible> WorkTaskResponsible { get; set; }
-
-    public virtual DbSet<WorkTaskStatus> WorkTaskStatus { get; set; }
-
-    public virtual DbSet<WorkTopic> WorkTopic { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -313,66 +299,6 @@ public partial class CatebiContext : DbContext
                 .HasConstraintName("cat_tag_color_id_fkey");
         });
 
-        modelBuilder.Entity<ClinicVisit>(entity =>
-        {
-            entity.HasKey(e => e.ClinicVisitId).HasName("clinic_visit_pkey");
-
-            entity.ToTable("clinic_visit", "ctb", tb => tb.HasComment("Посещение врача/ветеринарной клиники"));
-
-            entity.Property(e => e.ClinicVisitId)
-                .HasDefaultValueSql("nextval('clinic_visit_clinic_visit_id_seq'::regclass)")
-                .HasComment("ID посещения")
-                .HasColumnName("clinic_visit_id");
-            entity.Property(e => e.CatId)
-                .HasComment("ID кошки")
-                .HasColumnName("cat_id");
-            entity.Property(e => e.ClinicName)
-                .HasComment("Название клиники")
-                .HasColumnName("clinic_name");
-            entity.Property(e => e.CompanionVolunteerId).HasColumnName("companion_volunteer_id");
-            entity.Property(e => e.DoctorName)
-                .HasComment("Имя врача")
-                .HasColumnName("doctor_name");
-            entity.Property(e => e.VisitDate)
-                .HasComment("Дата визита")
-                .HasColumnName("visit_date");
-
-            entity.HasOne(d => d.Cat).WithMany(p => p.ClinicVisit)
-                .HasForeignKey(d => d.CatId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("clinic_visit_cat_id_fkey");
-
-            entity.HasOne(d => d.CompanionVolunteer).WithMany(p => p.ClinicVisit)
-                .HasForeignKey(d => d.CompanionVolunteerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("clinic_visit_companion_volunteer_id_fkey");
-        });
-
-        modelBuilder.Entity<ClinicVisitFile>(entity =>
-        {
-            entity.HasKey(e => e.ClinicVisitFileId).HasName("clinic_visit_file_pkey");
-
-            entity.ToTable("clinic_visit_file", "ctb", tb => tb.HasComment("Файлы посещений"));
-
-            entity.Property(e => e.ClinicVisitFileId)
-                .HasDefaultValueSql("nextval('clinic_visit_file_clinic_visit_file_id_seq'::regclass)")
-                .HasComment("ID файла")
-                .HasColumnName("clinic_visit_file_id");
-            entity.Property(e => e.ClinicVisitId)
-                .HasComment("ID посещения")
-                .HasColumnName("clinic_visit_id");
-            entity.Property(e => e.FileName)
-                .HasComment("Имя файла")
-                .HasColumnName("file_name");
-            entity.Property(e => e.FileUrl)
-                .HasComment("URL файла")
-                .HasColumnName("file_url");
-
-            entity.HasOne(d => d.ClinicVisit).WithMany(p => p.ClinicVisitFile)
-                .HasForeignKey(d => d.ClinicVisitId)
-                .HasConstraintName("clinic_visit_file_clinic_visit_id_fkey");
-        });
-
         modelBuilder.Entity<Color>(entity =>
         {
             entity.HasKey(e => e.ColorId).HasName("color_pkey");
@@ -452,6 +378,35 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.MessageId)
                 .HasComment("ID сообщения (в чате после фильтрации)")
                 .HasColumnName("message_id");
+        });
+
+        modelBuilder.Entity<FileStorage>(entity =>
+        {
+            entity.HasKey(e => e.FileStorageId).HasName("file_storage_pkey");
+
+            entity.ToTable("file_storage", "ctb", tb => tb.HasComment("Stores file data with metadata including original filename, content type, and upload timestamp"));
+
+            entity.Property(e => e.FileStorageId)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .HasComment("Unique identifier for the file, automatically generated using gen_random_uuid()")
+                .HasColumnName("file_storage_id");
+            entity.Property(e => e.Content)
+                .HasComment("Binary data of the file stored as BYTEA")
+                .HasColumnName("content");
+            entity.Property(e => e.ContentType)
+                .HasComment("MIME type of the file (e.g., image/jpeg, application/pdf)")
+                .HasColumnName("content_type");
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("timezone('utc'::text, now())")
+                .HasComment("Timestamp when the file was uploaded, automatically set to current time")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created");
+            entity.Property(e => e.FileName)
+                .HasComment("Original filename of the uploaded file")
+                .HasColumnName("file_name");
+            entity.Property(e => e.Size)
+                .HasComment("Size of the file in bytes")
+                .HasColumnName("size");
         });
 
         modelBuilder.Entity<Group>(entity =>
@@ -537,48 +492,6 @@ public partial class CatebiContext : DbContext
                 .HasConstraintName("keyword_group_id_fkey");
         });
 
-        modelBuilder.Entity<MedSchedule>(entity =>
-        {
-            entity.HasKey(e => e.MedScheduleRecordId).HasName("med_schedule_pkey");
-
-            entity.ToTable("med_schedule", "ctb", tb => tb.HasComment("График медицинского ухода"));
-
-            entity.Property(e => e.MedScheduleRecordId)
-                .HasDefaultValueSql("nextval('med_schedule_med_schedule_record_id_seq'::regclass)")
-                .HasComment("ID записи в графике(журнале) мед. ухода")
-                .HasColumnName("med_schedule_record_id");
-            entity.Property(e => e.CatId)
-                .HasComment("ID кошки")
-                .HasColumnName("cat_id");
-            entity.Property(e => e.Done)
-                .HasComment("Процедура выполнена")
-                .HasColumnName("done");
-            entity.Property(e => e.PrescriptionId)
-                .HasComment("ID назначения")
-                .HasColumnName("prescription_id");
-            entity.Property(e => e.ProcedureTime)
-                .HasComment("Дата и время назначенной процедуры")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("procedure_time");
-            entity.Property(e => e.VolunteerId)
-                .HasComment("Волонтёр-исполнитель")
-                .HasColumnName("volunteer_id");
-
-            entity.HasOne(d => d.Cat).WithMany(p => p.MedSchedule)
-                .HasForeignKey(d => d.CatId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("med_schedule_cat_id_fkey");
-
-            entity.HasOne(d => d.Prescription).WithMany(p => p.MedSchedule)
-                .HasForeignKey(d => d.PrescriptionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("med_schedule_prescription_id_fkey");
-
-            entity.HasOne(d => d.Volunteer).WithMany(p => p.MedSchedule)
-                .HasForeignKey(d => d.VolunteerId)
-                .HasConstraintName("med_schedule_volunteer_id_fkey");
-        });
-
         modelBuilder.Entity<Message>(entity =>
         {
             entity.HasKey(e => e.MessageId).HasName("message_pkey");
@@ -602,127 +515,145 @@ public partial class CatebiContext : DbContext
                 .HasColumnName("original_text");
         });
 
-        modelBuilder.Entity<Permission>(entity =>
-        {
-            entity.HasKey(e => e.PermissionId).HasName("permission_pkey");
-
-            entity.ToTable("permission", "ctb", tb => tb.HasComment("Список прав (разрешений/доступов)"));
-
-            entity.HasIndex(e => e.Name, "permission_name_key").IsUnique();
-
-            entity.Property(e => e.PermissionId)
-                .HasDefaultValueSql("nextval('permission_permission_id_seq'::regclass)")
-                .HasComment("ID права")
-                .HasColumnName("permission_id");
-            entity.Property(e => e.Name)
-                .HasComment("Наименование права")
-                .HasColumnName("name");
-        });
-
-        modelBuilder.Entity<Prescription>(entity =>
-        {
-            entity.HasKey(e => e.PrescriptionId).HasName("prescription_pkey");
-
-            entity.ToTable("prescription", "ctb", tb => tb.HasComment("Назначения по медицинскому уходу"));
-
-            entity.Property(e => e.PrescriptionId)
-                .HasDefaultValueSql("nextval('prescription_prescription_id_seq'::regclass)")
-                .HasComment("ID назначения")
-                .HasColumnName("prescription_id");
-            entity.Property(e => e.ClinicVisitId)
-                .HasComment("ID визита к врачу")
-                .HasColumnName("clinic_visit_id");
-            entity.Property(e => e.Duration)
-                .HasComment("Длительность лечения в днях")
-                .HasColumnName("duration");
-            entity.Property(e => e.OneTimeProcedure)
-                .HasComment("Процедура одноразовая")
-                .HasColumnName("one_time_procedure");
-            entity.Property(e => e.PeriodicityUnitId)
-                .HasComment("Периодичность, ед. изм.")
-                .HasColumnName("periodicity_unit_id");
-            entity.Property(e => e.PeriodicityValue)
-                .HasComment("Периодичность, значение")
-                .HasColumnName("periodicity_value");
-            entity.Property(e => e.PrescriptionText)
-                .HasComment("Текст назначения")
-                .HasColumnName("prescription_text");
-            entity.Property(e => e.StartDate)
-                .HasComment("Дата начала лечения")
-                .HasColumnName("start_date");
-
-            entity.HasOne(d => d.ClinicVisit).WithMany(p => p.Prescription)
-                .HasForeignKey(d => d.ClinicVisitId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("prescription_clinic_visit_id_fkey");
-
-            entity.HasOne(d => d.PeriodicityUnit).WithMany(p => p.Prescription)
-                .HasForeignKey(d => d.PeriodicityUnitId)
-                .HasConstraintName("prescription_periodicity_unit_id_fkey");
-        });
-
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("role_pkey");
+            entity.HasKey(e => e.Id).HasName("pk_role");
 
-            entity.ToTable("role", "ctb", tb => tb.HasComment("Список ролей волонтёров"));
+            entity.ToTable("role", "identity");
 
-            entity.HasIndex(e => e.Name, "role_name_key").IsUnique();
+            entity.HasIndex(e => e.NormalizedName, "RoleNameIndex").IsUnique();
 
-            entity.Property(e => e.RoleId)
-                .HasDefaultValueSql("nextval('role_role_id_seq'::regclass)")
-                .HasComment("ID роли")
-                .HasColumnName("role_id");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ConcurrencyStamp).HasColumnName("concurrency_stamp");
             entity.Property(e => e.Name)
-                .HasComment("Наименование роли")
+                .HasMaxLength(256)
                 .HasColumnName("name");
+            entity.Property(e => e.NormalizedName)
+                .HasMaxLength(256)
+                .HasColumnName("normalized_name");
         });
 
-        modelBuilder.Entity<RolePermission>(entity =>
+        modelBuilder.Entity<RoleClaim>(entity =>
         {
-            entity.HasKey(e => e.RolePermissionId).HasName("role_permission_pkey");
+            entity.HasKey(e => e.Id).HasName("pk_role_claim");
 
-            entity.ToTable("role_permission", "ctb", tb => tb.HasComment("Таблица связи роли с разрешениями"));
+            entity.ToTable("role_claim", "identity");
 
-            entity.HasIndex(e => new { e.RoleId, e.PermissionId }, "role_permission_role_id_permission_id_key").IsUnique();
+            entity.HasIndex(e => e.RoleId, "ix_role_claim_role_id");
 
-            entity.Property(e => e.RolePermissionId)
-                .HasDefaultValueSql("nextval('role_permission_role_permission_id_seq'::regclass)")
-                .HasComment("ID соотношения")
-                .HasColumnName("role_permission_id");
-            entity.Property(e => e.PermissionId)
-                .HasComment("ID разрешения")
-                .HasColumnName("permission_id");
-            entity.Property(e => e.RoleId)
-                .HasComment("ID роли")
-                .HasColumnName("role_id");
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ClaimType).HasColumnName("claim_type");
+            entity.Property(e => e.ClaimValue).HasColumnName("claim_value");
+            entity.Property(e => e.RoleId).HasColumnName("role_id");
 
-            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermission)
-                .HasForeignKey(d => d.PermissionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("role_permission_permission_id_fkey");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.RolePermission)
+            entity.HasOne(d => d.Role).WithMany(p => p.RoleClaim)
                 .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("role_permission_role_id_fkey");
+                .HasConstraintName("fk_role_claim_role_role_id");
         });
 
-        modelBuilder.Entity<TimeUnit>(entity =>
+        modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.TimeUnitId).HasName("time_unit_pkey");
+            entity.HasKey(e => e.Id).HasName("pk_user");
 
-            entity.ToTable("time_unit", "ctb", tb => tb.HasComment("Единицы измерения времени"));
+            entity.ToTable("user", "identity");
 
-            entity.HasIndex(e => e.Name, "time_unit_name_key").IsUnique();
+            entity.HasIndex(e => e.NormalizedEmail, "EmailIndex");
 
-            entity.Property(e => e.TimeUnitId)
-                .HasDefaultValueSql("nextval('time_unit_time_unit_id_seq'::regclass)")
-                .HasComment("ID единицы измерения")
-                .HasColumnName("time_unit_id");
-            entity.Property(e => e.Name)
-                .HasComment("Наименование единицы измерения")
-                .HasColumnName("name");
+            entity.HasIndex(e => e.NormalizedUserName, "UserNameIndex").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AccessFailedCount).HasColumnName("access_failed_count");
+            entity.Property(e => e.ConcurrencyStamp).HasColumnName("concurrency_stamp");
+            entity.Property(e => e.Email)
+                .HasMaxLength(256)
+                .HasColumnName("email");
+            entity.Property(e => e.EmailConfirmed).HasColumnName("email_confirmed");
+            entity.Property(e => e.LockoutEnabled).HasColumnName("lockout_enabled");
+            entity.Property(e => e.LockoutEnd).HasColumnName("lockout_end");
+            entity.Property(e => e.NormalizedEmail)
+                .HasMaxLength(256)
+                .HasColumnName("normalized_email");
+            entity.Property(e => e.NormalizedUserName)
+                .HasMaxLength(256)
+                .HasColumnName("normalized_user_name");
+            entity.Property(e => e.PasswordHash).HasColumnName("password_hash");
+            entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
+            entity.Property(e => e.PhoneNumberConfirmed).HasColumnName("phone_number_confirmed");
+            entity.Property(e => e.SecurityStamp).HasColumnName("security_stamp");
+            entity.Property(e => e.TwoFactorEnabled).HasColumnName("two_factor_enabled");
+            entity.Property(e => e.UserName)
+                .HasMaxLength(256)
+                .HasColumnName("user_name");
+
+            entity.HasMany(d => d.Role).WithMany(p => p.User)
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserRole",
+                    r => r.HasOne<Role>().WithMany()
+                        .HasForeignKey("RoleId")
+                        .HasConstraintName("fk_user_role_role_role_id"),
+                    l => l.HasOne<User>().WithMany()
+                        .HasForeignKey("UserId")
+                        .HasConstraintName("fk_user_role_user_user_id"),
+                    j =>
+                    {
+                        j.HasKey("UserId", "RoleId").HasName("pk_user_role");
+                        j.ToTable("user_role", "identity");
+                        j.HasIndex(new[] { "RoleId" }, "ix_user_role_role_id");
+                        j.IndexerProperty<string>("UserId").HasColumnName("user_id");
+                        j.IndexerProperty<string>("RoleId").HasColumnName("role_id");
+                    });
+        });
+
+        modelBuilder.Entity<UserClaim>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("pk_user_claim");
+
+            entity.ToTable("user_claim", "identity");
+
+            entity.HasIndex(e => e.UserId, "ix_user_claim_user_id");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ClaimType).HasColumnName("claim_type");
+            entity.Property(e => e.ClaimValue).HasColumnName("claim_value");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserClaim)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_user_claim_user_user_id");
+        });
+
+        modelBuilder.Entity<UserLogin>(entity =>
+        {
+            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey }).HasName("pk_user_login");
+
+            entity.ToTable("user_login", "identity");
+
+            entity.HasIndex(e => e.UserId, "ix_user_login_user_id");
+
+            entity.Property(e => e.LoginProvider).HasColumnName("login_provider");
+            entity.Property(e => e.ProviderKey).HasColumnName("provider_key");
+            entity.Property(e => e.ProviderDisplayName).HasColumnName("provider_display_name");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserLogin)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_user_login_user_user_id");
+        });
+
+        modelBuilder.Entity<UserToken>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name }).HasName("pk_user_token");
+
+            entity.ToTable("user_token", "identity");
+
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+            entity.Property(e => e.LoginProvider).HasColumnName("login_provider");
+            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.Value).HasColumnName("value");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserToken)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_user_token_user_user_id");
         });
 
         modelBuilder.Entity<Volunteer>(entity =>
@@ -767,202 +698,6 @@ public partial class CatebiContext : DbContext
             entity.Property(e => e.TelegramAccount)
                 .HasComment("Telegram username волонтёра")
                 .HasColumnName("telegram_account");
-        });
-
-        modelBuilder.Entity<VolunteerRole>(entity =>
-        {
-            entity.HasKey(e => e.VolunteerRoleId).HasName("volunteer_role_pkey");
-
-            entity.ToTable("volunteer_role", "ctb", tb => tb.HasComment("Таблица связи \"волонтёр-роль\""));
-
-            entity.Property(e => e.VolunteerRoleId)
-                .HasDefaultValueSql("nextval('volunteer_role_volunteer_role_id_seq'::regclass)")
-                .HasComment("ID соотношения")
-                .HasColumnName("volunteer_role_id");
-            entity.Property(e => e.RoleId)
-                .HasComment("ID роли")
-                .HasColumnName("role_id");
-            entity.Property(e => e.VolunteerId)
-                .HasComment("ID волонтёра")
-                .HasColumnName("volunteer_id");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.VolunteerRole)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("volunteer_role_role_id_fkey");
-
-            entity.HasOne(d => d.Volunteer).WithMany(p => p.VolunteerRole)
-                .HasForeignKey(d => d.VolunteerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("volunteer_role_volunteer_id_fkey");
-        });
-
-        modelBuilder.Entity<WorkTask>(entity =>
-        {
-            entity.HasKey(e => e.WorkTaskId).HasName("work_task_pkey");
-
-            entity.ToTable("work_task", "tasks", tb => tb.HasComment("Таблица для хранения задач в чате Catebi"));
-
-            entity.Property(e => e.WorkTaskId)
-                .HasComment("ID записи")
-                .HasColumnName("work_task_id");
-            entity.Property(e => e.ChangedById)
-                .HasComment("ID волонтёра, изменившего задачу")
-                .HasColumnName("changed_by_id");
-            entity.Property(e => e.ChangedDate)
-                .HasComment("Дата изменения")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("changed_date");
-            entity.Property(e => e.CreatedById)
-                .HasComment("ID волонтёра-автора задачи")
-                .HasColumnName("created_by_id");
-            entity.Property(e => e.CreatedDate)
-                .HasComment("Дата создания")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created_date");
-            entity.Property(e => e.Description)
-                .HasComment("описание задачи")
-                .HasColumnName("description");
-            entity.Property(e => e.StatusId)
-                .HasComment("ID статуса задачи")
-                .HasColumnName("status_id");
-            entity.Property(e => e.WorkTopicId)
-                .HasComment("ID топика, в котором создана задача")
-                .HasColumnName("work_topic_id");
-
-            entity.HasOne(d => d.ChangedBy).WithMany(p => p.WorkTaskChangedBy)
-                .HasForeignKey(d => d.ChangedById)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_changed_by_id_fkey");
-
-            entity.HasOne(d => d.CreatedBy).WithMany(p => p.WorkTaskCreatedBy)
-                .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_created_by_id_fkey");
-
-            entity.HasOne(d => d.Status).WithMany(p => p.WorkTask)
-                .HasForeignKey(d => d.StatusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_status_id_fkey");
-
-            entity.HasOne(d => d.WorkTopic).WithMany(p => p.WorkTask)
-                .HasForeignKey(d => d.WorkTopicId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_work_topic_id_fkey");
-        });
-
-        modelBuilder.Entity<WorkTaskReminder>(entity =>
-        {
-            entity.HasKey(e => e.WorkTaskReminderId).HasName("work_task_reminder_pkey");
-
-            entity.ToTable("work_task_reminder", "tasks", tb => tb.HasComment("Информация для оповещений по задачам"));
-
-            entity.Property(e => e.WorkTaskReminderId)
-                .HasComment("ID записи")
-                .HasColumnName("work_task_reminder_id");
-            entity.Property(e => e.Created)
-                .HasComment("дата создания")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created");
-            entity.Property(e => e.CreatedById)
-                .HasComment("ID волонтёра-создателя задачи")
-                .HasColumnName("created_by_id");
-            entity.Property(e => e.ReminderDate)
-                .HasComment("дата оповещения")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("reminder_date");
-            entity.Property(e => e.WorkTaskId)
-                .HasComment("ID задачи")
-                .HasColumnName("work_task_id");
-
-            entity.HasOne(d => d.CreatedBy).WithMany(p => p.WorkTaskReminder)
-                .HasForeignKey(d => d.CreatedById)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_reminder_created_by_id_fkey");
-
-            entity.HasOne(d => d.WorkTask).WithMany(p => p.WorkTaskReminder)
-                .HasForeignKey(d => d.WorkTaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_reminder_work_task_id_fkey");
-        });
-
-        modelBuilder.Entity<WorkTaskResponsible>(entity =>
-        {
-            entity.HasKey(e => e.WorkTaskResponsibleId).HasName("work_task_responsible_pkey");
-
-            entity.ToTable("work_task_responsible", "tasks", tb => tb.HasComment("Информация о волонтёре, ответственном за задачу"));
-
-            entity.Property(e => e.WorkTaskResponsibleId)
-                .HasComment("ID записи")
-                .HasColumnName("work_task_responsible_id");
-            entity.Property(e => e.VolunteerId)
-                .HasComment("ID волонтёра, ответственного за задачу")
-                .HasColumnName("volunteer_id");
-            entity.Property(e => e.WorkTaskId)
-                .HasComment("ID задачи")
-                .HasColumnName("work_task_id");
-
-            entity.HasOne(d => d.Volunteer).WithMany(p => p.WorkTaskResponsible)
-                .HasForeignKey(d => d.VolunteerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_responsible_volunteer_id_fkey");
-
-            entity.HasOne(d => d.WorkTask).WithMany(p => p.WorkTaskResponsible)
-                .HasForeignKey(d => d.WorkTaskId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("work_task_responsible_work_task_id_fkey");
-        });
-
-        modelBuilder.Entity<WorkTaskStatus>(entity =>
-        {
-            entity.HasKey(e => e.WorkTaskStatusId).HasName("work_task_status_pkey");
-
-            entity.ToTable("work_task_status", "tasks", tb => tb.HasComment("Справочная таблица, содержащая возможные статусы задачек"));
-
-            entity.Property(e => e.WorkTaskStatusId)
-                .HasComment("ID записи")
-                .HasColumnName("work_task_status_id");
-            entity.Property(e => e.Code)
-                .HasComment("Код статуса")
-                .HasColumnName("code");
-            entity.Property(e => e.Name)
-                .HasComment("Статусы задачек")
-                .HasColumnName("name");
-        });
-
-        modelBuilder.Entity<WorkTopic>(entity =>
-        {
-            entity.HasKey(e => e.WorkTopicId).HasName("work_topic_pkey");
-
-            entity.ToTable("work_topic", "tasks", tb => tb.HasComment("Таблица для хранения инфоромации о топиках в чате Catebi"));
-
-            entity.HasIndex(e => e.TelegramThreadId, "work_topic_telegram_thread_id_key").IsUnique();
-
-            entity.Property(e => e.WorkTopicId)
-                .HasComment("ID записи")
-                .HasColumnName("work_topic_id");
-            entity.Property(e => e.Created)
-                .HasComment("Дата создания")
-                .HasColumnType("timestamp without time zone")
-                .HasColumnName("created");
-            entity.Property(e => e.CreatedById)
-                .HasComment("ID волонтёра-автора топика")
-                .HasColumnName("created_by_id");
-            entity.Property(e => e.Description)
-                .HasComment("описание топика")
-                .HasColumnName("description");
-            entity.Property(e => e.IsActual)
-                .HasComment("Флаг актуальности")
-                .HasColumnName("is_actual");
-            entity.Property(e => e.IsMain)
-                .HasComment("топик для напоминаний об активных задачах")
-                .HasColumnName("is_main");
-            entity.Property(e => e.Name)
-                .HasComment("Название топика")
-                .HasColumnName("name");
-            entity.Property(e => e.TelegramThreadId)
-                .HasComment("ID топика в tg")
-                .HasColumnName("telegram_thread_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

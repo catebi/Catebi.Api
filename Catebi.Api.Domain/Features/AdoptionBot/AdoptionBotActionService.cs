@@ -6,11 +6,10 @@ using Catebi.Api.Domain.Features.AdoptionBot.Models;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
-public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClient telegramBotClient) : IAdoptionBotActionService
+public class AdoptionBotActionService(
+                    AirtableBase AirtableBase,
+                    TelegramBotClient TelegramBotClient) : IAdoptionBotActionService
 {
-    private readonly AirtableBase _airtableBase = airtableBase;
-    private readonly TelegramBotClient _telegramBotClient = telegramBotClient;
-
     private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
     private readonly string CatPaymentName = AirTables.CatPayment.ToString();
@@ -20,7 +19,7 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
 
     public async Task<bool> ConfirmUser(string atUserId)
     {
-        var userRecord = await _airtableBase.RetrieveRecord<AtUser>(UserTableName, atUserId);
+        var userRecord = await AirtableBase.RetrieveRecord<AtUser>(UserTableName, atUserId);
 
         if (!userRecord.Success || userRecord.Record == null)
         {
@@ -41,7 +40,7 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
 
         var updatedFields = new Fields();
         updatedFields.AddField(StatusColumnName, UserStatuses.Confirmed.ToString());
-        var updateResponse = await _airtableBase.UpdateRecord(UserTableName, updatedFields, atUserId);
+        var updateResponse = await AirtableBase.UpdateRecord(UserTableName, updatedFields, atUserId);
 
         if (!updateResponse.Success)
         {
@@ -50,14 +49,14 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
 
         // Send a Telegram message
         var message = $"Hello {userModel.Name} 👋 \nYour account has been confirmed!";
-        await _telegramBotClient.SendMessage(userModel.TelegramChatId, message);
+        await TelegramBotClient.SendMessage(userModel.TelegramChatId, message);
 
         return true;
     }
 
     public async Task<bool> ConfirmCatPayment(string atCatId)
     {
-        var cat = await _airtableBase.RetrieveRecord<AtCat>(CatTableName, atCatId);
+        var cat = await AirtableBase.RetrieveRecord<AtCat>(CatTableName, atCatId);
 
         if (!cat.Success || cat.Record == null)
         {
@@ -90,7 +89,7 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
         // update cat status
         var updatedFields = new Fields();
         updatedFields.AddField(StatusColumnName, CatStatuses.AdoptionProcess.ToString());
-        var updateResponse = await _airtableBase.UpdateRecord(CatTableName, updatedFields, atCatId);
+        var updateResponse = await AirtableBase.UpdateRecord(CatTableName, updatedFields, atCatId);
 
         if (!updateResponse.Success)
         {
@@ -100,7 +99,7 @@ public class AdoptionBotActionService(AirtableBase airtableBase, TelegramBotClie
         // update cat payment status
         updatedFields = new Fields();
         updatedFields.AddField(StatusColumnName, CatPaymentStatuses.Confirmed.ToString());
-        updateResponse = await _airtableBase.UpdateRecord(CatPaymentName, updatedFields, catModel.AccountPaymentRecordId);
+        updateResponse = await AirtableBase.UpdateRecord(CatPaymentName, updatedFields, catModel.AccountPaymentRecordId);
 
         if (!updateResponse.Success)
         {
@@ -114,7 +113,7 @@ Payment for your cat {catModel.Name} has been confirmed. Congrats!
 
 You can now access to push your cat to the Catbook or to book event for them.";
 
-        await _telegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
+        await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
 
         return true;
     }
@@ -122,4 +121,51 @@ You can now access to push your cat to the Catbook or to book event for them.";
     public Task<bool> ConfirmCatbookPlacement(string atCatId) => throw new NotImplementedException();
     public Task<bool> OpenEventRegistration(string atEventId) => throw new NotImplementedException();
     public Task<bool> CloseEventRegistration(string atEventId) => throw new NotImplementedException();
+    public async Task<bool> AddCatPayment(string catRecordId, string imageUrl)
+    {
+        var cat = await AirtableBase.RetrieveRecord<AtCat>(CatTableName, catRecordId);
+
+        if (!cat.Success || cat.Record == null)
+        {
+            throw new Exception($"Cat with ID {catRecordId} not found.");
+        }
+
+        var catModel = cat.Record.Fields;
+
+        if (catModel.OwnerTelegramChatId == 0)
+        {
+            throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {catRecordId}.");
+        }
+
+        if (catModel.Status != CatStatuses.Available)
+        {
+            throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}) is not in ✨Available status.");
+        }
+
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            throw new Exception($"❗️File URL is missing for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}).");
+        }
+
+        // update cat payment status
+        var updatedFields = new Fields();
+
+        // Create Attachments list
+        var attachmentList = new List<AirtableAttachment>
+        {
+            new() { Url = imageUrl }
+        };
+
+        updatedFields.AddField("Cat", new string[] { catRecordId });
+        updatedFields.AddField(StatusColumnName, CatPaymentStatuses.ToConfirm.ToString());
+        updatedFields.AddField("Proof", attachmentList);
+        var updateResponse = await AirtableBase.CreateRecord(CatPaymentName, updatedFields);
+
+        if (!updateResponse.Success)
+        {
+            throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        return true;
+    }
 }

@@ -1,12 +1,14 @@
 using Catebi.Api.Domain.Features.AdoptionBot;
+using Catebi.Api.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Catebi.Api.Controllers;
 
-[Route("api/[controller]/[action]")]
+[Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionController( IAdoptionBotActionService   AdoptionService,
-                                 ILogger<AdoptionController> Logger         ) : ControllerBase
+public class AdoptionController(IAdoptionBotActionService AdoptionService,
+                                IFileService FileService,
+                                ILogger<AdoptionController> Logger) : ControllerBase
 {
     /// <summary>
     /// User account confirmation
@@ -31,6 +33,51 @@ public class AdoptionController( IAdoptionBotActionService   AdoptionService,
         {
             Logger.LogError(ex, "⚠️ Error confirming user");
             return StatusCode(500, new { ex.Message });
+        }
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> AddCatPayment(string catRecordId, IFormFile file)
+    {
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = Path.GetFileName(file.FileName) ?? $"confirmation_{catRecordId}.{extension}";
+            var fileSize = file.Length;
+            var fileType = file.ContentType;
+
+            var fileRequest = new FileStorageDto
+            {
+                FileName = fileName,
+                Size = fileSize,
+                ContentType = fileType,
+                Data = memoryStream.ToArray()
+            };
+
+            var uploadedFile = await FileService.SaveFileAsync(fileRequest);
+            fileRequest.FileStorageId = uploadedFile.FileStorageId;
+            var fileUrl = FileService.GenerateFileUrl(fileRequest);
+
+            var result = await AdoptionService.AddCatPayment(catRecordId, fileUrl);
+            if (result)
+            {
+                return Ok(new { Message = $"🎉 cat payment ({catRecordId}) confirmed and notified." });
+            }
+            else
+            {
+                return StatusCode(500, new { Message = $"Failed to confirm cat payment {catRecordId}." });
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An error occurred while processing your request., exception: {ex.Message}");
         }
     }
 

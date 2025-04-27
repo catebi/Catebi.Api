@@ -66,8 +66,8 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<ICatService, CatService>();
         services.AddScoped<IFreeganService, FreeganService>();
         services.AddScoped<IWorkTaskService, WorkTaskService>();
-        services.AddScoped<IDutyScheduleService, DutyScheduleService>();
         services.AddScoped<IAdoptionBotActionService, AdoptionBotActionService>();
+        services.AddScoped<IFileService, FileService>();
 
         services.AddTransient<IEmailSender, EmailSender>();
 
@@ -168,7 +168,7 @@ public class Startup(IConfiguration configuration)
         app.UseEndpoints(endpoints =>
         {
             endpoints
-                .MapHealthChecks("/api/hc", new HealthCheckOptions
+                .MapHealthChecks("/hc", new HealthCheckOptions
                 {
                     ResponseWriter = async (context, report) =>
                     {

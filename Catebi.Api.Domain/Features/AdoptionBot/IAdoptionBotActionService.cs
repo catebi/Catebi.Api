@@ -10,6 +10,14 @@ public interface IAdoptionBotActionService
     Task<bool> ConfirmUser(string atUserId);
 
     /// <summary>
+    /// Add a cat payment record and notify the user.
+    /// </summary>
+    /// <param name="catRecordId">The ID of the cat record.</param>
+    /// <param name="fileUrl">The URL of the payment confirmation file.</param>
+    /// <returns>True if the operation was successful, otherwise false.</returns>
+    Task<bool> AddCatPayment(string catRecordId, string fileUrl);
+
+    /// <summary>
     /// Confirm a user's cat payment and grant access to paid features for exact cat.
     /// </summary>
     Task<bool> ConfirmCatPayment(string atCatId);
