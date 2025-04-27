@@ -124,6 +124,7 @@ You can now access to push your cat to the Catbook or to book event for them.";
     public Task<bool> CloseEventRegistration(string atEventId) => throw new NotImplementedException();
     public async Task<bool> AddCatPayment(string catRecordId, string imageUrl)
     {
+        Logger.LogInformation($"Adding cat payment for record ID: {catRecordId}");
         var cat = await AirtableBase.RetrieveRecord<AtCat>(CatTableName, catRecordId);
 
         Logger.LogInformation($"Cat record retrieved: {catRecordId} - {cat.Success}");

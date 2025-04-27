@@ -79,10 +79,12 @@ public class AdoptionController(IAdoptionBotActionService AdoptionService,
         }
         catch (ArgumentException ex)
         {
+            Logger.LogError(ex, "⚠️ Error in AddCatPayment");
             return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "⚠️ Error in AddCatPayment");
             return StatusCode(500, $"An error occurred while processing your request., exception: {ex.Message}");
         }
     }
