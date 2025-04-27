@@ -41,6 +41,7 @@ public class AdoptionController(IAdoptionBotActionService AdoptionService,
     {
         try
         {
+            Logger.LogInformation($"Received file for cat payment confirmation: {file.FileName}");
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
@@ -58,8 +59,13 @@ public class AdoptionController(IAdoptionBotActionService AdoptionService,
             };
 
             var uploadedFile = await FileService.SaveFileAsync(fileRequest);
+
+            Logger.LogInformation($"File uploaded successfully: {uploadedFile.FileStorageId}");
+
             fileRequest.FileStorageId = uploadedFile.FileStorageId;
             var fileUrl = FileService.GenerateFileUrl(fileRequest);
+
+            Logger.LogInformation($"Generated file URL: {fileUrl}");
 
             var result = await AdoptionService.AddCatPayment(catRecordId, fileUrl);
             if (result)

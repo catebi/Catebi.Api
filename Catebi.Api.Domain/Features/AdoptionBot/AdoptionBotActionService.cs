@@ -8,7 +8,8 @@ namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotActionService(
                     AirtableBase AirtableBase,
-                    TelegramBotClient TelegramBotClient) : IAdoptionBotActionService
+                    TelegramBotClient TelegramBotClient,
+                    ILogger<AdoptionBotActionService> Logger) : IAdoptionBotActionService
 {
     private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
@@ -125,6 +126,8 @@ You can now access to push your cat to the Catbook or to book event for them.";
     {
         var cat = await AirtableBase.RetrieveRecord<AtCat>(CatTableName, catRecordId);
 
+        Logger.LogInformation($"Cat record retrieved: {catRecordId} - {cat.Success}");
+
         if (!cat.Success || cat.Record == null)
         {
             throw new Exception($"Cat with ID {catRecordId} not found.");
@@ -147,6 +150,8 @@ You can now access to push your cat to the Catbook or to book event for them.";
             throw new Exception($"❗️File URL is missing for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}).");
         }
 
+        Logger.LogInformation($"Cat payment validation passed: {catRecordId}");
+
         // update cat payment status
         var updatedFields = new Fields();
 
@@ -161,10 +166,19 @@ You can now access to push your cat to the Catbook or to book event for them.";
         updatedFields.AddField("Proof", attachmentList);
         var updateResponse = await AirtableBase.CreateRecord(CatPaymentName, updatedFields);
 
+        Logger.LogInformation($"Cat payment record created: {updateResponse.Success}");
+
         if (!updateResponse.Success)
         {
+            Logger.LogError($"Error creating cat payment record: {updateResponse.AirtableApiError.ErrorMessage}");
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
+
+        var catPaymentFields = updateResponse.Record.Fields;
+        var catPaymentModel = JsonSerializer.Deserialize<AtCatPayment>(catPaymentFields.ToString(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
 
         return true;
     }
