@@ -112,9 +112,11 @@ jobs:
   notify_finish:
     runs-on: ubuntu-latest
     needs: [checkout, notify_start, copy, build_deploy, healthcheck]
+    if: ${{ always() }}
+
     steps:
     - name: Notify Deployment and Healthcheck Result
-      if: success()
+      if: ${{needs.checkout.result == 'success' && needs.build_deploy.result == 'success' && needs.healthcheck.result == 'success' && needs.copy.result == 'success' && needs.healthcheck.outputs.overall_status == 'Healthy' }}
       run: |
         echo "Overall Status: ${{ needs.healthcheck.outputs.overall_status }}"
         if [[ "${{ needs.healthcheck.outputs.overall_status }}" == "Healthy" ]]; then
@@ -124,7 +126,7 @@ jobs:
           -d "chat_id=${{ vars.IT_TELEGRAM_CHAT_ID }}&text=${msg}&message_thread_id=${{ vars.IT_TELEGRAM_CHAT_NOTIFY_TOPIC_ID }}&parse_mode=HTML"
         fi
     - name: Notify Deployment Failure
-      if: failure()
+      if: ${{ needs.checkout.result != 'success' || needs.build_deploy.result != 'success' || needs.healthcheck.result != 'success' || needs.copy.result != 'success' || needs.healthcheck.outputs.overall_status != 'Healthy' }}
       run: |
         failure_msg="❌ Deployment Failed: Check the actions log for details.%0AView Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}%0A☑️Version: <code>${{ needs.checkout.outputs.api_version }}</code>"
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.NOTIFY_BOT_TOKEN }}/sendMessage" \
