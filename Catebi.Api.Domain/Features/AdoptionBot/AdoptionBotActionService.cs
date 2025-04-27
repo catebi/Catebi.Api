@@ -175,11 +175,11 @@ You can now access to push your cat to the Catbook or to book event for them.";
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        var catPaymentFields = updateResponse.Record.Fields;
-        var catPaymentModel = JsonSerializer.Deserialize<AtCatPayment>(catPaymentFields.ToString(), new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        // var catPaymentFields = updateResponse.Record.Fields;
+        // var catPaymentModel = JsonSerializer.Deserialize<AtCatPayment>(catPaymentFields.ToString(), new JsonSerializerOptions
+        // {
+        //     PropertyNameCaseInsensitive = true
+        // });
 
         return true;
     }
