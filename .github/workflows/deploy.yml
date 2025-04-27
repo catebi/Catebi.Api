@@ -51,6 +51,15 @@ jobs:
           pattern: project-files
           merge-multiple: true
 
+      - name: Clean remote target directory
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf ~/Catebi.Api/*
+
       - name: Copy project files
         uses: appleboy/scp-action@v0.1.7
         with:
