@@ -86,12 +86,15 @@ public class AdoptionBotActionService(
         var updatedFields = new Fields();
 
         // Create Attachments list
-        var attachmentList = new List<AirtableAttachment>
-        {
-            new() { Url = photoUrl }
-        };
+        var updatedPhotos = catModel.Photos.Union(
+        [
+            new AtAttachment
+            {
+                Url = photoUrl
+            }
+        ]).Select(x => new AirtableAttachment { Url = x.Url }).ToList();
 
-        updatedFields.AddField("Photos", attachmentList);
+        updatedFields.AddField("Photos", updatedPhotos);
         var updateResponse = await AirtableBase.UpdateRecord(CatTableName, updatedFields, catRecordId);
 
         Logger.LogInformation($"Cat photo record created: {updateResponse.Success}");
