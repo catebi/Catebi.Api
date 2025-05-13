@@ -9,7 +9,7 @@ public class AtCat
     public int CatId { get; set; }
     public string Name { get; set; }
     public string CatbookUrl { get; set; }
-    public AtAttachment[] Photos { get; set; }
+    public AtAttachment[] Photos { get; set; } = [];
 
     [JsonPropertyName("OwnerName")]
     public string[] OwnerNameValue { get; set; }

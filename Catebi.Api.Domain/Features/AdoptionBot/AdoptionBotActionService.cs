@@ -86,7 +86,8 @@ public class AdoptionBotActionService(
         var updatedFields = new Fields();
 
         // Create Attachments list
-        var updatedPhotos = catModel.Photos.Union(
+        var photos = catModel.Photos ?? [];
+        var updatedPhotos = photos.Union(
         [
             new AtAttachment
             {
