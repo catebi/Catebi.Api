@@ -10,6 +10,14 @@ public interface IAdoptionBotActionService
     Task<bool> ConfirmUser(string atUserId);
 
     /// <summary>
+    /// Add a cat photo record and notify the user.
+    /// </summary>
+    /// <param name="catRecordId">The ID of the cat record.</param>
+    /// <param name="fileUrl">The URL of the cat photo file.</param>
+    /// <returns>True if the operation was successful, otherwise false.</returns>
+    Task<bool> AddCatPhoto(string catRecordId, string photoUrl);
+
+    /// <summary>
     /// Add a cat payment record and notify the user.
     /// </summary>
     /// <param name="catRecordId">The ID of the cat record.</param>

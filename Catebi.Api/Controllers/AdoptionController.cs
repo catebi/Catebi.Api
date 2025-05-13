@@ -37,6 +37,61 @@ public class AdoptionController(IAdoptionBotActionService AdoptionService,
     }
 
     [HttpPost]
+    public async Task<IActionResult> AddCatPhoto(string catRecordId, IFormFile file)
+    {
+        try
+        {
+            Logger.LogInformation($"Received file for cat record: {file.FileName}");
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = Path.GetFileName(file.FileName) ?? $"cat_{catRecordId}.{extension}";
+            var fileSize = file.Length;
+            var fileType = file.ContentType;
+
+            var fileRequest = new FileStorageDto
+            {
+                FileName = fileName,
+                Size = fileSize,
+                ContentType = fileType,
+                Data = memoryStream.ToArray()
+            };
+
+            var uploadedFile = await FileService.SaveFileAsync(fileRequest);
+
+            Logger.LogInformation($"File uploaded successfully: {uploadedFile.FileStorageId}");
+
+            fileRequest.FileStorageId = uploadedFile.FileStorageId;
+            var fileUrl = FileService.GenerateFileUrl(fileRequest);
+
+            Logger.LogInformation($"Generated file URL: {fileUrl}");
+
+            var result = await AdoptionService.AddCatPhoto(catRecordId, fileUrl);
+            if (result)
+            {
+                return Ok(new { Message = $"🎉 cat photo ({catRecordId}) added and notified." });
+            }
+            else
+            {
+                return StatusCode(500, new { Message = $"Failed to add cat photo {catRecordId}." });
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in AddCatPhoto");
+            return BadRequest(ex.Message);
+
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in AddCatPhoto");
+            return StatusCode(500, $"An error occurred while processing your request., exception: {ex.Message}");
+        }
+    }
+
+    [HttpPost]
+
     public async Task<IActionResult> AddCatPayment(string catRecordId, IFormFile file)
     {
         try

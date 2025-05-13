@@ -32,6 +32,9 @@ public class AtCat
     [JsonPropertyName("OwnerRole")]
     public string[] OwnerRoleValue { get; set; }
 
+    [JsonPropertyName("OwnerIsVolunteer")]
+    public bool?[] OwnerIsVolunteerValue { get; set; }
+
     #endregion
 
     [JsonIgnore]
@@ -54,4 +57,7 @@ public class AtCat
 
     [JsonIgnore]
     public CatPaymentStatuses? AccountPaymentStatus => Enum.TryParse<CatPaymentStatuses>(AccountPaymentStatusValue[0], out var paymentStatus) ? paymentStatus : null;
+
+    [JsonIgnore]
+    public bool OwnerIsVolunteer => OwnerIsVolunteerValue.FirstOrDefault() ?? false;
 }

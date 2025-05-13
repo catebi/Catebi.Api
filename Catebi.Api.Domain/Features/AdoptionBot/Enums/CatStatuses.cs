@@ -5,7 +5,6 @@ public enum CatStatuses
     Available,
     Adopted,
     CheckStatus,
-    ToConfirmPayment,
-    ToConfirmCatbook,
-    AdoptionProcess
+    AdoptionProcessFree,
+    AdoptionProcessPaid
 }
