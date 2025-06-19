@@ -25,7 +25,7 @@ jobs:
           # Extract the GitHub tag version
           VERSION="${GITHUB_REF#refs/tags/}"
           echo "Version extracted: $VERSION"
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Archive project files
         uses: actions/upload-artifact@v4
