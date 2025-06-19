@@ -2,6 +2,7 @@ using AirtableApiClient;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
+[Obsolete("Use Admin and Cat services instead")]
 public interface IAdoptionBotActionService
 {
     /// <summary>

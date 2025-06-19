@@ -9,7 +9,7 @@ public class MapController(ICatService mapService) : ControllerBase
     private readonly ICatService _mapService = mapService;
 
     [HttpGet]
-    public async Task<IEnumerable<CatDto>> GetCats() => await _mapService.GetCats();
+    public async Task<IEnumerable<Data.Models.MapCatDto>> GetCats() => await _mapService.GetCats();
 
     [HttpGet]
     public async Task<IEnumerable<CatDtoShort>> GetCatsShort() => await _mapService.GetCatsShort();

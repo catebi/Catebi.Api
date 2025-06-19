@@ -1,60 +1,130 @@
-using System.Text.Json;
 using AirtableApiClient;
 using Telegram.Bot;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Models;
+using Catebi.Api.Domain.Features.AdoptionBot.Converters;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
-[Obsolete("Use Admin and Cat services instead")]
-public class AdoptionBotActionService(
-                    IAirtableRepository AirtableRepository,
-                    TelegramBotClient TelegramBotClient,
-                    ILogger<AdoptionBotActionService> Logger) : IAdoptionBotActionService
+public class AdoptionBotCatService(
+    IAirtableRepository AirtableRepository,
+    TelegramBotClient TelegramBotClient,
+    ILogger<AdoptionBotCatService> Logger) : IAdoptionBotCatService
 {
-    private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
     private readonly string CatPaymentName = AirTables.CatPayment.ToString();
-    private readonly string EventTableName = AirTables.Event.ToString();
     private readonly string PaymentOptionTableName = AirTables.PaymentOption.ToString();
-
     private readonly string StatusColumnName = "Status";
 
-    public async Task<bool> ConfirmUser(string atUserId)
+    public async Task<CatDto> AddCat(CatDto catDto)
     {
-        var userRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, atUserId);
+        Logger.LogInformation($"Adding new cat: {catDto.Name}");
 
-        if (!userRecord.Success || userRecord.Record == null)
+        var fields = new Fields();
+        fields.AddField("Name", catDto.Name);
+        fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
+        fields.AddField("Status", catDto.Status);
+        fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
+
+        var response = await AirtableRepository.CreateRecord(CatTableName, fields);
+
+        if (!response.Success)
         {
-            throw new Exception($"User with ID {atUserId} not found.");
+            Logger.LogError($"Error adding cat: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error adding cat: {response.AirtableApiError.ErrorMessage}");
         }
 
-        var userModel = userRecord.Record.Fields;
+        var createdCat = await GetCatById(response.Record.Id);
+        Logger.LogInformation($"Cat added successfully: {catDto.Name}");
+        return createdCat!;
+    }
 
-        if (userModel.TelegramChatId == 0)
+    public async Task<IEnumerable<CatDto>> GetCatsByUserId(string userId)
+    {
+        Logger.LogInformation($"Getting cats for user: {userId}");
+
+        var response = await AirtableRepository.ListRecords<AtCat>(
+            CatTableName,
+            filterByFormula: $"{{OwnerRecordId}} = '{userId}'"
+        );
+
+        if (!response.Success)
         {
-            throw new Exception($"Telegram chat ID missing for user ID {atUserId}.");
+            Logger.LogError($"Error getting cats: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error getting cats: {response.AirtableApiError.ErrorMessage}");
         }
 
-        if (userModel.Status != UserStatuses.ToConfirm)
+        var cats = response.Records.Select(r => CatConverter.ToDto(r.Fields)).ToList();
+        Logger.LogInformation($"Found {cats.Count} cats for user {userId}");
+        return cats;
+    }
+
+    public async Task<CatDto?> GetCatById(string recordId)
+    {
+        Logger.LogInformation($"Getting cat by ID: {recordId}");
+
+        var response = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, recordId);
+
+        if (!response.Success)
         {
-            throw new Exception($"User ID {atUserId} must be in ToConfirm status.");
+            Logger.LogError($"Error getting cat: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error getting cat: {response.AirtableApiError.ErrorMessage}");
         }
 
-        var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, UserStatuses.Confirmed.ToString());
-        var updateResponse = await AirtableRepository.UpdateRecord(UserTableName, updatedFields, atUserId);
-
-        if (!updateResponse.Success)
+        if (response.Record == null)
         {
-            throw new Exception($"Error updating status for user ID {atUserId}: {updateResponse.AirtableApiError.ErrorMessage}");
+            Logger.LogInformation($"No cat found with ID: {recordId}");
+            return null;
         }
 
-        // Send a Telegram message
-        var message = $"Hello {userModel.Name} 👋 \nYour account has been confirmed!";
-        await TelegramBotClient.SendMessage(userModel.TelegramChatId, message);
+        Logger.LogInformation($"Found cat: {response.Record.Fields.Name}");
+        return CatConverter.ToDto(response.Record.Fields);
+    }
 
-        return true;
+    public async Task<CatDto> UpdateCat(CatDto catDto)
+    {
+        if (string.IsNullOrEmpty(catDto.RecordId))
+        {
+            throw new ArgumentException("Record ID is required for updating a cat");
+        }
+
+        Logger.LogInformation($"Updating cat: {catDto.Name}");
+
+        var fields = new Fields();
+        fields.AddField("Name", catDto.Name);
+        fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
+        fields.AddField("Status", catDto.Status);
+
+        var response = await AirtableRepository.UpdateRecord(CatTableName, fields, catDto.RecordId);
+
+        if (!response.Success)
+        {
+            Logger.LogError($"Error updating cat: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error updating cat: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        Logger.LogInformation($"Cat updated successfully: {catDto.Name}");
+        return await GetCatById(catDto.RecordId) ?? catDto;
+    }
+
+    public async Task<IEnumerable<CatPaymentDto>> GetCatPayments(string catId)
+    {
+        Logger.LogInformation($"Getting payments for cat: {catId}");
+
+        var response = await AirtableRepository.ListRecords<AtCatPayment>(
+            CatPaymentName,
+            filterByFormula: $"{{CatRecordId}} = '{catId}'"
+        );
+
+        if (!response.Success)
+        {
+            Logger.LogError($"Error getting cat payments: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error getting cat payments: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        var payments = response.Records.Select(r => CatPaymentConverter.ToDto(r.Fields)).ToList();
+        Logger.LogInformation($"Found {payments.Count} payments for cat {catId}");
+        return payments;
     }
 
     public async Task<bool> AddCatPhoto(string catRecordId, string photoUrl)
@@ -176,81 +246,6 @@ public class AdoptionBotActionService(
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        // var catPaymentFields = updateResponse.Record.Fields;
-        // var catPaymentModel = JsonSerializer.Deserialize<AtCatPayment>(catPaymentFields.ToString(), new JsonSerializerOptions
-        // {
-        //     PropertyNameCaseInsensitive = true
-        // });
-
         return true;
     }
-
-    public async Task<bool> ConfirmCatPayment(string atCatId)
-    {
-        var cat = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, atCatId);
-
-        if (!cat.Success || cat.Record == null)
-        {
-            throw new Exception($"Cat with ID {atCatId} not found.");
-        }
-
-        // Update the user's status or grant paid features
-        var catModel = cat.Record.Fields;
-
-        if (catModel.OwnerTelegramChatId == 0)
-        {
-            throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {atCatId}.");
-        }
-
-        if (catModel.Status != CatStatuses.Available)
-        {
-            throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) is not in ✨Available✨ status.");
-        }
-
-        if (catModel.AccountPaymentRecordId == null || catModel.AccountPaymentType != PaymentOptionTypes.Account)
-        {
-            throw new Exception($"❗️Cat payment info not found for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}).");
-        }
-
-        // if (catModel.AccountPaymentStatus != CatPaymentStatuses.ToConfirm)
-        // {
-        //     throw new Exception($"❗️Cat payment for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) must be in ✨ToConfirm✨ status.");
-        // }
-
-        // update cat payment status
-        var updatedFields = new Fields();
-
-        updatedFields.AddField(StatusColumnName, CatPaymentStatuses.Confirmed.ToString());
-        var updateResponse = await AirtableRepository.UpdateRecord(CatPaymentName, updatedFields, catModel.AccountPaymentRecordId);
-
-        if (!updateResponse.Success)
-        {
-            throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
-        }
-
-        // update cat status
-        updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, CatStatuses.AdoptionProcessPaid.ToString());
-        updateResponse = await AirtableRepository.UpdateRecord(CatTableName, updatedFields, atCatId);
-
-        if (!updateResponse.Success)
-        {
-            throw new Exception($"Error updating status for cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
-        }
-
-        // Send a Telegram message
-        var message = @$"
-Hello {catModel.OwnerName} 👋
-Payment for your cat {catModel.Name} has been confirmed. Congrats!
-
-You can now access to push your cat to the Catbook or to book event for them.";
-
-        await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
-
-        return true;
-    }
-
-    public Task<bool> ConfirmCatbookPlacement(string atCatId) => throw new NotImplementedException();
-    public Task<bool> OpenEventRegistration(string atEventId) => throw new NotImplementedException();
-    public Task<bool> CloseEventRegistration(string atEventId) => throw new NotImplementedException();
 }

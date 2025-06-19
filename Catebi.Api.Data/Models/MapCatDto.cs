@@ -1,6 +1,6 @@
 namespace Catebi.Api.Data.Models;
 
-public class CatDto
+public class MapCatDto
 {
     public int Id { get; set; }
     public string? NotionCatId { get; set; }

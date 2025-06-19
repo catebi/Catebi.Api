@@ -9,3 +9,6 @@ global using Catebi.Api.Data.Helpers;
 global using Catebi.Api.Data.Models;
 global using Catebi.Api.Data.Models.Enums;
 global using Catebi.Api.Data.Contracts.Repositories;
+
+global using Catebi.Api.Domain.Features.AdoptionBot.Models;
+global using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;

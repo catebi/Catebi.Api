@@ -19,7 +19,7 @@ public class NotionApiService(
     private List<CatTag> _catTags;
     private List<Volunteer> _volunteers;
     private List<VolunteerDto> _volunteerDtos;
-    private List<CatDto> _catDtos;
+    private List<MapCatDto> _catDtos;
     private Dictionary<string, string> _notionVolunteerPageDict = [];
 
     #region Public
@@ -258,7 +258,7 @@ public class NotionApiService(
         };
     }
 
-    private CatDto GetCatDto(Page x)
+    private MapCatDto GetCatDto(Page x)
     {
         var properties = x.Properties;
         var idProperty = ((UniqueIdPropertyValue)properties["id"]).UniqueId;
@@ -281,7 +281,7 @@ public class NotionApiService(
             _notionVolunteerPageDict.Add(notionCatId, notionUserId);
         }
 
-        return new CatDto
+        return new MapCatDto
         {
             NotionCatId = notionCatId,
             Name = ((TitlePropertyValue)x.Properties["cat\\name"]).Title.FirstOrDefault()?.PlainText,

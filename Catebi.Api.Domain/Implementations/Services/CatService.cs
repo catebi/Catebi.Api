@@ -14,9 +14,9 @@ public class CatService(    IUnitOfWork unitOfWork,
     private readonly IMemoryCache _cache = cache;
 
     #region Public
-    public async Task<IEnumerable<CatDto>> GetCats()
+    public async Task<IEnumerable<MapCatDto>> GetCats()
     {
-        var result = new List<CatDto>();
+        var result = new List<MapCatDto>();
         try
         {
             result = await GetCatsInternal();
@@ -51,7 +51,7 @@ public class CatService(    IUnitOfWork unitOfWork,
 
     #region Private
 
-    private async Task<List<CatDto>> GetCatsInternal()
+    private async Task<List<MapCatDto>> GetCatsInternal()
     {
         // Optionally, you could cache this key list as well.
         _cache.TryGetValue(CachedCatKeysKey, out List<string> cachedCatKeys);
@@ -93,7 +93,7 @@ public class CatService(    IUnitOfWork unitOfWork,
         _cache.Set(CatsShortKey, catsResult, cacheOptions);
     }
 
-    private async Task<List<CatDto>> GetCatsFromDb()
+    private async Task<List<MapCatDto>> GetCatsFromDb()
     {
         var cats = await _catRepo.GetAsync
         (
@@ -121,7 +121,7 @@ public class CatService(    IUnitOfWork unitOfWork,
                    .ToList();
     }
 
-    private CatDto GetCatDto(Cat cat) =>
+    private MapCatDto GetCatDto(Cat cat) =>
 
         new()
         {
@@ -175,7 +175,7 @@ public class CatService(    IUnitOfWork unitOfWork,
             }).ToList()
         };
 
-    private void CacheCats(List<CatDto> cats)
+    private void CacheCats(List<MapCatDto> cats)
     {
         // Set cache options.
         var cacheOptions = new MemoryCacheEntryOptions
@@ -199,12 +199,12 @@ public class CatService(    IUnitOfWork unitOfWork,
         _cache.Set(CachedCatKeysKey, cachedCatKeys, cacheOptions);
     }
 
-    private List<CatDto> GetAllCatsFromCache(List<string> cachedCatKeys)
+    private List<MapCatDto> GetAllCatsFromCache(List<string> cachedCatKeys)
     {
-        var cats = new List<CatDto>();
+        var cats = new List<MapCatDto>();
         foreach (var key in cachedCatKeys)
         {
-            if (_cache.TryGetValue(key, out CatDto? cachedCat))
+            if (_cache.TryGetValue(key, out MapCatDto? cachedCat))
             {
                 cats.Add(cachedCat!);
             }

@@ -68,6 +68,11 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IWorkTaskService, WorkTaskService>();
         services.AddScoped<IAdoptionBotActionService, AdoptionBotActionService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IAirtableRepository, AirtableRepository>();
+        services.AddScoped<IAdoptionBotUserService, AdoptionBotUserService>();
+        services.AddScoped<IAdoptionBotEventService, AdoptionBotEventService>();
+        services.AddScoped<IAdoptionBotCatService, AdoptionBotCatService>();
+        services.AddScoped<IAdoptionBotAdminService, AdoptionBotAdminService>();
 
         services.AddTransient<IEmailSender, EmailSender>();
 
@@ -150,7 +155,11 @@ public class Startup(IConfiguration configuration)
         if (env.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(ui =>
+            {
+                ui.SwaggerEndpoint("/swagger/v1/swagger.json", "Adoption Bot API v1");
+                // ui.RoutePrefix = "docs";    // uncomment to serve UI at /docs
+            });
         }
 
         if (!env.IsDevelopment())

@@ -5,6 +5,7 @@ namespace Catebi.Api.Domain.Features.AdoptionBot.Models;
 
 public class AtUser
 {
+    public string? RecordId { get; set; }
     public int UserId { get; set; }
     public string Name { get; set; }
     public string Telegram { get; set; }

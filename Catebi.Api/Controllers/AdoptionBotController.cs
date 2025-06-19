@@ -4,18 +4,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Catebi.Api.Controllers;
 
+[Obsolete("Use Admin, Cat and Event controllers instead")]
 [Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionController(IAdoptionBotActionService AdoptionService,
-                                IFileService FileService,
-                                ILogger<AdoptionController> Logger) : ControllerBase
+public class AdoptionBotController(IAdoptionBotActionService AdoptionService,
+                                   IFileService FileService,
+                                   ILogger<AdoptionBotController> Logger) : ControllerBase
 {
     /// <summary>
     /// User account confirmation
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [Obsolete("this method is not necessary anymore")]
     [HttpGet]
     public async Task<IActionResult> ConfirmUser([FromQuery] string id)
     {

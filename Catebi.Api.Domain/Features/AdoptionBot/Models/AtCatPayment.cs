@@ -5,6 +5,12 @@ namespace Catebi.Api.Domain.Features.AdoptionBot.Models;
 
 public class AtCatPayment
 {
+    public string? RecordId { get; set; }
+    public string CatRecordId { get; set; }
+    public string? OwnerRecordId { get; set; }
+    public string Proof { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public string? CatName { get; set; }    
     public int CatId { get; set; }
     public int OwnerTelegramChatId { get; set; }
     public int TelegramChatId { get; set; }
