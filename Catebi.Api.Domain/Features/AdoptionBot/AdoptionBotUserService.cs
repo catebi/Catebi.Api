@@ -21,9 +21,9 @@ public class AdoptionBotUserService(
         var fields = new Fields();
         fields.AddField("Name", userDto.Name);
         fields.AddField("Telegram", userDto.Telegram);
-        fields.AddField("Status", userDto.Status ?? UserStatuses.ToConfirm.ToString());
+        fields.AddField("Status", UserStatuses.ToConfirm.ToString());
         fields.AddField("TelegramChatId", userDto.TelegramChatId);
-        fields.AddField("Role", userDto.Role ?? UserRoles.CatOwner.ToString());
+        fields.AddField("Role", UserRoles.CatOwner.ToString());
 
         var response = await AirtableRepository.CreateRecord(UserTableName, fields);
 
