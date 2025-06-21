@@ -9,6 +9,7 @@ public static class CatConverter
         OwnerRecordId = cat.OwnerRecordId ?? string.Empty,
         Name = cat.Name,
         DateOfBirth = cat.DateOfBirth.ToString("yyyy-MM-dd"),
+        MainPhoto = cat.MainPhoto?.Select(p => new AttachmentDto { Id = p.Id, Url = p.Url, Filename = p.FileName }).FirstOrDefault(),
         Photos = cat.Photos?.Select(p => new AttachmentDto { Id = p.Id, Url = p.Url, Filename = p.FileName }).ToList(),
         Status = cat.StatusValue
     };

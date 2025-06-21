@@ -11,4 +11,6 @@ public class UserDto
     public bool? IsVolunteer { get; set; }
     public string? Status { get; set; }
     public string? Role { get; set; }
+    public string? Language { get; set; }
+    public string? AdditionalContact { get; set; }
 }

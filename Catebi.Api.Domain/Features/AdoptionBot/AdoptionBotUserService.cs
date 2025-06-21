@@ -24,6 +24,7 @@ public class AdoptionBotUserService(
         fields.AddField("Status", UserStatuses.ToConfirm.ToString());
         fields.AddField("TelegramChatId", userDto.TelegramChatId);
         fields.AddField("Role", UserRoles.CatOwner.ToString());
+        fields.AddField("Language", userDto.Language ?? Languages.en.ToString());
 
         var response = await AirtableRepository.CreateRecord(UserTableName, fields);
 
@@ -76,11 +77,14 @@ public class AdoptionBotUserService(
         Logger.LogInformation($"Updating user: {userDto.Name}");
 
         var fields = new Fields();
+
         fields.AddField("Name", userDto.Name);
         fields.AddField("Telegram", userDto.Telegram);
         fields.AddField("Status", userDto.Status);
         fields.AddField("TelegramChatId", userDto.TelegramChatId);
         fields.AddField("Role", userDto.Role);
+        fields.AddField("Language", userDto.Language ?? Languages.en.ToString());
+        fields.AddField(nameof(userDto.AdditionalContact), userDto.AdditionalContact);
 
         var response = await AirtableRepository.UpdateRecord(UserTableName, fields, userDto.RecordId);
 

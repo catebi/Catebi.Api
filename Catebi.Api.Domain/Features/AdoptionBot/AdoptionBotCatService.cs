@@ -26,6 +26,13 @@ public class AdoptionBotCatService(
         fields.AddField("Status", catDto.Status);
         fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
 
+        if (catDto.MainPhoto != null && !string.IsNullOrEmpty(catDto.MainPhoto.Url))
+        {
+            Logger.LogInformation($"Adding main photo for cat: {catDto.Name}");
+            var mainPhotoAttachment = new AirtableAttachment { Url = catDto.MainPhoto.Url };
+            fields.AddField("MainPhoto", new List<AirtableAttachment> { mainPhotoAttachment });
+        }
+
         var response = await AirtableRepository.CreateRecord(CatTableName, fields);
 
         if (!response.Success)
@@ -94,6 +101,14 @@ public class AdoptionBotCatService(
         fields.AddField("Name", catDto.Name);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", catDto.Status);
+
+        // Handle main photo if provided
+        if (catDto.MainPhoto != null && !string.IsNullOrEmpty(catDto.MainPhoto.Url))
+        {
+            Logger.LogInformation($"Updating main photo for cat: {catDto.Name}");
+            var mainPhotoAttachment = new AirtableAttachment { Url = catDto.MainPhoto.Url };
+            fields.AddField("MainPhoto", new List<AirtableAttachment> { mainPhotoAttachment });
+        }
 
         var response = await AirtableRepository.UpdateRecord(CatTableName, fields, catDto.RecordId);
 

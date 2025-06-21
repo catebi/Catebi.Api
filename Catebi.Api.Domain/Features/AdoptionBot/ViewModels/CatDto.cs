@@ -8,5 +8,6 @@ public class CatDto
     public string Name { get; set; }
     public string DateOfBirth { get; set; }
     public List<AttachmentDto>? Photos { get; set; }
+    public AttachmentDto? MainPhoto { get; set; }
     public string Status { get; set; }
 }

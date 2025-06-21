@@ -11,14 +11,80 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                                       IFileService FileService,
                                       ILogger<AdoptionBotCatController> Logger) : ControllerBase
 {
+    public class AddCatRequest
+    {
+        public string OwnerRecordId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string DateOfBirth { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class UpdateCatRequest
+    {
+        public string? RecordId { get; set; }
+        public string OwnerRecordId { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string DateOfBirth { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+    }
+
     /// <summary>
     /// Add a new cat record
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> AddCat([FromBody] CatDto cat)
+    public async Task<IActionResult> AddCat([FromForm] AddCatRequest request, IFormFile? mainPhoto = null)
     {
         try
         {
+            string? mainPhotoUrl = null;
+
+            // Handle main photo upload if provided
+            if (mainPhoto != null)
+            {
+                Logger.LogInformation($"Received main photo for new cat: {mainPhoto.FileName}");
+                using var memoryStream = new MemoryStream();
+                await mainPhoto.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+                var extension = Path.GetExtension(mainPhoto.FileName);
+                var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
+                var fileSize = mainPhoto.Length;
+                var fileType = mainPhoto.ContentType;
+
+                var fileRequest = new FileStorageDto
+                {
+                    FileName = fileName,
+                    Size = fileSize,
+                    ContentType = fileType,
+                    Data = memoryStream.ToArray()
+                };
+
+                var uploadedFile = await FileService.SaveFileAsync(fileRequest);
+                Logger.LogInformation($"Main photo uploaded successfully: {uploadedFile.FileStorageId}");
+
+                fileRequest.FileStorageId = uploadedFile.FileStorageId;
+                mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
+                Logger.LogInformation($"Generated main photo URL: {mainPhotoUrl}");
+            }
+
+            // Create CatDto from request
+            var cat = new CatDto
+            {
+                OwnerRecordId = request.OwnerRecordId,
+                Name = request.Name,
+                DateOfBirth = request.DateOfBirth,
+                Status = request.Status
+            };
+
+            // Set the main photo URL in the cat DTO if uploaded
+            if (!string.IsNullOrEmpty(mainPhotoUrl))
+            {
+                cat.MainPhoto = new AttachmentDto
+                {
+                    Url = mainPhotoUrl,
+                    Filename = mainPhoto?.FileName
+                };
+            }
+
             var result = await CatService.AddCat(cat);
             return Ok(result);
         }
@@ -55,10 +121,60 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
     /// Update a cat record
     /// </summary>
     [HttpPut]
-    public async Task<IActionResult> UpdateCat([FromBody] CatDto cat)
+    public async Task<IActionResult> UpdateCat([FromForm] UpdateCatRequest request, IFormFile? mainPhoto = null)
     {
         try
         {
+            string? mainPhotoUrl = null;
+
+            // Handle main photo upload if provided
+            if (mainPhoto != null)
+            {
+                Logger.LogInformation($"Received main photo for cat update: {mainPhoto.FileName}");
+                using var memoryStream = new MemoryStream();
+                await mainPhoto.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+                var extension = Path.GetExtension(mainPhoto.FileName);
+                var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
+                var fileSize = mainPhoto.Length;
+                var fileType = mainPhoto.ContentType;
+
+                var fileRequest = new FileStorageDto
+                {
+                    FileName = fileName,
+                    Size = fileSize,
+                    ContentType = fileType,
+                    Data = memoryStream.ToArray()
+                };
+
+                var uploadedFile = await FileService.SaveFileAsync(fileRequest);
+                Logger.LogInformation($"Main photo uploaded successfully: {uploadedFile.FileStorageId}");
+
+                fileRequest.FileStorageId = uploadedFile.FileStorageId;
+                mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
+                Logger.LogInformation($"Generated main photo URL: {mainPhotoUrl}");
+            }
+
+            // Create CatDto from request
+            var cat = new CatDto
+            {
+                RecordId = request.RecordId,
+                OwnerRecordId = request.OwnerRecordId,
+                Name = request.Name,
+                DateOfBirth = request.DateOfBirth,
+                Status = request.Status
+            };
+
+            // Set the main photo URL in the cat DTO if uploaded
+            if (!string.IsNullOrEmpty(mainPhotoUrl))
+            {
+                cat.MainPhoto = new AttachmentDto
+                {
+                    Url = mainPhotoUrl,
+                    Filename = mainPhoto?.FileName
+                };
+            }
+
             var result = await CatService.UpdateCat(cat);
             return Ok(result);
         }

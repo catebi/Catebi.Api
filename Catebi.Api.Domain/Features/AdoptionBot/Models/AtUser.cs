@@ -12,6 +12,7 @@ public class AtUser
     public long TelegramChatId { get; set; }
     public bool UsePayedAccount { get; set; }
     public bool IsVolunteer { get; set; }
+    public string? AdditionalContact { get; set; }
 
     [JsonPropertyName("Status")]
     public string StatusValue { get; set; }
@@ -19,9 +20,15 @@ public class AtUser
     [JsonPropertyName("Role")]
     public string RoleValue { get; set; }
 
+    [JsonPropertyName("Language")]
+    public string LanguageValue { get; set; } = Languages.en.ToString();
+
     [JsonIgnore]
     public UserStatuses Status => Enum.Parse<UserStatuses>(StatusValue);
 
     [JsonIgnore]
     public UserRoles Role => Enum.Parse<UserRoles>(RoleValue);
+
+    [JsonIgnore]
+    public Languages Language => Enum.Parse<Languages>(LanguageValue);
 }
