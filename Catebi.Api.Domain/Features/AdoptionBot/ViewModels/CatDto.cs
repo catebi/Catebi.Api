@@ -10,4 +10,7 @@ public class CatDto
     public List<AttachmentDto>? Photos { get; set; }
     public AttachmentDto? MainPhoto { get; set; }
     public string Status { get; set; }
+    public bool? IsVaccinatedComplex { get; set; }
+    public bool? IsVaccinatedRabies { get; set; }
+    public string? OwnerNotes { get; set; }
 }

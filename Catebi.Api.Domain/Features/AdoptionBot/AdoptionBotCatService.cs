@@ -26,6 +26,16 @@ public class AdoptionBotCatService(
         fields.AddField("Status", catDto.Status);
         fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
 
+        // Add vaccination fields if provided
+        if (catDto.IsVaccinatedComplex.HasValue)
+        {
+            fields.AddField("IsVaccinatedComplex", catDto.IsVaccinatedComplex.Value);
+        }
+        if (catDto.IsVaccinatedRabies.HasValue)
+        {
+            fields.AddField("IsVaccinatedRabies", catDto.IsVaccinatedRabies.Value);
+        }
+
         if (catDto.MainPhoto != null && !string.IsNullOrEmpty(catDto.MainPhoto.Url))
         {
             Logger.LogInformation($"Adding main photo for cat: {catDto.Name}");
@@ -101,6 +111,20 @@ public class AdoptionBotCatService(
         fields.AddField("Name", catDto.Name);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", catDto.Status);
+
+        // Add vaccination fields if provided
+        if (catDto.IsVaccinatedComplex.HasValue)
+        {
+            fields.AddField("IsVaccinatedComplex", catDto.IsVaccinatedComplex.Value);
+        }
+        if (catDto.IsVaccinatedRabies.HasValue)
+        {
+            fields.AddField("IsVaccinatedRabies", catDto.IsVaccinatedRabies.Value);
+        }
+        if (!string.IsNullOrEmpty(catDto.OwnerNotes))
+        {
+            fields.AddField("OwnerNotes", catDto.OwnerNotes);
+        }
 
         // Handle main photo if provided
         if (catDto.MainPhoto != null && !string.IsNullOrEmpty(catDto.MainPhoto.Url))

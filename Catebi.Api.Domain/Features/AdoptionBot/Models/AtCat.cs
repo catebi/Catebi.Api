@@ -39,6 +39,15 @@ public class AtCat
     [JsonPropertyName("OwnerIsVolunteer")]
     public bool?[] OwnerIsVolunteerValue { get; set; } = [];
 
+    [JsonPropertyName("IsVaccinatedComplex")]
+    public bool? IsVaccinatedComplex { get; set; }
+
+    [JsonPropertyName("IsVaccinatedRabies")]
+    public bool? IsVaccinatedRabies { get; set; }
+
+    [JsonPropertyName("OwnerNotes")]
+    public string? OwnerNotes { get; set; }
+
     [JsonIgnore]
     public CatStatuses Status => Enum.Parse<CatStatuses>(StatusValue);
 
