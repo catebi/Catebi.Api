@@ -147,4 +147,22 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
             return StatusCode(500, new { ex.Message });
         }
     }
+
+    /// <summary>
+    /// Get all cats registered for a specific event
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetEventCats([FromQuery] string eventRecordId)
+    {
+        try
+        {
+            var cats = await EventService.GetEventCats(eventRecordId);
+            return Ok(cats);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "⚠️ Error getting event cats");
+            return StatusCode(500, new { ex.Message });
+        }
+    }
 } 

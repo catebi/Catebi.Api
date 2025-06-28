@@ -30,6 +30,9 @@ public class AtCat
     [JsonPropertyName("AccountPaymentStatus")]
     public string[] AccountPaymentStatusValue { get; set; } = [];
 
+    [JsonPropertyName("OwnerTelegram")]
+    public string[] OwnerTelegramValue { get; set; } = [];
+
     [JsonPropertyName("OwnerTelegramChatId")]
     public long[] OwnerTelegramChatIdValue { get; set; } = [];
 
@@ -48,6 +51,8 @@ public class AtCat
     [JsonPropertyName("OwnerNotes")]
     public string? OwnerNotes { get; set; }
 
+    public DateTime Created { get; set; }
+
     [JsonIgnore]
     public CatStatuses Status => Enum.Parse<CatStatuses>(StatusValue);
 
@@ -56,6 +61,10 @@ public class AtCat
 
     [JsonIgnore]
     public string? OwnerName => OwnerNameValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public string OwnerTelegram => OwnerTelegramValue.FirstOrDefault();
+
     [JsonIgnore]
     public long OwnerTelegramChatId => OwnerTelegramChatIdValue.FirstOrDefault();
 

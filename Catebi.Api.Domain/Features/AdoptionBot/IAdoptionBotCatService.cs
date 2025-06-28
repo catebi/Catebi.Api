@@ -35,5 +35,10 @@ public interface IAdoptionBotCatService
     /// <summary>
     /// Add a payment confirmation for a cat and notify the owner.
     /// </summary>
-    Task<bool> AddCatPayment(string catRecordId, string imageUrl);
-} 
+    Task<CatPaymentDto> AddCatPayment(string catRecordId, string imageUrl);
+
+    /// <summary>
+    /// Register a cat to an event.
+    /// </summary>
+    Task<bool> RegisterCatToEvent(string catRecordId, string eventRecordId);
+}

@@ -195,24 +195,6 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         }
     }
 
-    /// <summary>
-    /// Get payments for a specific cat
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GetCatPayments([FromQuery] string catId)
-    {
-        try
-        {
-            var payments = await CatService.GetCatPayments(catId);
-            return Ok(payments);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting cat payments");
-            return StatusCode(500, new { ex.Message });
-        }
-    }
-
     [HttpPost]
     public async Task<IActionResult> AddCatPhoto(string catRecordId, IFormFile file)
     {
@@ -266,56 +248,33 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         }
     }
 
+    /// <summary>
+    /// Register a cat to an event
+    /// </summary>
     [HttpPost]
-    public async Task<IActionResult> AddCatPayment(string catRecordId, IFormFile file)
+    public async Task<IActionResult> RegisterCatToEvent([FromQuery] string catRecordId, [FromQuery] string eventRecordId)
     {
         try
         {
-            Logger.LogInformation($"Received file for cat payment confirmation: {file.FileName}");
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-            var extension = Path.GetExtension(file.FileName);
-            var fileName = Path.GetFileName(file.FileName) ?? $"confirmation_{catRecordId}.{extension}";
-            var fileSize = file.Length;
-            var fileType = file.ContentType;
-
-            var fileRequest = new FileStorageDto
-            {
-                FileName = fileName,
-                Size = fileSize,
-                ContentType = fileType,
-                Data = memoryStream.ToArray()
-            };
-
-            var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-
-            Logger.LogInformation($"File uploaded successfully: {uploadedFile.FileStorageId}");
-
-            fileRequest.FileStorageId = uploadedFile.FileStorageId;
-            var fileUrl = FileService.GenerateFileUrl(fileRequest);
-
-            Logger.LogInformation($"Generated file URL: {fileUrl}");
-
-            var result = await CatService.AddCatPayment(catRecordId, fileUrl);
+            var result = await CatService.RegisterCatToEvent(catRecordId, eventRecordId);
             if (result)
             {
-                return Ok(new { Message = $"🎉 cat payment ({catRecordId}) confirmed and notified." });
+                return Ok(new { Message = $"🎉 Cat successfully registered to event. Cat ID: {catRecordId}, Event ID: {eventRecordId}" });
             }
             else
             {
-                return StatusCode(500, new { Message = $"Failed to confirm cat payment {catRecordId}." });
+                return StatusCode(500, new { Message = $"Failed to register cat to event. Cat ID: {catRecordId}, Event ID: {eventRecordId}" });
             }
         }
         catch (ArgumentException ex)
         {
-            Logger.LogError(ex, "⚠️ Error in AddCatPayment");
-            return BadRequest(ex.Message);
+            Logger.LogError(ex, "⚠️ Error in RegisterCatToEvent - Validation error");
+            return BadRequest(new { Message = ex.Message });
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "⚠️ Error in AddCatPayment");
-            return StatusCode(500, $"An error occurred while processing your request., exception: {ex.Message}");
+            Logger.LogError(ex, "⚠️ Error in RegisterCatToEvent");
+            return StatusCode(500, new { Message = $"An error occurred while registering cat to event: {ex.Message}" });
         }
     }
 }

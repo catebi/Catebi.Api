@@ -7,9 +7,9 @@ public static class CatPaymentConverter
         RecordId = payment.RecordId,
         CatRecordId = payment.CatRecordId,
         OwnerRecordId = payment.OwnerRecordId,
-        Proof = payment.Proof,
+        Proof = payment.Proof?.Select(p => new AttachmentDto { Id = p.Id, Url = p.Url, Filename = p.FileName }).FirstOrDefault(),
         Status = payment.StatusValue,
-        CreatedAt = payment.CreatedAt,
+        Created = payment.Created.ToString("yyyy-MM-dd HH:mm:ss"),
         CatName = payment.CatName
     };
-} 
+}

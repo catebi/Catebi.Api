@@ -1,7 +1,6 @@
 using AirtableApiClient;
 using Telegram.Bot;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
-using Catebi.Api.Domain.Features.AdoptionBot.Models;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
@@ -14,6 +13,7 @@ public class AdoptionBotCatService(
     private readonly string CatTableName = AirTables.Cat.ToString();
     private readonly string CatPaymentName = AirTables.CatPayment.ToString();
     private readonly string PaymentOptionTableName = AirTables.PaymentOption.ToString();
+    private readonly string EventTableName = AirTables.Event.ToString();
     private readonly string StatusColumnName = "Status";
 
     public async Task<CatDto> AddCat(CatDto catDto)
@@ -146,13 +146,13 @@ public class AdoptionBotCatService(
         return await GetCatById(catDto.RecordId) ?? catDto;
     }
 
-    public async Task<IEnumerable<CatPaymentDto>> GetCatPayments(string catId)
+    public async Task<IEnumerable<CatPaymentDto>> GetCatPayments(string catRecordId)
     {
-        Logger.LogInformation($"Getting payments for cat: {catId}");
+        Logger.LogInformation($"Getting payments for cat: {catRecordId}");
 
         var response = await AirtableRepository.ListRecords<AtCatPayment>(
             CatPaymentName,
-            filterByFormula: $"{{CatRecordId}} = '{catId}'"
+            filterByFormula: $"{{CatRecordId}} = '{catRecordId}'"
         );
 
         if (!response.Success)
@@ -162,7 +162,7 @@ public class AdoptionBotCatService(
         }
 
         var payments = response.Records.Select(r => CatPaymentConverter.ToDto(r.Fields)).ToList();
-        Logger.LogInformation($"Found {payments.Count} payments for cat {catId}");
+        Logger.LogInformation($"Found {payments.Count} payments for cat {catRecordId}");
         return payments;
     }
 
@@ -219,7 +219,7 @@ public class AdoptionBotCatService(
         return true;
     }
 
-    public async Task<bool> AddCatPayment(string catRecordId, string imageUrl)
+    public async Task<CatPaymentDto> AddCatPayment(string catRecordId, string imageUrl)
     {
         Logger.LogInformation($"Adding cat payment for record ID: {catRecordId}");
         var cat = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catRecordId);
@@ -283,6 +283,93 @@ public class AdoptionBotCatService(
         {
             Logger.LogError($"Error creating cat payment record: {updateResponse.AirtableApiError.ErrorMessage}");
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        var paymentRecord = await AirtableRepository.RetrieveRecord<AtCatPayment>(CatPaymentName, updateResponse.Record.Id);
+        if (!paymentRecord.Success || paymentRecord.Record == null)
+        {
+            throw new Exception($"Error retrieving payment record for cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {paymentRecord.AirtableApiError.ErrorMessage}");
+        }
+
+        var paymentDto = CatPaymentConverter.ToDto(paymentRecord.Record.Fields);
+        return paymentDto;
+    }
+
+    public async Task<bool> RegisterCatToEvent(string catRecordId, string eventRecordId)
+    {
+        Logger.LogInformation($"Registering cat {catRecordId} to event {eventRecordId}");
+
+        // Validate cat exists
+        var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catRecordId);
+        if (!catResponse.Success || catResponse.Record == null)
+        {
+            throw new Exception($"Cat with ID {catRecordId} not found.");
+        }
+
+        var catModel = catResponse.Record.Fields;
+        Logger.LogInformation($"Cat found: {catModel.Name} (Owner: {catModel.OwnerName})");
+
+        // Validate event exists and get current state
+        var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, eventRecordId);
+        if (!eventResponse.Success || eventResponse.Record == null)
+        {
+            throw new Exception($"Event with ID {eventRecordId} not found.");
+        }
+
+        var eventModel = eventResponse.Record.Fields;
+        Logger.LogInformation($"Event found: {eventModel.Name}");
+
+        // Validate event is open for registration
+        if (eventModel.Status != EventStatuses.BookingOpen)
+        {
+            throw new Exception($"Event '{eventModel.Name}' is not open for registration. Current status: {eventModel.Status}");
+        }
+
+        // Check if cat is already registered
+        var currentCats = eventModel.Cats ?? Array.Empty<string>();
+        if (currentCats.Contains(catRecordId))
+        {
+            throw new Exception($"Cat '{catModel.Name}' is already registered for event '{eventModel.Name}'");
+        }
+
+        // Check if there are available slots
+        var currentCatCount = eventModel.Cats.Count();
+        var maxCatSlots = eventModel.PaidSlotCount + eventModel.FreeSlotCount;
+
+        if (currentCatCount >= maxCatSlots)
+        {
+            throw new Exception($"Event '{eventModel.Name}' is full. No available slots (current: {currentCatCount}/{maxCatSlots})");
+        }
+
+        // Add cat to event
+        var updatedCats = currentCats.Append(catRecordId).ToArray();
+        var updatedFields = new Fields();
+        updatedFields.AddField("Cats", updatedCats);
+
+        var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, eventRecordId);
+
+        if (!updateResponse.Success)
+        {
+            Logger.LogError($"Error registering cat to event: {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error registering cat '{catModel.Name}' to event '{eventModel.Name}': {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        Logger.LogInformation($"Successfully registered cat '{catModel.Name}' to event '{eventModel.Name}'");
+
+        // Optional: Send notification to cat owner
+        if (catModel.OwnerTelegramChatId != 0)
+        {
+            try
+            {
+                var message = $"🎉 Great news! Your cat '{catModel.Name}' has been successfully registered for the event '{eventModel.Name}' on {eventModel.When:yyyy-MM-dd} at {eventModel.Where}.";
+                await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
+                Logger.LogInformation($"Notification sent to cat owner: {catModel.OwnerName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to send notification to cat owner {catModel.OwnerName}");
+                // Don't throw here, registration was successful
+            }
         }
 
         return true;

@@ -1,5 +1,3 @@
-using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
-
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public interface IAdoptionBotUserService
@@ -22,10 +20,10 @@ public interface IAdoptionBotUserService
     /// <summary>
     /// Get all payments for a user.
     /// </summary>
-    Task<IEnumerable<CatPaymentDto>> GetUserPayments(string userId);
+    Task<IEnumerable<CatPaymentDto>> GetUserPayments(string userRecordId);
 
     /// <summary>
     /// Get all cats for a user
     /// </summary>
-    Task<IEnumerable<CatDto>> GetCats(string userId);
+    Task<IEnumerable<CatDto>> GetCats(string userRecordId);
 }

@@ -6,25 +6,38 @@ namespace Catebi.Api.Domain.Features.AdoptionBot.Models;
 public class AtCatPayment
 {
     public string? RecordId { get; set; }
-    public string CatRecordId { get; set; }
-    public string? OwnerRecordId { get; set; }
-    public string Proof { get; set; }
-    public DateTime? CreatedAt { get; set; }
-    public string? CatName { get; set; }    
-    public int CatId { get; set; }
-    public int OwnerTelegramChatId { get; set; }
-    public int TelegramChatId { get; set; }
-    public string CatbookUrl { get; set; }
+
+    [JsonPropertyName("CatRecordId")]
+    public string[] CatRecordIdValue { get; set; } = [];
+
+    [JsonPropertyName("OwnerRecordId")]
+    public string[] OwnerRecordIdValue { get; set; } = [];
+
+    public AtAttachment[] Proof { get; set; } = [];
+
+    public DateTime Created { get; set; }
+
+    [JsonPropertyName("CatName")]
+    public string[] CatNameValue { get; set; } = [];
 
     [JsonPropertyName("Status")]
     public string StatusValue { get; set; }
 
     [JsonPropertyName("PaymentType")]
-    public string PaymentTypeValue { get; set; }
+    public string[] PaymentTypeValue { get; set; } = [];
+
+    [JsonIgnore]
+    public string? CatRecordId => CatRecordIdValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public string? OwnerRecordId => OwnerRecordIdValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public string? CatName => CatNameValue.FirstOrDefault();
 
     [JsonIgnore]
     public CatPaymentStatuses Status => Enum.Parse<CatPaymentStatuses>(StatusValue);
 
     [JsonIgnore]
-    public PaymentOptionTypes PaymentType => Enum.Parse<PaymentOptionTypes>(PaymentTypeValue);
+    public PaymentOptionTypes? PaymentType => Enum.TryParse<PaymentOptionTypes>(PaymentTypeValue.FirstOrDefault(), out var paymentType) ? paymentType : null;
 }

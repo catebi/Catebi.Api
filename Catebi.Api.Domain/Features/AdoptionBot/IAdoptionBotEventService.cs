@@ -38,4 +38,9 @@ public interface IAdoptionBotEventService
     /// Close registration for an event.
     /// </summary>
     Task<bool> CloseEventRegistration(string atEventId);
+
+    /// <summary>
+    /// Get all cats registered for a specific event.
+    /// </summary>
+    Task<IEnumerable<CatDto>> GetEventCats(string eventRecordId);
 } 

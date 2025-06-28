@@ -1,7 +1,5 @@
 using AirtableApiClient;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
-using Catebi.Api.Domain.Features.AdoptionBot.Models;
-using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
@@ -118,13 +116,13 @@ public class AdoptionBotUserService(
         return payments;
     }
 
-    public async Task<IEnumerable<CatDto>> GetCats(string userId)
+    public async Task<IEnumerable<CatDto>> GetCats(string userRecordId)
     {
-        Logger.LogInformation($"Getting cats for user: {userId}");
+        Logger.LogInformation($"Getting cats for user: {userRecordId}");
 
         var response = await AirtableRepository.ListRecords<AtCat>(
             CatTableName,
-            filterByFormula: $"{{OwnerUserId}} = {userId}"
+            filterByFormula: $"{{OwnerUserId}} = {userRecordId}"
         );
 
         if (!response.Success)
@@ -134,7 +132,7 @@ public class AdoptionBotUserService(
         }
 
         var cats = response.Records.Select(r => CatConverter.ToDto(r.Fields, r.Id)).ToList();
-        Logger.LogInformation($"Found {cats.Count} cats for user {userId}");
+        Logger.LogInformation($"Found {cats.Count} cats for user {userRecordId}");
         return cats;
     }
 }

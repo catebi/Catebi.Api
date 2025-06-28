@@ -8,8 +8,6 @@ public static class EventConverter
         RecordId = recordId ?? ev.RecordId,
         Name = ev.Name,
         Description = ev.Description,
-        CatSlotCount = ev.CatSlotCount,
-        CatCount = ev.CatCount,
         When = ev.When.ToString("yyyy-MM-dd"),
         Where = ev.Where,
         Created = ev.Created?.ToString("yyyy-MM-dd"),
@@ -26,8 +24,6 @@ public static class EventConverter
         EventId = dto.EventId ?? 0,
         Name = dto.Name,
         Description = dto.Description,
-        CatSlotCount = dto.CatSlotCount,
-        CatCount = dto.CatCount,
         When = DateTime.TryParse(dto.When, out var when) ? when : default,
         Where = dto.Where,
         Created = string.IsNullOrEmpty(dto.Created) ? null : DateTime.Parse(dto.Created),
@@ -37,4 +33,4 @@ public static class EventConverter
         Poster = dto.Poster?.Select(p => new AtAttachment { Id = p.Id ?? string.Empty, Url = p.Url ?? string.Empty, FileName = p.Filename ?? string.Empty }).ToArray() ?? [],
         StatusValue = dto.Status
     };
-} 
+}

@@ -12,6 +12,7 @@ public class AdoptionBotEventService(
     ILogger<AdoptionBotEventService> Logger) : IAdoptionBotEventService
 {
     private readonly string EventTableName = AirTables.Event.ToString();
+    private readonly string CatTableName = AirTables.Cat.ToString();
     private readonly string StatusColumnName = "Status";
 
     public async Task<IEnumerable<EventDto>> GetAllEvents()
@@ -169,7 +170,7 @@ public class AdoptionBotEventService(
         }
 
         var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, EventStatuses.Open.ToString());
+        updatedFields.AddField(StatusColumnName, EventStatuses.BookingOpen.ToString());
         var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
 
         if (!updateResponse.Success)
@@ -191,7 +192,7 @@ public class AdoptionBotEventService(
 
         var eventModel = event_.Record.Fields;
 
-        if (eventModel.Status != EventStatuses.Open)
+        if (eventModel.Status != EventStatuses.BookingOpen)
         {
             throw new Exception($"Event {eventModel.Name} must be in Open status.");
         }
@@ -207,4 +208,56 @@ public class AdoptionBotEventService(
 
         return true;
     }
-} 
+
+    public async Task<IEnumerable<CatDto>> GetEventCats(string eventRecordId)
+    {
+        Logger.LogInformation($"Getting cats for event: {eventRecordId}");
+
+        // First, get the event to validate it exists and get the cat IDs
+        var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, eventRecordId);
+        
+        if (!eventResponse.Success || eventResponse.Record == null)
+        {
+            throw new Exception($"Event with ID {eventRecordId} not found.");
+        }
+
+        var eventModel = eventResponse.Record.Fields;
+        var catIds = eventModel.Cats ?? Array.Empty<string>();
+
+        Logger.LogInformation($"Event '{eventModel.Name}' has {catIds.Length} registered cats");
+
+        if (catIds.Length == 0)
+        {
+            return Enumerable.Empty<CatDto>();
+        }
+
+        // Fetch all cats in parallel for better performance
+        var catTasks = catIds.Select(async catId =>
+        {
+            try
+            {
+                var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catId);
+                if (catResponse.Success && catResponse.Record != null)
+                {
+                    return CatConverter.ToDto(catResponse.Record.Fields);
+                }
+                else
+                {
+                    Logger.LogWarning($"Could not retrieve cat with ID: {catId}");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Error retrieving cat with ID: {catId}");
+                return null;
+            }
+        });
+
+        var cats = await Task.WhenAll(catTasks);
+        var validCats = cats.Where(cat => cat != null).Cast<CatDto>().ToList();
+
+        Logger.LogInformation($"Successfully retrieved {validCats.Count} cats for event '{eventModel.Name}'");
+        return validCats;
+    }
+}

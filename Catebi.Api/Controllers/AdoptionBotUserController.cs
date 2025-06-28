@@ -73,11 +73,11 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetUserPayments([FromQuery] string userId)
+    public async Task<IActionResult> GetUserPayments([FromQuery] string userRecordId)
     {
         try
         {
-            var payments = await UserService.GetUserPayments(userId);
+            var payments = await UserService.GetUserPayments(userRecordId);
             return Ok(payments);
         }
         catch (Exception ex)
@@ -91,11 +91,11 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     /// Get all cats for a user
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetCats([FromQuery] string userId)
+    public async Task<IActionResult> GetCats([FromQuery] string userRecordId)
     {
         try
         {
-            var cats = await UserService.GetCats(userId);
+            var cats = await UserService.GetCats(userRecordId);
             return Ok(cats);
         }
         catch (Exception ex)

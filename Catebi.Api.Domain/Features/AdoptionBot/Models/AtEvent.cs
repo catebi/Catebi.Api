@@ -11,8 +11,6 @@ public class AtEvent
     public int EventId { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public int CatSlotCount { get; set; }
-    public int CatCount { get; set; }
     public DateTime When { get; set; }
     public string Where { get; set; }
     public DateTime? Created { get; set; }

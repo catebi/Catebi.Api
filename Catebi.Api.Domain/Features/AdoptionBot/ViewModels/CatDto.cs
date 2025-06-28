@@ -5,6 +5,7 @@ public class CatDto
     public int? CatId { get; set; }
     public string? RecordId { get; set; }
     public string OwnerRecordId { get; set; }
+    public string OwnerTelegram { get; set; }
     public string Name { get; set; }
     public string DateOfBirth { get; set; }
     public List<AttachmentDto>? Photos { get; set; }
@@ -13,4 +14,5 @@ public class CatDto
     public bool? IsVaccinatedComplex { get; set; }
     public bool? IsVaccinatedRabies { get; set; }
     public string? OwnerNotes { get; set; }
+    public string Created { get; set; }
 }

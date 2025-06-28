@@ -1,4 +1,5 @@
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
+using Notion.Client;
 using System.Text.Json.Serialization;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot.Models;
@@ -22,6 +23,7 @@ public class AtUser
 
     [JsonPropertyName("Language")]
     public string LanguageValue { get; set; } = Languages.en.ToString();
+    public DateTime? Created { get; set; }
 
     [JsonIgnore]
     public UserStatuses Status => Enum.Parse<UserStatuses>(StatusValue);
