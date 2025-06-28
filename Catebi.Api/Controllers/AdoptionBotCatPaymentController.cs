@@ -57,6 +57,7 @@ public class AdoptionBotCatPaymentController(IAdoptionBotCatService CatService,
 
             fileRequest.FileStorageId = uploadedFile.FileStorageId;
             var fileUrl = FileService.GenerateFileUrl(fileRequest);
+            fileUrl = "https://v5.airtableusercontent.com/v3/u/42/42/1751126400000/kCOthkH6Z9w-ZL9Uzsi8mA/y8unoGdVhYmN9lt1XifWPhb1tcJ-Im09E9ix-dw6zdQjAnFqGUbzcGHKtWkJt1j3_Y8LACXwK6tkM7QlPWMhMRG42K0DRdvVxSY6uNOTSzD4Qt0qEFQ-J1fgpLtcD3OMFGgdxK6zwyMfHTq-K0ogNQ/uiSfC0is0PfCVSnbM3pe8BIgzvYgvMkvjRD98tY3Xek";
 
             Logger.LogInformation($"Generated file URL: {fileUrl}");
 

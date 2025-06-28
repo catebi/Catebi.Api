@@ -1,7 +1,7 @@
 using AirtableApiClient;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
-using Catebi.Api.Domain.Features.AdoptionBot.Models;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
@@ -13,6 +13,7 @@ public class AdoptionBotEventService(
 {
     private readonly string EventTableName = AirTables.Event.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
+    private readonly string UserTableName = AirTables.User.ToString();
     private readonly string StatusColumnName = "Status";
 
     public async Task<IEnumerable<EventDto>> GetAllEvents()
@@ -181,6 +182,83 @@ public class AdoptionBotEventService(
         return true;
     }
 
+    public async Task<bool> OpenEventRegistrationWithNotification(string atEventId)
+    {
+        var event_ = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, atEventId);
+
+        if (!event_.Success || event_.Record == null)
+        {
+            throw new Exception($"Event with ID {atEventId} not found.");
+        }
+
+        var eventModel = event_.Record.Fields;
+
+        if (eventModel.Status != EventStatuses.Closed)
+        {
+            throw new Exception($"Event {eventModel.Name} must be in Closed status.");
+        }
+
+        var updatedFields = new Fields();
+        updatedFields.AddField(StatusColumnName, EventStatuses.BookingOpen.ToString());
+        var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
+
+        if (!updateResponse.Success)
+        {
+            throw new Exception($"Error updating status for event {eventModel.Name}: {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        // Get all confirmed users and notify them
+        var usersResponse = await AirtableRepository.ListRecords<AtUser>(
+            UserTableName,
+            filterByFormula: $"{{Status}} = '{UserStatuses.Active}'"
+        );
+
+        if (!usersResponse.Success)
+        {
+            Logger.LogWarning($"Error getting confirmed users for notification: {usersResponse.AirtableApiError.ErrorMessage}");
+            return true; // Event was opened successfully, just notification failed
+        }
+
+        var confirmedUsers = usersResponse.Records.Select(r => r.Fields).ToList();
+        Logger.LogInformation($"Notifying {confirmedUsers.Count} confirmed users about event opening");
+
+        // Create notification message with event details
+        var message = $@"🎉 <b>New Event Open for Registration!</b> 🎉
+
+<b>{eventModel.Name}</b>
+📅 <b>Date:</b> {eventModel.When:yyyy-MM-dd}
+📍 <b>Location:</b> {eventModel.Where}
+
+📝 <b>Description:</b>
+{eventModel.Description}
+
+🐱 You can now register your cats for this event! Don't miss out!";
+
+        // Send notification to all confirmed users
+        var successCount = 0;
+        var failCount = 0;
+
+        foreach (var user in confirmedUsers)
+        {
+            try
+            {
+                if (user.TelegramChatId != 0)
+                {
+                    await TelegramBotClient.SendMessage(user.TelegramChatId, message, parseMode: ParseMode.Html);
+                    successCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to send event notification to user {user.Name} (ID: {user.RecordId})");
+                failCount++;
+            }
+        }
+
+        Logger.LogInformation($"Event notification completed: {successCount} success, {failCount} failed");
+        return true;
+    }
+
     public async Task<bool> CloseEventRegistration(string atEventId)
     {
         var event_ = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, atEventId);
@@ -215,7 +293,7 @@ public class AdoptionBotEventService(
 
         // First, get the event to validate it exists and get the cat IDs
         var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, eventRecordId);
-        
+
         if (!eventResponse.Success || eventResponse.Record == null)
         {
             throw new Exception($"Event with ID {eventRecordId} not found.");

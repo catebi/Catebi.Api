@@ -35,6 +35,11 @@ public interface IAdoptionBotEventService
     Task<bool> OpenEventRegistration(string atEventId);
 
     /// <summary>
+    /// Open registration for an event and notify all confirmed users.
+    /// </summary>
+    Task<bool> OpenEventRegistrationWithNotification(string atEventId);
+
+    /// <summary>
     /// Close registration for an event.
     /// </summary>
     Task<bool> CloseEventRegistration(string atEventId);

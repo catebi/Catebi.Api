@@ -1,5 +1,4 @@
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
-using Notion.Client;
 using System.Text.Json.Serialization;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot.Models;
@@ -14,6 +13,7 @@ public class AtUser
     public bool UsePayedAccount { get; set; }
     public bool IsVolunteer { get; set; }
     public string? AdditionalContact { get; set; }
+    public string? Notes { get; set; }
 
     [JsonPropertyName("Status")]
     public string StatusValue { get; set; }

@@ -42,7 +42,7 @@ public class AdoptionBotActionService(
         }
 
         var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, UserStatuses.Confirmed.ToString());
+        updatedFields.AddField(StatusColumnName, UserStatuses.Active.ToString());
         var updateResponse = await AirtableRepository.UpdateRecord(UserTableName, updatedFields, atUserId);
 
         if (!updateResponse.Success)

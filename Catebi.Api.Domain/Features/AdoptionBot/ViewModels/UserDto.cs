@@ -13,4 +13,5 @@ public class UserDto
     public string? Role { get; set; }
     public string? Language { get; set; }
     public string? AdditionalContact { get; set; }
+    public string? Notes { get; set; }
 }

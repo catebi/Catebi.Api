@@ -4,8 +4,8 @@ public static class UserConverter
 {
     public static UserDto ToDto(AtUser user) => new()
     {
-        UserId = user.UserId,
         RecordId = user.RecordId,
+        UserId = user.UserId,
         Name = user.Name,
         Telegram = user.Telegram,
         TelegramChatId = user.TelegramChatId,
@@ -14,6 +14,23 @@ public static class UserConverter
         Status = user.StatusValue,
         Role = user.RoleValue,
         Language = user.LanguageValue,
-        AdditionalContact = user.AdditionalContact
+        AdditionalContact = user.AdditionalContact,
+        Notes = user.Notes
+    };
+
+    public static AtUser ToAtUser(UserDto dto) => new()
+    {
+        RecordId = dto.RecordId,
+        UserId = dto.UserId ?? 0,
+        Name = dto.Name,
+        Telegram = dto.Telegram,
+        TelegramChatId = dto.TelegramChatId,
+        UsePayedAccount = dto.UsePayedAccount ?? false,
+        IsVolunteer = dto.IsVolunteer ?? false,
+        StatusValue = dto.Status ?? string.Empty,
+        RoleValue = dto.Role ?? string.Empty,
+        LanguageValue = dto.Language ?? string.Empty,
+        AdditionalContact = dto.AdditionalContact,
+        Notes = dto.Notes
     };
 }

@@ -6,6 +6,7 @@ public enum AirTables
     Cat,
     Event,
     CatPayment,
-    PaymentOption
+    PaymentOption,
+    Message
 }
 
