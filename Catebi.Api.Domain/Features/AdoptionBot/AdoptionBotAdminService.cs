@@ -21,6 +21,55 @@ public class AdoptionBotAdminService(
     private readonly string MessageTableName = AirTables.Message.ToString();
     private readonly string StatusColumnName = "Status";
 
+        private static string ConvertHtmlToTelegramFormat(string htmlContent)
+    {
+        if (string.IsNullOrEmpty(htmlContent))
+            return htmlContent;
+
+        var result = htmlContent;
+
+        // Replace HTML entities
+        result = result.Replace("&nbsp;", " ");
+        result = result.Replace("&#39;", "'");
+        result = result.Replace("&quot;", "\"");
+        result = result.Replace("&amp;", "&");
+        result = result.Replace("&lt;", "<");
+        result = result.Replace("&gt;", ">");
+
+        // Handle ordered lists (convert to numbered list)
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<ol[^>]*>", "");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"</ol>", "\n");
+
+        // Handle unordered lists (convert to bullet list)
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<ul[^>]*>", "");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"</ul>", "\n");
+
+        // Handle list items - this is more complex as we need to track if we're in ol or ul
+        // For simplicity, we'll use bullets for all list items
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<li[^>]*>", "• ");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"</li>", "\n");
+
+        // Clean up link tags - remove unsupported attributes, keep only href
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<a\s+[^>]*href\s*=\s*[""']([^""']*)[""'][^>]*>", @"<a href=""$1"">");
+
+        // Replace paragraph tags with line breaks
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<p[^>]*>", "");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"</p>", "\n");
+
+        // Replace other unsupported block elements with line breaks
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<div[^>]*>", "");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"</div>", "\n");
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"<br[^>]*>", "\n");
+
+        // Clean up multiple consecutive line breaks
+        result = System.Text.RegularExpressions.Regex.Replace(result, @"\n\s*\n", "\n\n");
+
+        // Trim whitespace
+        result = result.Trim();
+
+        return result;
+    }
+
     public async Task<bool> ConfirmUser(string atUserId, bool isVolunteer, string? notes)
     {
         var userRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, atUserId);
@@ -159,6 +208,8 @@ public class AdoptionBotAdminService(
             throw new Exception($"Error creating message record: {createResponse.AirtableApiError.ErrorMessage}");
         }
 
+        var messageRecordId = createResponse.Record.Id;
+
         // Get all confirmed users
         var usersResponse = await AirtableRepository.ListRecords<AtUser>(
             UserTableName,
@@ -173,9 +224,11 @@ public class AdoptionBotAdminService(
         var confirmedUsers = usersResponse.Records.Select(r => r.Fields).ToList();
         Logger.LogInformation($"Found {confirmedUsers.Count} confirmed users for broadcast");
 
-        // Send message to all confirmed users
+        // Send message to all confirmed users and collect log information
         var successCount = 0;
         var failCount = 0;
+        var successfulTelegramAccounts = new List<string>();
+        var errors = new List<string>();
 
         foreach (var user in confirmedUsers)
         {
@@ -185,21 +238,69 @@ public class AdoptionBotAdminService(
                 {
                     // For broadcast messages, use the original content (admin can write in any language)
                     var localizedContent = LocalizationService.GetBroadcastMessage(user.Language, content);
-                    await TelegramBotClient.SendMessage(user.TelegramChatId, localizedContent, parseMode: ParseMode.Html);
+                    // Convert HTML to Telegram-compatible format
+                    var telegramContent = ConvertHtmlToTelegramFormat(localizedContent);
+                    await TelegramBotClient.SendMessage(user.TelegramChatId, telegramContent, parseMode: ParseMode.Html);
                     successCount++;
+
+                    // Collect successful telegram account (use telegram username or name if available)
+                    var telegramAccount = !string.IsNullOrEmpty(user.Telegram) ? user.Telegram : user.Name;
+                    if (!string.IsNullOrEmpty(telegramAccount))
+                    {
+                        successfulTelegramAccounts.Add(telegramAccount);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, $"Failed to send message to user {user.Name} (ID: {user.RecordId})");
                 failCount++;
+
+                // Collect error information
+                var userIdentifier = !string.IsNullOrEmpty(user.Telegram) ? user.Telegram : user.Name;
+                errors.Add($"User: {userIdentifier} - Error: {ex.Message}");
             }
         }
 
-        Logger.LogInformation($"Broadcast completed: {successCount} success, {failCount} failed");
+                Logger.LogInformation($"Broadcast completed: {successCount} success, {failCount} failed");
 
-        // Retrieve the created message to return
-        var messageRecord = await AirtableRepository.RetrieveRecord<AtMessage>(MessageTableName, createResponse.Record.Id);
+        // Build log information
+        var logEntries = new List<string>();
+
+        // Add success and fail counts
+        logEntries.Add($"Success: {successCount}, Failed: {failCount}");
+
+        // Add successful telegram accounts (joined by commas)
+        if (successfulTelegramAccounts.Any())
+        {
+            logEntries.Add($"Successful recipients: {string.Join(", ", successfulTelegramAccounts)}");
+        }
+
+        // Add errors if any occurred
+        if (errors.Any())
+        {
+            logEntries.Add("Errors:");
+            logEntries.AddRange(errors);
+        }
+
+        var logContent = string.Join("\n", logEntries);
+
+        // Determine message status based on failures
+        var messageStatus = failCount > 0 ? MessageStatuses.FailedToSend : MessageStatuses.SuccessfullySent;
+
+        // Update the message record with log information and status
+        var updateFields = new Fields();
+        updateFields.AddField("Log", logContent);
+        updateFields.AddField("Status", messageStatus.ToString());
+        var updateResponse = await AirtableRepository.UpdateRecord(MessageTableName, updateFields, messageRecordId);
+
+        if (!updateResponse.Success)
+        {
+            Logger.LogWarning($"Failed to update message log: {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        // Retrieve the updated message to return
+        var messageRecord = await AirtableRepository.RetrieveRecord<AtMessage>(MessageTableName, messageRecordId);
         if (!messageRecord.Success || messageRecord.Record == null)
         {
             throw new Exception($"Error retrieving created message: {createResponse.AirtableApiError.ErrorMessage}");

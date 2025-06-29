@@ -7,4 +7,5 @@ public class MessageDto
     public string Content { get; set; }
     public string? AdminRecordId { get; set; }
     public string? Created { get; set; }
+    public string? Status { get; set; }
 } 

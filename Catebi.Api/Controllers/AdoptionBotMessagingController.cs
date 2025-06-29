@@ -18,12 +18,20 @@ public class AdoptionBotMessagingController(IAdoptionBotAdminService AdminServic
         try
         {
             var result = await AdminService.BroadcastMessage(request.Content, request.AdminRecordId);
-            return Ok(new { Message = "📢 Message broadcasted to all confirmed users.", MessageRecord = result });
+            return Ok(new ApiResponse
+            {
+                Success = true,
+                Message = "📢 Message broadcasted to all confirmed users."
+            });
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Error broadcasting message");
-            return StatusCode(500, new { ex.Message });
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
         }
     }
 
@@ -36,12 +44,21 @@ public class AdoptionBotMessagingController(IAdoptionBotAdminService AdminServic
         try
         {
             var messages = await AdminService.GetBroadcastMessages();
-            return Ok(messages);
+            return Ok(new ApiResponse<IEnumerable<MessageDto>>
+            {
+                Success = true,
+                Message = "Broadcast messages retrieved successfully.",
+                Data = messages
+            });
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Error getting broadcast messages");
-            return StatusCode(500, new { ex.Message });
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
         }
     }
 }
@@ -50,4 +67,4 @@ public class BroadcastMessageRequest
 {
     public string Content { get; set; }
     public string AdminRecordId { get; set; }
-} 
+}
