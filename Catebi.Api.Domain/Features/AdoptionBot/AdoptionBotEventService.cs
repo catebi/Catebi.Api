@@ -2,13 +2,16 @@ using AirtableApiClient;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
+using Catebi.Api.Domain.Features.AdoptionBot.Models;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
+using Catebi.Api.Domain.Contracts.Services;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotEventService(
     IAirtableRepository AirtableRepository,
     TelegramBotClient TelegramBotClient,
+    ILocalizationService LocalizationService,
     ILogger<AdoptionBotEventService> Logger) : IAdoptionBotEventService
 {
     private readonly string EventTableName = AirTables.Event.ToString();
@@ -222,19 +225,7 @@ public class AdoptionBotEventService(
         var confirmedUsers = usersResponse.Records.Select(r => r.Fields).ToList();
         Logger.LogInformation($"Notifying {confirmedUsers.Count} confirmed users about event opening");
 
-        // Create notification message with event details
-        var message = $@"🎉 <b>New Event Open for Registration!</b> 🎉
-
-<b>{eventModel.Name}</b>
-📅 <b>Date:</b> {eventModel.When:yyyy-MM-dd}
-📍 <b>Location:</b> {eventModel.Where}
-
-📝 <b>Description:</b>
-{eventModel.Description}
-
-🐱 You can now register your cats for this event! Don't miss out!";
-
-        // Send notification to all confirmed users
+        // Send notification to all confirmed users with localized messages
         var successCount = 0;
         var failCount = 0;
 
@@ -244,6 +235,15 @@ public class AdoptionBotEventService(
             {
                 if (user.TelegramChatId != 0)
                 {
+                    // Get localized event notification message
+                    var message = LocalizationService.GetEventOpenNotificationMessage(
+                        user.Language, 
+                        eventModel.Name, 
+                        eventModel.When, 
+                        eventModel.Where, 
+                        eventModel.Description
+                    );
+                    
                     await TelegramBotClient.SendMessage(user.TelegramChatId, message, parseMode: ParseMode.Html);
                     successCount++;
                 }
@@ -293,7 +293,7 @@ public class AdoptionBotEventService(
 
         // First, get the event to validate it exists and get the cat IDs
         var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, eventRecordId);
-
+        
         if (!eventResponse.Success || eventResponse.Record == null)
         {
             throw new Exception($"Event with ID {eventRecordId} not found.");

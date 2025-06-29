@@ -12,7 +12,7 @@ public interface IAdoptionBotAdminService
     /// <summary>
     /// Confirm a user's cat payment and grant access to paid features for exact cat.
     /// </summary>
-    Task<bool> ConfirmCatPayment(string atCatId);
+    Task<bool> ConfirmCatPayment(string paymentRecordId);
 
     /// <summary>
     /// Send a formatted message to all confirmed users
@@ -28,4 +28,9 @@ public interface IAdoptionBotAdminService
     /// Get all users with ToConfirm status
     /// </summary>
     Task<IEnumerable<UserDto>> GetUsersToConfirm();
+
+    /// <summary>
+    /// Get all payments to confirm
+    /// </summary>
+    Task<IEnumerable<CatPaymentDto>> GetPaymentsToConfirm();
 }

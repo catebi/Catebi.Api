@@ -95,6 +95,15 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             var result = await CatService.AddCat(cat);
             return Ok(result);
         }
+        catch (Exception ex) when (ex.Message.Contains("must be confirmed by an admin"))
+        {
+            Logger.LogWarning(ex, "⚠️ User not confirmed - cat creation blocked");
+            return BadRequest(new { 
+                Error = "UserNotConfirmed", 
+                Message = ex.Message,
+                Success = false 
+            });
+        }
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Error adding cat");

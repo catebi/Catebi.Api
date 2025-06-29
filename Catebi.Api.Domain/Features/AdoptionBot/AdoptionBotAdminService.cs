@@ -2,13 +2,17 @@ using AirtableApiClient;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
+using Catebi.Api.Domain.Features.AdoptionBot.Models;
+using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
+using Catebi.Api.Domain.Contracts.Services;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotAdminService(
     IAirtableRepository AirtableRepository,
     TelegramBotClient TelegramBotClient,
+    ILocalizationService LocalizationService,
     ILogger<AdoptionBotAdminService> Logger) : IAdoptionBotAdminService
 {
     private readonly string UserTableName = AirTables.User.ToString();
@@ -53,69 +57,87 @@ public class AdoptionBotAdminService(
             throw new Exception($"Error updating user ID {atUserId}: {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        // Send a Telegram message
-        var volunteerStatus = isVolunteer ? "as a volunteer" : "as a cat owner";
-        var message = $"Hello {userModel.Name} 👋\nYour account has been confirmed {volunteerStatus}! Welcome to our community!";
+        // Send a localized Telegram message
+        var message = LocalizationService.GetUserConfirmationMessage(userModel.Language, userModel.Name, isVolunteer);
         await TelegramBotClient.SendMessage(userModel.TelegramChatId, message);
 
         return true;
     }
 
-    public async Task<bool> ConfirmCatPayment(string atCatId)
+    public async Task<bool> ConfirmCatPayment(string paymentRecordId)
     {
-        var cat = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, atCatId);
+        // First get the payment record
+        var paymentRecord = await AirtableRepository.RetrieveRecord<AtCatPayment>(CatPaymentName, paymentRecordId);
+
+        if (!paymentRecord.Success || paymentRecord.Record == null)
+        {
+            throw new Exception($"Payment with ID {paymentRecordId} not found.");
+        }
+
+        var paymentModel = paymentRecord.Record.Fields;
+
+        if (paymentModel.Status != CatPaymentStatuses.ToConfirm)
+        {
+            throw new Exception($"Payment {paymentRecordId} must be in ToConfirm status.");
+        }
+
+        // Get the associated cat record
+        var catRecordId = paymentModel.CatRecordId;
+        if (string.IsNullOrEmpty(catRecordId))
+        {
+            throw new Exception($"Cat record ID missing for payment {paymentRecordId}.");
+        }
+
+        var cat = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catRecordId);
 
         if (!cat.Success || cat.Record == null)
         {
-            throw new Exception($"Cat with ID {atCatId} not found.");
+            throw new Exception($"Cat with ID {catRecordId} not found for payment {paymentRecordId}.");
         }
 
-        // Update the user's status or grant paid features
         var catModel = cat.Record.Fields;
 
         if (catModel.OwnerTelegramChatId == 0)
         {
-            throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {atCatId}.");
+            throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {catRecordId}.");
         }
 
         if (catModel.Status != CatStatuses.SearchingForHome)
         {
-            throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) is not in ✨Available✨ status.");
+            throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, catId {catRecordId}) is not in ✨SearchingForHome✨ status.");
         }
 
-        if (catModel.AccountPaymentRecordId == null || catModel.AccountPaymentType != PaymentOptionTypes.Account)
-        {
-            throw new Exception($"❗️Cat payment info not found for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}).");
-        }
-
-        // update cat payment status
+        // Update payment status to confirmed
         var updatedFields = new Fields();
-
         updatedFields.AddField(StatusColumnName, CatPaymentStatuses.Confirmed.ToString());
-        var updateResponse = await AirtableRepository.UpdateRecord(CatPaymentName, updatedFields, catModel.AccountPaymentRecordId);
+        var updateResponse = await AirtableRepository.UpdateRecord(CatPaymentName, updatedFields, paymentRecordId);
 
         if (!updateResponse.Success)
         {
-            throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error updating payment status for payment {paymentRecordId}: {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        // update cat status
+        // Update cat status (keep as SearchingForHome since payment is now confirmed)
         updatedFields = new Fields();
         updatedFields.AddField(StatusColumnName, CatStatuses.SearchingForHome.ToString());
-        updateResponse = await AirtableRepository.UpdateRecord(CatTableName, updatedFields, atCatId);
+        updateResponse = await AirtableRepository.UpdateRecord(CatTableName, updatedFields, catRecordId);
 
         if (!updateResponse.Success)
         {
-            throw new Exception($"Error updating status for cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}): {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error updating cat status for cat {catModel.Name} (catId: {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        // Send a Telegram message
-        var message = @$"
-Hello {catModel.OwnerName} 👋
-Payment for your cat {catModel.Name} has been confirmed. Congrats!
+        // Get owner's language for localized message
+        var ownerRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catModel.OwnerRecordId!);
+        var ownerLanguage = Languages.ru;
 
-You can now access to push your cat to the Catbook or to book event for them.";
+        if (ownerRecord.Success && ownerRecord.Record != null)
+        {
+            ownerLanguage = ownerRecord.Record.Fields.Language;
+        }
 
+        // Send a localized Telegram message
+        var message = LocalizationService.GetCatPaymentConfirmationMessage(ownerLanguage, catModel.OwnerName!, catModel.Name);
         await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
 
         return true;
@@ -161,7 +183,9 @@ You can now access to push your cat to the Catbook or to book event for them.";
             {
                 if (user.TelegramChatId != 0)
                 {
-                    await TelegramBotClient.SendMessage(user.TelegramChatId, content, parseMode: ParseMode.Html);
+                    // For broadcast messages, use the original content (admin can write in any language)
+                    var localizedContent = LocalizationService.GetBroadcastMessage(user.Language, content);
+                    await TelegramBotClient.SendMessage(user.TelegramChatId, localizedContent, parseMode: ParseMode.Html);
                     successCount++;
                 }
             }
@@ -217,5 +241,24 @@ You can now access to push your cat to the Catbook or to book event for them.";
         var users = response.Records.Select(r => UserConverter.ToDto(r.Fields)).ToList();
         Logger.LogInformation($"Found {users.Count} users to confirm");
         return users;
+    }
+
+    public async Task<IEnumerable<CatPaymentDto>> GetPaymentsToConfirm()
+    {
+        Logger.LogInformation("Getting cat payments with ToConfirm status");
+
+        var response = await AirtableRepository.ListRecords<AtCatPayment>(
+            CatPaymentName,
+            filterByFormula: $"{{Status}} = '{CatPaymentStatuses.ToConfirm}'"
+        );
+
+        if (!response.Success)
+        {
+            throw new Exception($"Error getting payments to confirm: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        var payments = response.Records.Select(r => CatPaymentConverter.ToDto(r.Fields)).ToList();
+        Logger.LogInformation($"Found {payments.Count} payments to confirm");
+        return payments;
     }
 }

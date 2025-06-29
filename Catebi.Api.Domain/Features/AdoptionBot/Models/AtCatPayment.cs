@@ -13,6 +13,15 @@ public class AtCatPayment
     [JsonPropertyName("OwnerRecordId")]
     public string[] OwnerRecordIdValue { get; set; } = [];
 
+    [JsonPropertyName("OwnerName")]
+    public string[] OwnerNameValue { get; set; } = [];
+
+    [JsonPropertyName("OwnerTelegram")]
+    public string[] OwnerTelegramValue { get; set; } = [];
+
+    [JsonPropertyName("Price")]
+    public int[] PriceValue { get; set; } = [];
+
     public AtAttachment[] Proof { get; set; } = [];
 
     public DateTime Created { get; set; }
@@ -21,7 +30,7 @@ public class AtCatPayment
     public string[] CatNameValue { get; set; } = [];
 
     [JsonPropertyName("Status")]
-    public string StatusValue { get; set; }
+    public string StatusValue { get; set; } = string.Empty;
 
     [JsonPropertyName("PaymentType")]
     public string[] PaymentTypeValue { get; set; } = [];
@@ -31,6 +40,15 @@ public class AtCatPayment
 
     [JsonIgnore]
     public string? OwnerRecordId => OwnerRecordIdValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public string? OwnerName => OwnerNameValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public string? OwnerTelegram => OwnerTelegramValue.FirstOrDefault();
+
+    [JsonIgnore]
+    public int? Price => PriceValue.FirstOrDefault();
 
     [JsonIgnore]
     public string? CatName => CatNameValue.FirstOrDefault();

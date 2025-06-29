@@ -122,7 +122,7 @@ public class AdoptionBotUserService(
 
         var response = await AirtableRepository.ListRecords<AtCat>(
             CatTableName,
-            filterByFormula: $"{{OwnerUserId}} = {userRecordId}"
+            filterByFormula: $"{{OwnerRecordId}} = '{userRecordId}'"
         );
 
         if (!response.Success)

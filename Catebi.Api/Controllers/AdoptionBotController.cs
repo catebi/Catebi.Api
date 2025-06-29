@@ -150,17 +150,22 @@ public class AdoptionBotController(IAdoptionBotActionService AdoptionService,
         try
         {
             var result = await AdoptionService.ConfirmCatPayment(id);
-            if (result)
+            return Ok(new ApiResponse
             {
-                return Ok(new { Message = $"🎉 cat payment ({id}) confirmed and notified." });
-            }
-
-            return StatusCode(500, new { Message = $"Failed to confirm cat payment {id}." });
+                Success = result,
+                Message = result 
+                    ? $"🎉 cat payment ({id}) confirmed and notified." 
+                    : $"Failed to confirm cat payment {id}."
+            });
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Error confirming cat payment");
-            return StatusCode(500, new { ex.Message });
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
         }
     }
 }

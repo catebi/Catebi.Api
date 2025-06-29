@@ -148,6 +148,9 @@ public class Startup(IConfiguration configuration)
                         .AddService("Catebi.Api"))
             )
         );
+
+        // Register localization service
+        services.AddScoped<ILocalizationService, LocalizationService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

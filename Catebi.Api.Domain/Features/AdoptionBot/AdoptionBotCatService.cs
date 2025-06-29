@@ -2,14 +2,17 @@ using AirtableApiClient;
 using Telegram.Bot;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
+using Catebi.Api.Domain.Contracts.Services;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotCatService(
     IAirtableRepository AirtableRepository,
     TelegramBotClient TelegramBotClient,
+    ILocalizationService LocalizationService,
     ILogger<AdoptionBotCatService> Logger) : IAdoptionBotCatService
 {
+    private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
     private readonly string CatPaymentName = AirTables.CatPayment.ToString();
     private readonly string PaymentOptionTableName = AirTables.PaymentOption.ToString();
@@ -19,6 +22,23 @@ public class AdoptionBotCatService(
     public async Task<CatDto> AddCat(CatDto catDto)
     {
         Logger.LogInformation($"Adding new cat: {catDto.Name}");
+
+        // Validate that the user (owner) is confirmed before allowing cat creation
+        var userRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catDto.OwnerRecordId);
+
+        if (!userRecord.Success || userRecord.Record == null)
+        {
+            throw new Exception($"User with ID {catDto.OwnerRecordId} not found.");
+        }
+
+        var userModel = userRecord.Record.Fields;
+
+        if (userModel.Status != UserStatuses.Active)
+        {
+            throw new Exception($"❗️ User {userModel.Name} must be confirmed by an admin before creating cats. Current status: {userModel.StatusValue}");
+        }
+
+        Logger.LogInformation($"User validation passed: {userModel.Name} is confirmed (Active)");
 
         var fields = new Fields();
         fields.AddField("Name", catDto.Name);
@@ -225,6 +245,19 @@ public class AdoptionBotCatService(
             Logger.LogError($"Error creating cat photo record: {updateResponse.AirtableApiError.ErrorMessage}");
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
+
+        // Get owner's language for localized message
+        var ownerRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catModel.OwnerRecordId!);
+        var ownerLanguage = Languages.ru; // Default fallback
+        
+        if (ownerRecord.Success && ownerRecord.Record != null)
+        {
+            ownerLanguage = ownerRecord.Record.Fields.Language;
+        }
+
+        // Send a localized Telegram message
+        var message = LocalizationService.GetCatPhotoAddedMessage(ownerLanguage, catModel.OwnerName!, catModel.Name);
+        await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
 
         return true;
     }
