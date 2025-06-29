@@ -23,7 +23,7 @@ public class AdoptionBotCatService(
         var fields = new Fields();
         fields.AddField("Name", catDto.Name);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
-        fields.AddField("Status", catDto.Status);
+        fields.AddField("Status", CatStatuses.SearchingForHome.ToString());
         fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
 
         // Add vaccination fields if provided
@@ -94,8 +94,18 @@ public class AdoptionBotCatService(
             return null;
         }
 
+        var paymentOptionType = response.Record.Fields.OwnerIsVolunteer
+            ? PaymentOptions.CatbookVolunteerPrice
+            : PaymentOptions.CatbookStandardPrice;
+        var paymentOptions = await AirtableRepository.ListRecords<AtPaymentOption>(PaymentOptionTableName, filterByFormula: $"{{Name}}='{paymentOptionType}'");
+
+        if (!paymentOptions.Success || paymentOptions.Records.Count() == 0)
+        {
+            throw new Exception($"❗️Payment type not found for the cat {response.Record.Fields.Name} and paymentOption ({paymentOptionType}) (owner: {response.Record.Fields.OwnerName}, atId {recordId}).");
+        }
+
         Logger.LogInformation($"Found cat: {response.Record.Fields.Name}");
-        return CatConverter.ToDto(response.Record.Fields);
+        return CatConverter.ToDto(response.Record.Fields, paymentOptions.Records.First().Fields.Price);
     }
 
     public async Task<CatDto> UpdateCat(CatDto catDto)
@@ -238,7 +248,7 @@ public class AdoptionBotCatService(
             throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {catRecordId}.");
         }
 
-        if (catModel.Status != CatStatuses.Available)
+        if (catModel.Status != CatStatuses.SearchingForHome)
         {
             throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}) is not in ✨Available status.");
         }

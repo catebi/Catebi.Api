@@ -2,7 +2,7 @@ namespace Catebi.Api.Domain.Features.AdoptionBot.Converters;
 
 public static class CatConverter
 {
-    public static CatDto ToDto(AtCat cat, string? recordId = null) => new()
+    public static CatDto ToDto(AtCat cat, int paidAccountPrice = 0, string? recordId = null) => new()
     {
         CatId = cat.CatId,
         RecordId = recordId ?? cat.RecordId,
@@ -16,6 +16,9 @@ public static class CatConverter
         IsVaccinatedComplex = cat.IsVaccinatedComplex,
         IsVaccinatedRabies = cat.IsVaccinatedRabies,
         OwnerNotes = cat.OwnerNotes,
+        OwnerIsVolunteer = cat.OwnerIsVolunteer,
+        PaidAccountPrice = paidAccountPrice,
+        ConfirmedPaymentAccount = cat.AccountPaymentStatus == Enums.CatPaymentStatuses.Confirmed,
         Created = cat.Created.ToString("yyyy-MM-dd HH:mm:ss")
     };
 }

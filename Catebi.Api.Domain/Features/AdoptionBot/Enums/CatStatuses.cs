@@ -2,9 +2,7 @@ namespace Catebi.Api.Domain.Features.AdoptionBot.Enums;
 
 public enum CatStatuses
 {
-    Available,
+    SearchingForHome,
     Adopted,
-    CheckStatus,
-    AdoptionProcessFree,
-    AdoptionProcessPaid
+    CheckStatus
 }

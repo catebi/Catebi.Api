@@ -20,26 +20,26 @@ public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService,
             var result = await AdminService.ConfirmUser(request.RecordId, request.IsVolunteer, request.Notes);
             if (result)
             {
-                return Ok(new ConfirmUserResponse 
-                { 
-                    Success = true, 
-                    Message = $"🎉 user {request.RecordId} confirmed and notified." 
+                return Ok(new ConfirmUserResponse
+                {
+                    Success = true,
+                    Message = $"🎉 user {request.RecordId} confirmed and notified."
                 });
             }
 
-            return Ok(new ConfirmUserResponse 
-            { 
-                Success = false, 
-                Message = $"Failed to confirm user {request.RecordId}." 
+            return Ok(new ConfirmUserResponse
+            {
+                Success = false,
+                Message = $"Failed to confirm user {request.RecordId}."
             });
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Error confirming user");
-            return Ok(new ConfirmUserResponse 
-            { 
-                Success = false, 
-                Message = ex.Message 
+            return Ok(new ConfirmUserResponse
+            {
+                Success = false,
+                Message = ex.Message
             });
         }
     }

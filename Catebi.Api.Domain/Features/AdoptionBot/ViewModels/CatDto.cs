@@ -14,5 +14,8 @@ public class CatDto
     public bool? IsVaccinatedComplex { get; set; }
     public bool? IsVaccinatedRabies { get; set; }
     public string? OwnerNotes { get; set; }
+    public bool OwnerIsVolunteer { get; set; }
+    public int PaidAccountPrice { get; set; }
+    public bool ConfirmedPaymentAccount { get; set; }
     public string Created { get; set; }
 }

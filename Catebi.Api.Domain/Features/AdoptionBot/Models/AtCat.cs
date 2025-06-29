@@ -21,6 +21,9 @@ public class AtCat
     [JsonPropertyName("OwnerName")]
     public string[] OwnerNameValue { get; set; } = [];
 
+    [JsonPropertyName("OwnerIsVolunteer")]
+    public bool?[] OwnerIsVolunteerValue { get; set; } = [];
+
     [JsonPropertyName("AccountPaymentRecordId")]
     public string[] AccountPaymentRecordIdValue { get; set; } = [];
 
@@ -38,9 +41,6 @@ public class AtCat
 
     [JsonPropertyName("OwnerRole")]
     public string[] OwnerRoleValue { get; set; } = [];
-
-    [JsonPropertyName("OwnerIsVolunteer")]
-    public bool?[] OwnerIsVolunteerValue { get; set; } = [];
 
     [JsonPropertyName("IsVaccinatedComplex")]
     public bool? IsVaccinatedComplex { get; set; }
@@ -80,7 +80,11 @@ public class AtCat
     public PaymentOptionTypes? AccountPaymentType => Enum.TryParse<PaymentOptionTypes>(AccountPaymentTypeValue.FirstOrDefault(), out var paymentType) ? paymentType : null;
 
     [JsonIgnore]
-    public CatPaymentStatuses? AccountPaymentStatus => Enum.TryParse<CatPaymentStatuses>(AccountPaymentStatusValue.FirstOrDefault(), out var paymentStatus) ? paymentStatus : null;
+    public CatPaymentStatuses? AccountPaymentStatus => Enum.TryParse<CatPaymentStatuses>(
+                                                                AccountPaymentStatusValue
+                                                                    .FirstOrDefault(x =>
+                                                                        !string.IsNullOrEmpty(x)
+                                                                        && x == CatPaymentStatuses.Confirmed.ToString()), out var paymentStatus) ? paymentStatus : null;
 
     [JsonIgnore]
     public bool OwnerIsVolunteer => OwnerIsVolunteerValue.FirstOrDefault() ?? false;

@@ -78,7 +78,7 @@ public class AdoptionBotAdminService(
             throw new Exception($"Owner Telegram chat ID missing for cat {catModel.Name} (owner: {catModel.OwnerName}) ID {atCatId}.");
         }
 
-        if (catModel.Status != CatStatuses.Available)
+        if (catModel.Status != CatStatuses.SearchingForHome)
         {
             throw new Exception($"❗️Cat {catModel.Name} (owner: {catModel.OwnerName}, atId {atCatId}) is not in ✨Available✨ status.");
         }
@@ -101,7 +101,7 @@ public class AdoptionBotAdminService(
 
         // update cat status
         updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, CatStatuses.AdoptionProcessPaid.ToString());
+        updatedFields.AddField(StatusColumnName, CatStatuses.SearchingForHome.ToString());
         updateResponse = await AirtableRepository.UpdateRecord(CatTableName, updatedFields, atCatId);
 
         if (!updateResponse.Success)
