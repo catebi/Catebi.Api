@@ -33,4 +33,14 @@ public interface IAdoptionBotAdminService
     /// Get all payments to confirm
     /// </summary>
     Task<IEnumerable<CatPaymentDto>> GetPaymentsToConfirm();
+
+    /// <summary>
+    /// Send notification to all admin users about new user registration
+    /// </summary>
+    Task<bool> NotifyAdminsAboutUserRegistration(string userName, string userTelegram, string userRecordId);
+
+    /// <summary>
+    /// Send notification to all admin users about new payment submission
+    /// </summary>
+    Task<bool> NotifyAdminsAboutPaymentSubmission(string catName, string ownerName, string catRecordId, string paymentRecordId);
 }

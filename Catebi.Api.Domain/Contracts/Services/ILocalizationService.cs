@@ -28,4 +28,14 @@ public interface ILocalizationService
     /// Get localized message for general broadcast (preserves original formatting)
     /// </summary>
     string GetBroadcastMessage(Languages language, string content);
+
+    /// <summary>
+    /// Get localized admin notification message for new user registration
+    /// </summary>
+    string GetAdminUserRegistrationNotification(Languages language, string userName, string userTelegram, string userRecordId);
+
+    /// <summary>
+    /// Get localized admin notification message for new payment submission
+    /// </summary>
+    string GetAdminPaymentSubmissionNotification(Languages language, string catName, string ownerName, string catRecordId, string paymentRecordId);
 } 

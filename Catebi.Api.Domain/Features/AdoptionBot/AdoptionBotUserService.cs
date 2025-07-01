@@ -6,6 +6,7 @@ namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotUserService(
     IAirtableRepository AirtableRepository,
+    IAdoptionBotAdminService AdminService,
     ILogger<AdoptionBotUserService> Logger) : IAdoptionBotUserService
 {
     private readonly string UserTableName = AirTables.User.ToString();
@@ -34,6 +35,21 @@ public class AdoptionBotUserService(
 
         var createdUser = await FindUserByTelegramId(userDto.TelegramChatId);
         Logger.LogInformation($"User registered successfully: {userDto.Name}");
+
+        // Notify admins about new user registration
+        try
+        {
+            await AdminService.NotifyAdminsAboutUserRegistration(
+                createdUser!.Name, 
+                createdUser.Telegram, 
+                createdUser.RecordId!);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to notify admins about user registration for {createdUser!.Name}");
+            // Don't throw here - user registration was successful, notification failure shouldn't fail the registration
+        }
+
         return createdUser!;
     }
 

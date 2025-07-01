@@ -96,6 +96,69 @@ You can now access to push your cat to the Catbook or to book event for them."
         return content;
     }
 
+    public string GetAdminUserRegistrationNotification(Languages language, string userName, string userTelegram, string userRecordId)
+    {
+        return language switch
+        {
+            Languages.ru => $@"🆕 <b>Новая регистрация пользователя</b>
+
+👤 <b>Имя:</b> {userName}
+📱 <b>Telegram:</b> {userTelegram}
+🆔 <b>Record ID:</b> {userRecordId}
+
+⏳ Требует подтверждения администратором",
+
+            Languages.en => $@"🆕 <b>New User Registration</b>
+
+👤 <b>Name:</b> {userName}
+📱 <b>Telegram:</b> {userTelegram}
+🆔 <b>Record ID:</b> {userRecordId}
+
+⏳ Requires admin confirmation",
+
+            _ => $@"🆕 <b>New User Registration</b>
+
+👤 <b>Name:</b> {userName}
+📱 <b>Telegram:</b> {userTelegram}
+🆔 <b>Record ID:</b> {userRecordId}
+
+⏳ Requires admin confirmation"
+        };
+    }
+
+    public string GetAdminPaymentSubmissionNotification(Languages language, string catName, string ownerName, string catRecordId, string paymentRecordId)
+    {
+        return language switch
+        {
+            Languages.ru => $@"💳 <b>Новая подача платежной информации</b>
+
+🐱 <b>Кот:</b> {catName}
+👤 <b>Владелец:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
+🆔 <b>Payment Record ID:</b> {paymentRecordId}
+
+⏳ Требует подтверждения администратором",
+
+            Languages.en => $@"💳 <b>New Payment Information Submitted</b>
+
+🐱 <b>Cat:</b> {catName}
+👤 <b>Owner:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
+🆔 <b>Payment Record ID:</b> {paymentRecordId}
+
+⏳ Requires admin confirmation",
+
+            _ => $@"💳 <b>New Payment Information Submitted</b>
+
+🐱 <b>Cat:</b> {catName}
+👤 <b>Owner:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
+🆔 <b>Payment Record ID:</b> {paymentRecordId}
+
+⏳ Requires admin confirmation"
+        };
+    }
+
     private string GetVolunteerStatusText(Languages language)
     {
         return language switch

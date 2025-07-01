@@ -10,6 +10,7 @@ public class AdoptionBotCatService(
     IAirtableRepository AirtableRepository,
     TelegramBotClient TelegramBotClient,
     ILocalizationService LocalizationService,
+    IAdoptionBotAdminService AdminService,
     ILogger<AdoptionBotCatService> Logger) : IAdoptionBotCatService
 {
     private readonly string UserTableName = AirTables.User.ToString();
@@ -335,6 +336,22 @@ public class AdoptionBotCatService(
         }
 
         var paymentDto = CatPaymentConverter.ToDto(paymentRecord.Record.Fields);
+
+        // Notify admins about new payment submission
+        try
+        {
+            await AdminService.NotifyAdminsAboutPaymentSubmission(
+                catModel.Name, 
+                catModel.OwnerName!, 
+                catRecordId, 
+                updateResponse.Record.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to notify admins about payment submission for cat {catModel.Name}");
+            // Don't throw here - payment submission was successful, notification failure shouldn't fail the submission
+        }
+
         return paymentDto;
     }
 
