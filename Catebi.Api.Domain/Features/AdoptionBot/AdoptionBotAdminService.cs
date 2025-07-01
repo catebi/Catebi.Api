@@ -399,7 +399,7 @@ public class AdoptionBotAdminService(
                     {
                         new[]
                         {
-                            InlineKeyboardButton.WithUrl("👥 Open Admin Users", "https://catebi-adoption-miniapp.catebi.ge/admin/users")
+                            InlineKeyboardButton.WithWebApp("👥 Open Admin Users", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/users" })
                         }
                     });
                     
@@ -455,7 +455,7 @@ public class AdoptionBotAdminService(
                     {
                         new[]
                         {
-                            InlineKeyboardButton.WithUrl("💳 Open Admin Payments", "https://catebi-adoption-miniapp.catebi.ge/admin/payments")
+                            InlineKeyboardButton.WithWebApp("💳 Open Admin Payments", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/payments" })
                         }
                     });
                     
