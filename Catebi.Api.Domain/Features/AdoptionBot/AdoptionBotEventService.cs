@@ -182,34 +182,6 @@ public class AdoptionBotEventService(
             throw new Exception($"Error updating status for event {eventModel.Name}: {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        return true;
-    }
-
-    public async Task<bool> OpenEventRegistrationWithNotification(string atEventId)
-    {
-        var event_ = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, atEventId);
-
-        if (!event_.Success || event_.Record == null)
-        {
-            throw new Exception($"Event with ID {atEventId} not found.");
-        }
-
-        var eventModel = event_.Record.Fields;
-
-        if (eventModel.Status != EventStatuses.Closed)
-        {
-            throw new Exception($"Event {eventModel.Name} must be in Closed status.");
-        }
-
-        var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, EventStatuses.BookingOpen.ToString());
-        var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
-
-        if (!updateResponse.Success)
-        {
-            throw new Exception($"Error updating status for event {eventModel.Name}: {updateResponse.AirtableApiError.ErrorMessage}");
-        }
-
         // Get all confirmed users and notify them
         var usersResponse = await AirtableRepository.ListRecords<AtUser>(
             UserTableName,

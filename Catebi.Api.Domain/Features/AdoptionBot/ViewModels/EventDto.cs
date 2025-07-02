@@ -6,7 +6,7 @@ public class EventDto
     public int? EventId { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public int CatSlotCount { get; set; }
+    public int RegisteredCatCount { get; set; }
     public int CatCount { get; set; }
     public string When { get; set; }
     public string Where { get; set; }
@@ -16,4 +16,4 @@ public class EventDto
     public int FreeSlotCount { get; set; }
     public List<AttachmentDto>? Poster { get; set; }
     public string Status { get; set; }
-} 
+}

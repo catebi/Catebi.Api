@@ -51,6 +51,9 @@ public class AtCat
     [JsonPropertyName("OwnerNotes")]
     public string? OwnerNotes { get; set; }
 
+    [JsonPropertyName("Sex")]
+    public string SexValue { get; set; } = string.Empty;
+
     public DateTime Created { get; set; }
 
     [JsonIgnore]
@@ -88,4 +91,7 @@ public class AtCat
 
     [JsonIgnore]
     public bool OwnerIsVolunteer => OwnerIsVolunteerValue.FirstOrDefault() ?? false;
+
+    [JsonIgnore]
+    public Enums.CatSex? Sex => Enum.TryParse<Enums.CatSex>(SexValue, out var sex) ? sex : null;
 }

@@ -15,6 +15,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
     {
         public string OwnerRecordId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string Sex { get; set; } = string.Empty;
         public string DateOfBirth { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public bool? IsVaccinatedComplex { get; set; }
@@ -26,6 +27,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         public string? RecordId { get; set; }
         public string OwnerRecordId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string Sex { get; set; } = string.Empty;
         public string DateOfBirth { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public bool? IsVaccinatedComplex { get; set; }
@@ -76,6 +78,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             {
                 OwnerRecordId = request.OwnerRecordId,
                 Name = request.Name,
+                Sex = request.Sex,
                 DateOfBirth = request.DateOfBirth,
                 Status = request.Status,
                 IsVaccinatedComplex = request.IsVaccinatedComplex,
@@ -98,10 +101,10 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (Exception ex) when (ex.Message.Contains("must be confirmed by an admin"))
         {
             Logger.LogWarning(ex, "⚠️ User not confirmed - cat creation blocked");
-            return BadRequest(new { 
-                Error = "UserNotConfirmed", 
+            return BadRequest(new {
+                Error = "UserNotConfirmed",
                 Message = ex.Message,
-                Success = false 
+                Success = false
             });
         }
         catch (Exception ex)
@@ -177,6 +180,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                 RecordId = request.RecordId,
                 OwnerRecordId = request.OwnerRecordId,
                 Name = request.Name,
+                Sex = request.Sex,
                 DateOfBirth = request.DateOfBirth,
                 Status = request.Status,
                 IsVaccinatedComplex = request.IsVaccinatedComplex,

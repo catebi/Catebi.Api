@@ -43,6 +43,7 @@ public class AdoptionBotCatService(
 
         var fields = new Fields();
         fields.AddField("Name", catDto.Name);
+        fields.AddField("Sex", catDto.Sex);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", CatStatuses.SearchingForHome.ToString());
         fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
@@ -140,6 +141,7 @@ public class AdoptionBotCatService(
 
         var fields = new Fields();
         fields.AddField("Name", catDto.Name);
+        fields.AddField("Sex", catDto.Sex);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", catDto.Status);
 

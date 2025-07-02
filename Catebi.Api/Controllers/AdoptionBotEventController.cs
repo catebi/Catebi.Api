@@ -129,26 +129,6 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     }
 
     [HttpGet]
-    public async Task<IActionResult> OpenEventRegistrationWithNotification([FromQuery] string id)
-    {
-        try
-        {
-            var result = await EventService.OpenEventRegistrationWithNotification(id);
-            if (result)
-            {
-                return Ok(new { Message = $"🎉 event registration ({id}) opened and all confirmed users notified." });
-            }
-
-            return StatusCode(500, new { Message = $"Failed to open event registration {id}." });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error opening event registration with notification");
-            return StatusCode(500, new { ex.Message });
-        }
-    }
-
-    [HttpGet]
     public async Task<IActionResult> CloseEventRegistration([FromQuery] string id)
     {
         try

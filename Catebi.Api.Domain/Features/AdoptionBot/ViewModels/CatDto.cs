@@ -7,6 +7,7 @@ public class CatDto
     public string OwnerRecordId { get; set; }
     public string OwnerTelegram { get; set; }
     public string Name { get; set; }
+    public string Sex { get; set; } = string.Empty;
     public string DateOfBirth { get; set; }
     public List<AttachmentDto>? Photos { get; set; }
     public AttachmentDto? MainPhoto { get; set; }

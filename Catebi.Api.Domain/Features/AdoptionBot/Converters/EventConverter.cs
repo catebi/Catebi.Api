@@ -14,6 +14,7 @@ public static class EventConverter
         Cats = ev.Cats?.ToList(),
         PaidSlotCount = ev.PaidSlotCount,
         FreeSlotCount = ev.FreeSlotCount,
+        RegisteredCatCount = ev.RegisteredCatCount,
         Poster = ev.Poster?.Select(p => new AttachmentDto { Id = p.Id, Url = p.Url, Filename = p.FileName }).ToList(),
         Status = ev.StatusValue
     };
@@ -30,6 +31,7 @@ public static class EventConverter
         Cats = dto.Cats?.ToArray() ?? [],
         PaidSlotCount = dto.PaidSlotCount,
         FreeSlotCount = dto.FreeSlotCount,
+        RegisteredCatCount = dto.RegisteredCatCount,
         Poster = dto.Poster?.Select(p => new AtAttachment { Id = p.Id ?? string.Empty, Url = p.Url ?? string.Empty, FileName = p.Filename ?? string.Empty }).ToArray() ?? [],
         StatusValue = dto.Status
     };

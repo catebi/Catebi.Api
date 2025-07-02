@@ -40,8 +40,8 @@ public class AdoptionBotUserService(
         try
         {
             await AdminService.NotifyAdminsAboutUserRegistration(
-                createdUser!.Name, 
-                createdUser.Telegram, 
+                createdUser!.Name,
+                createdUser.Telegram,
                 createdUser.RecordId!);
         }
         catch (Exception ex)
@@ -147,7 +147,10 @@ public class AdoptionBotUserService(
             throw new Exception($"Error getting user's cats: {response.AirtableApiError.ErrorMessage}");
         }
 
-        var cats = response.Records.Select(r => CatConverter.ToDto(r.Fields, recordId: r.Id)).ToList();
+        var cats = response.Records.Select(r => CatConverter.ToDto(r.Fields, recordId: r.Id))
+                                   .OrderByDescending(c => c.CatId)
+                                   .ToList();
+
         Logger.LogInformation($"Found {cats.Count} cats for user {userRecordId}");
         return cats;
     }

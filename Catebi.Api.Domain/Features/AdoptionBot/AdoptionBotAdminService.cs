@@ -393,16 +393,15 @@ public class AdoptionBotAdminService(
                 {
                     var message = LocalizationService.GetAdminUserRegistrationNotification(
                         admin.Language, userName, userTelegram, userRecordId);
-                    
+
                     // Create inline keyboard with button to open admin users page
-                    var keyboard = new InlineKeyboardMarkup(new[]
-                    {
-                        new[]
-                        {
+                    var keyboard = new InlineKeyboardMarkup(
+                    [
+                        [
                             InlineKeyboardButton.WithWebApp("👥 Open Admin Users", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/users" })
-                        }
-                    });
-                    
+                        ]
+                    ]);
+
                     await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
                     successCount++;
                 }
@@ -449,16 +448,15 @@ public class AdoptionBotAdminService(
                 {
                     var message = LocalizationService.GetAdminPaymentSubmissionNotification(
                         admin.Language, catName, ownerName, catRecordId, paymentRecordId);
-                    
+
                     // Create inline keyboard with button to open admin payments page
-                    var keyboard = new InlineKeyboardMarkup(new[]
-                    {
-                        new[]
-                        {
+                    var keyboard = new InlineKeyboardMarkup(
+                    [
+                        [
                             InlineKeyboardButton.WithWebApp("💳 Open Admin Payments", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/payments" })
-                        }
-                    });
-                    
+                        ]
+                    ]);
+
                     await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
                     successCount++;
                 }

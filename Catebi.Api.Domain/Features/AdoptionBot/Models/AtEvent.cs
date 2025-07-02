@@ -17,6 +17,7 @@ public class AtEvent
     public string[] Cats { get; set; } = [];
     public int PaidSlotCount { get; set; }
     public int FreeSlotCount { get; set; }
+    public int RegisteredCatCount { get; set; }
     public AtAttachment[] Poster { get; set; } = [];
 
     [JsonPropertyName("Status")]
