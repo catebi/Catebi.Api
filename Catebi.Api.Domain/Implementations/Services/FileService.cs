@@ -9,7 +9,7 @@ public class FileService( CatebiContext        Context,
                           IHttpContextAccessor HttpContextAccessor) : IFileService
 {
     private const int MaxFileSize = 10 * 1024 * 1024;
-    private static readonly string[] AllowedMimeTypes = [ "image/jpeg", "image/png", "image/gif" ];
+    private static readonly string[] AllowedMimeTypes = [ "image/jpeg", "image/png", "image/gif", "image/heic", "image/heif" ];
 
     public async Task<FileStorage> SaveFileAsync(FileStorageDto file)
     {
@@ -20,7 +20,7 @@ public class FileService( CatebiContext        Context,
 
         if (!AllowedMimeTypes.Contains(file.ContentType))
         {
-            throw new ArgumentException("Only image files (JPEG, PNG, GIF) are allowed.");
+            throw new ArgumentException("Only image files (JPEG, PNG, GIF, HEIC) are allowed.");
         }
 
         var fileStorage = new FileStorage
