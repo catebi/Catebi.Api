@@ -138,16 +138,31 @@ public class Startup(IConfiguration configuration)
         });
         services.AddMemoryCache();
 
-        services.AddLogging((loggingBuilder) => loggingBuilder
-        .SetMinimumLevel(LogLevel.Debug)
-        .AddOpenTelemetry(options =>
-            options
-                .AddConsoleExporter()
-                .SetResourceBuilder(
-                    ResourceBuilder.CreateDefault()
-                        .AddService("Catebi.Api"))
-            )
+        services.AddLogging(loggingBuilder => loggingBuilder
+            .SetMinimumLevel(LogLevel.Debug)
+            .AddConsole(options =>
+            {
+                options.FormatterName = "simple";
+            })
+            .AddSimpleConsole(options =>
+            {
+                options.IncludeScopes = false;
+                options.SingleLine = true;
+                options.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+                options.UseUtcTimestamp = false;
+            })
         );
+
+        // services.AddLogging((loggingBuilder) => loggingBuilder
+        // .SetMinimumLevel(LogLevel.Debug)
+        // .AddOpenTelemetry(options =>
+        //     options
+        //         .AddConsoleExporter()
+        //         .SetResourceBuilder(
+        //             ResourceBuilder.CreateDefault()
+        //                 .AddService("Catebi.Api"))
+        //     )
+        // );        
 
         // Register localization service
         services.AddScoped<ILocalizationService, LocalizationService>();

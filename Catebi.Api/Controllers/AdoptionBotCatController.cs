@@ -48,7 +48,9 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             // Handle main photo upload if provided
             if (mainPhoto != null)
             {
-                Logger.LogInformation($"Received main photo for new cat: {mainPhoto.FileName}");
+                Logger.LogInformation($"📄 Received main photo for new cat: {mainPhoto.FileName}");
+                Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
+                
                 using var memoryStream = new MemoryStream();
                 await mainPhoto.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
@@ -56,6 +58,8 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                 var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
                 var fileSize = mainPhoto.Length;
                 var fileType = mainPhoto.ContentType;
+
+                Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
 
                 var fileRequest = new FileStorageDto
                 {
@@ -65,12 +69,13 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                     Data = memoryStream.ToArray()
                 };
 
+                Logger.LogInformation($"💾 About to save file to storage...");
                 var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-                Logger.LogInformation($"Main photo uploaded successfully: {uploadedFile.FileStorageId}");
+                Logger.LogInformation($"✅ Main photo uploaded successfully: {uploadedFile.FileStorageId}");
 
                 fileRequest.FileStorageId = uploadedFile.FileStorageId;
                 mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
-                Logger.LogInformation($"Generated main photo URL: {mainPhotoUrl}");
+                Logger.LogInformation($"🔗 Generated main photo URL: {mainPhotoUrl}");
             }
 
             // Create CatDto from request
@@ -107,10 +112,23 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                 Success = false
             });
         }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "❌ File validation error while adding cat");
+            return BadRequest(new { 
+                Error = "FileValidationError",
+                Message = ex.Message,
+                Details = "This is likely a file format or size issue. Check the file type and size."
+            });
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "⚠️ Error adding cat");
-            return StatusCode(500, new { ex.Message });
+            Logger.LogError(ex, "⚠️ Unexpected error adding cat");
+            return StatusCode(500, new { 
+                Error = "UnexpectedError",
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
         }
     }
 
@@ -149,7 +167,9 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             // Handle main photo upload if provided
             if (mainPhoto != null)
             {
-                Logger.LogInformation($"Received main photo for cat update: {mainPhoto.FileName}");
+                Logger.LogInformation($"📄 Received main photo for cat update: {mainPhoto.FileName}");
+                Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
+                
                 using var memoryStream = new MemoryStream();
                 await mainPhoto.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
@@ -157,6 +177,8 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                 var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
                 var fileSize = mainPhoto.Length;
                 var fileType = mainPhoto.ContentType;
+
+                Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
 
                 var fileRequest = new FileStorageDto
                 {
@@ -166,12 +188,13 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                     Data = memoryStream.ToArray()
                 };
 
+                Logger.LogInformation($"💾 About to save file to storage...");
                 var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-                Logger.LogInformation($"Main photo uploaded successfully: {uploadedFile.FileStorageId}");
+                Logger.LogInformation($"✅ Main photo uploaded successfully: {uploadedFile.FileStorageId}");
 
                 fileRequest.FileStorageId = uploadedFile.FileStorageId;
                 mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
-                Logger.LogInformation($"Generated main photo URL: {mainPhotoUrl}");
+                Logger.LogInformation($"🔗 Generated main photo URL: {mainPhotoUrl}");
             }
 
             // Create CatDto from request
@@ -201,10 +224,23 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             var result = await CatService.UpdateCat(cat);
             return Ok(result);
         }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "❌ File validation error while updating cat");
+            return BadRequest(new { 
+                Error = "FileValidationError",
+                Message = ex.Message,
+                Details = "This is likely a file format or size issue. Check the file type and size."
+            });
+        }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "⚠️ Error updating cat");
-            return StatusCode(500, new { ex.Message });
+            Logger.LogError(ex, "⚠️ Unexpected error updating cat");
+            return StatusCode(500, new { 
+                Error = "UnexpectedError",
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
         }
     }
 
@@ -213,7 +249,9 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
     {
         try
         {
-            Logger.LogInformation($"Received file for cat record: {file.FileName}");
+            Logger.LogInformation($"📄 Received file for cat record: {file.FileName}");
+            Logger.LogInformation($"📊 File details - Size: {file.Length} bytes, ContentType: '{file.ContentType}'");
+            
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
@@ -221,6 +259,8 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             var fileName = Path.GetFileName(file.FileName) ?? $"cat_{catRecordId}.{extension}";
             var fileSize = file.Length;
             var fileType = file.ContentType;
+
+            Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
 
             var fileRequest = new FileStorageDto
             {
@@ -230,14 +270,15 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
                 Data = memoryStream.ToArray()
             };
 
+            Logger.LogInformation($"💾 About to save file to storage...");
             var uploadedFile = await FileService.SaveFileAsync(fileRequest);
 
-            Logger.LogInformation($"File uploaded successfully: {uploadedFile.FileStorageId}");
+            Logger.LogInformation($"✅ File uploaded successfully: {uploadedFile.FileStorageId}");
 
             fileRequest.FileStorageId = uploadedFile.FileStorageId;
             var fileUrl = FileService.GenerateFileUrl(fileRequest);
 
-            Logger.LogInformation($"Generated file URL: {fileUrl}");
+            Logger.LogInformation($"🔗 Generated file URL: {fileUrl}");
 
             var result = await CatService.AddCatPhoto(catRecordId, fileUrl);
             if (result)
@@ -251,13 +292,21 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         }
         catch (ArgumentException ex)
         {
-            Logger.LogError(ex, "⚠️ Error in AddCatPhoto");
-            return BadRequest(ex.Message);
+            Logger.LogError(ex, "❌ File validation error in AddCatPhoto");
+            return BadRequest(new { 
+                Error = "FileValidationError",
+                Message = ex.Message,
+                Details = "This is likely a file format or size issue. Check the file type and size."
+            });
         }
         catch(Exception ex)
         {
-            Logger.LogError(ex, "⚠️ Error in AddCatPhoto");
-            return StatusCode(500, $"An error occurred while processing your request., exception: {ex.Message}");
+            Logger.LogError(ex, "⚠️ Unexpected error in AddCatPhoto");
+            return StatusCode(500, new { 
+                Error = "UnexpectedError",
+                Message = ex.Message,
+                StackTrace = ex.StackTrace
+            });
         }
     }
 

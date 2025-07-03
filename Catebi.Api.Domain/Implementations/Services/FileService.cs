@@ -13,15 +13,30 @@ public class FileService( CatebiContext        Context,
 
     public async Task<FileStorage> SaveFileAsync(FileStorageDto file)
     {
+        Console.WriteLine($"🔍 FileService: Starting file validation for '{file.FileName}'");
+        Console.WriteLine($"📋 FileService: File size: {file.Size} bytes, ContentType: '{file.ContentType}'");
+        Console.WriteLine($"📝 FileService: Allowed MIME types: [{string.Join(", ", AllowedMimeTypes)}]");
+
         if (file.Size > MaxFileSize)
         {
+            Console.WriteLine($"❌ FileService: File size {file.Size} exceeds maximum {MaxFileSize} bytes");
             throw new ArgumentException($"File size exceeds the maximum limit of {MaxFileSize} bytes.");
         }
 
+        Console.WriteLine($"✅ FileService: File size validation passed");
+
         if (!AllowedMimeTypes.Contains(file.ContentType))
         {
+            Console.WriteLine($"❌ FileService: ContentType '{file.ContentType}' not in allowed types");
+            Console.WriteLine($"🔍 FileService: Exact comparison results:");
+            foreach (var allowedType in AllowedMimeTypes)
+            {
+                Console.WriteLine($"   - '{allowedType}' == '{file.ContentType}': {allowedType == file.ContentType}");
+            }
             throw new ArgumentException("Only image files (JPEG, PNG, GIF, HEIC) are allowed.");
         }
+
+        Console.WriteLine($"✅ FileService: MIME type validation passed");
 
         var fileStorage = new FileStorage
         {
@@ -31,9 +46,11 @@ public class FileService( CatebiContext        Context,
             Content = file.Data,
         };
 
+        Console.WriteLine($"💾 FileService: About to save to database...");
         Context.FileStorage.Add(fileStorage);
         await Context.SaveChangesAsync();
 
+        Console.WriteLine($"✅ FileService: File saved successfully with ID: {fileStorage.FileStorageId}");
         return fileStorage;
     }
 
