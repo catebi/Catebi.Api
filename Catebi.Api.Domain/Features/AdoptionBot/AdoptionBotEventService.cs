@@ -1,10 +1,10 @@
 using AirtableApiClient;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using Catebi.Api.Domain.Features.AdoptionBot.Enums;
-using Catebi.Api.Domain.Features.AdoptionBot.Models;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
-using Catebi.Api.Domain.Contracts.Services;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
@@ -168,9 +168,9 @@ public class AdoptionBotEventService(
 
         var eventModel = event_.Record.Fields;
 
-        if (eventModel.Status != EventStatuses.Closed)
+        if (eventModel.Status != EventStatuses.Preparation)
         {
-            throw new Exception($"Event {eventModel.Name} must be in Closed status.");
+            throw new Exception($"Event {eventModel.Name} must be in Preparation status.");
         }
 
         var updatedFields = new Fields();
@@ -197,7 +197,6 @@ public class AdoptionBotEventService(
         var confirmedUsers = usersResponse.Records.Select(r => r.Fields).ToList();
         Logger.LogInformation($"Notifying {confirmedUsers.Count} confirmed users about event opening");
 
-        // Send notification to all confirmed users with localized messages
         var successCount = 0;
         var failCount = 0;
 
@@ -209,14 +208,22 @@ public class AdoptionBotEventService(
                 {
                     // Get localized event notification message
                     var message = LocalizationService.GetEventOpenNotificationMessage(
-                        user.Language, 
-                        eventModel.Name, 
-                        eventModel.When, 
-                        eventModel.Where, 
+                        user.Language,
+                        eventModel.Name,
+                        eventModel.When,
+                        eventModel.Where,
                         eventModel.Description
                     );
-                    
-                    await TelegramBotClient.SendMessage(user.TelegramChatId, message, parseMode: ParseMode.Html);
+
+                    // Create inline keyboard with button to open event page
+                    var keyboard = new InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton.WithWebApp("🎪 Open Event Page", new WebAppInfo { Url = $"https://catebi-adoption-miniapp.catebi.ge/event/{atEventId}" })
+                        ]
+                    ]);
+
+                    await TelegramBotClient.SendMessage(user.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
                     successCount++;
                 }
             }
@@ -248,7 +255,7 @@ public class AdoptionBotEventService(
         }
 
         var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, EventStatuses.Closed.ToString());
+        updatedFields.AddField(StatusColumnName, EventStatuses.Finished.ToString());
         var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
 
         if (!updateResponse.Success)
@@ -265,7 +272,7 @@ public class AdoptionBotEventService(
 
         // First, get the event to validate it exists and get the cat IDs
         var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, eventRecordId);
-        
+
         if (!eventResponse.Success || eventResponse.Record == null)
         {
             throw new Exception($"Event with ID {eventRecordId} not found.");

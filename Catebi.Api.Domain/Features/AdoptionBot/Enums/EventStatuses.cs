@@ -6,6 +6,5 @@ public enum EventStatuses
     BookingOpen,
     BookingClosed,
     Finished,
-    Cancelled,
-    Closed
+    Cancelled
 }
