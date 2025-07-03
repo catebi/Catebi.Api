@@ -8,7 +8,7 @@ namespace Catebi.Api.Domain.Implementations.Services;
 public class FileService( CatebiContext        Context,
                           IHttpContextAccessor HttpContextAccessor) : IFileService
 {
-    private const int MaxFileSize = 2 * 1024 * 1024; // 2 MB
+    private const int MaxFileSize = 10 * 1024 * 1024;
     private static readonly string[] AllowedMimeTypes = [ "image/jpeg", "image/png", "image/gif" ];
 
     public async Task<FileStorage> SaveFileAsync(FileStorageDto file)
