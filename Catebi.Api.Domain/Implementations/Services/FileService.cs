@@ -109,7 +109,6 @@ public class FileService( CatebiContext        Context,
         ArgumentException.ThrowIfNullOrEmpty(fileName);
 
         // split off extension
-        var extension    = Path.GetExtension(fileName);
         var tokenEncoded = Path.GetFileNameWithoutExtension(fileName);
         var token        = Uri.UnescapeDataString(tokenEncoded);
 
@@ -134,8 +133,5 @@ public class FileService( CatebiContext        Context,
         return (fileId, ticks);
     }
 
-    private async Task<FileStorage?> GetFileAsync(Guid id)
-    {
-        return await Context.FileStorage.FindAsync(id);
-    }
+    private async Task<FileStorage?> GetFileAsync(Guid id) => await Context.FileStorage.FindAsync(id);
 }
