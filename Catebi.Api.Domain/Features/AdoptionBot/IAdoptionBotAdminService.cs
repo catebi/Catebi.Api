@@ -1,4 +1,5 @@
 using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
+using Catebi.Api.Domain.Features.AdoptionBot.Models;
 
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
@@ -43,4 +44,14 @@ public interface IAdoptionBotAdminService
     /// Send notification to all admin users about new payment submission
     /// </summary>
     Task<bool> NotifyAdminsAboutPaymentSubmission(string catName, string ownerName, string catRecordId, string paymentRecordId);
+
+    /// <summary>
+    /// Send notification to all admin users about cat adoption
+    /// </summary>
+    Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null);
+
+    /// <summary>
+    /// Get all admin users from the system
+    /// </summary>
+    Task<IEnumerable<AtUser>> GetAdminUsers();
 }

@@ -159,6 +159,49 @@ You can now access to push your cat to the Catbook or to book event for them."
         };
     }
 
+    public string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null)
+    {
+        var baseMessage = language switch
+        {
+            Languages.ru => $@"🎉 <b>Случилось укотовление!</b>
+
+🐱 <b>Кот:</b> {catName}
+👤 <b>Владелец:</b> {ownerName}
+
+✅ Статус изменен на 'Укотовление'",
+
+            Languages.en => $@"🎉 <b>Cat Found a New Home!</b>
+
+🐱 <b>Cat:</b> {catName}
+👤 <b>Owner:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
+
+✅ Status changed to 'Adopted'",
+
+            _ => $@"🎉 <b>Cat Found a New Home!</b>
+
+🐱 <b>Cat:</b> {catName}
+👤 <b>Owner:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
+
+✅ Status changed to 'Adopted'"
+        };
+
+        // Add adoption comment if provided
+        if (!string.IsNullOrWhiteSpace(adoptionComment))
+        {
+            var commentSection = language switch
+            {
+                Languages.ru => $"\n\n💬 <b>Комментарий:</b> {adoptionComment}",
+                Languages.en => $"\n\n💬 <b>Comment:</b> {adoptionComment}",
+                _ => $"\n\n💬 <b>Comment:</b> {adoptionComment}"
+            };
+            baseMessage += commentSection;
+        }
+
+        return baseMessage;
+    }
+
     private string GetVolunteerStatusText(Languages language)
     {
         return language switch

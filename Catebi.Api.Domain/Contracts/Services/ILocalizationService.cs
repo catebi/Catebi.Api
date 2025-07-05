@@ -38,4 +38,9 @@ public interface ILocalizationService
     /// Get localized admin notification message for new payment submission
     /// </summary>
     string GetAdminPaymentSubmissionNotification(Languages language, string catName, string ownerName, string catRecordId, string paymentRecordId);
+
+    /// <summary>
+    /// Get admin notification message for cat adoption
+    /// </summary>
+    string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null);
 } 

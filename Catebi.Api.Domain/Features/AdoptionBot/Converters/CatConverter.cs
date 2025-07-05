@@ -17,6 +17,7 @@ public static class CatConverter
         IsVaccinatedComplex = cat.IsVaccinatedComplex,
         IsVaccinatedRabies = cat.IsVaccinatedRabies,
         OwnerNotes = cat.OwnerNotes,
+        AdoptionComment = cat.AdoptionComment,
         OwnerIsVolunteer = cat.OwnerIsVolunteer,
         PaidAccountPrice = paidAccountPrice,
         ConfirmedPaymentAccount = cat.AccountPaymentStatus == Enums.CatPaymentStatuses.Confirmed,

@@ -41,4 +41,9 @@ public interface IAdoptionBotCatService
     /// Register a cat to an event.
     /// </summary>
     Task<bool> RegisterCatToEvent(string catRecordId, string eventRecordId);
+
+    /// <summary>
+    /// Mark a cat as adopted and notify admins.
+    /// </summary>
+    Task<bool> MarkCatAsAdopted(string catRecordId, string? adoptionComment = null);
 }

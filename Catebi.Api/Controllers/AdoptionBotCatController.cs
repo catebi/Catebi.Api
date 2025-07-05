@@ -50,7 +50,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             {
                 Logger.LogInformation($"📄 Received main photo for new cat: {mainPhoto.FileName}");
                 Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
-                
+
                 using var memoryStream = new MemoryStream();
                 await mainPhoto.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
@@ -115,7 +115,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (ArgumentException ex)
         {
             Logger.LogError(ex, "❌ File validation error while adding cat");
-            return BadRequest(new { 
+            return BadRequest(new {
                 Error = "FileValidationError",
                 Message = ex.Message,
                 Details = "This is likely a file format or size issue. Check the file type and size."
@@ -124,7 +124,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Unexpected error adding cat");
-            return StatusCode(500, new { 
+            return StatusCode(500, new {
                 Error = "UnexpectedError",
                 Message = ex.Message,
                 StackTrace = ex.StackTrace
@@ -169,7 +169,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             {
                 Logger.LogInformation($"📄 Received main photo for cat update: {mainPhoto.FileName}");
                 Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
-                
+
                 using var memoryStream = new MemoryStream();
                 await mainPhoto.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
@@ -227,7 +227,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (ArgumentException ex)
         {
             Logger.LogError(ex, "❌ File validation error while updating cat");
-            return BadRequest(new { 
+            return BadRequest(new {
                 Error = "FileValidationError",
                 Message = ex.Message,
                 Details = "This is likely a file format or size issue. Check the file type and size."
@@ -236,7 +236,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (Exception ex)
         {
             Logger.LogError(ex, "⚠️ Unexpected error updating cat");
-            return StatusCode(500, new { 
+            return StatusCode(500, new {
                 Error = "UnexpectedError",
                 Message = ex.Message,
                 StackTrace = ex.StackTrace
@@ -251,7 +251,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         {
             Logger.LogInformation($"📄 Received file for cat record: {file.FileName}");
             Logger.LogInformation($"📊 File details - Size: {file.Length} bytes, ContentType: '{file.ContentType}'");
-            
+
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
@@ -293,7 +293,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch (ArgumentException ex)
         {
             Logger.LogError(ex, "❌ File validation error in AddCatPhoto");
-            return BadRequest(new { 
+            return BadRequest(new {
                 Error = "FileValidationError",
                 Message = ex.Message,
                 Details = "This is likely a file format or size issue. Check the file type and size."
@@ -302,7 +302,7 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
         catch(Exception ex)
         {
             Logger.LogError(ex, "⚠️ Unexpected error in AddCatPhoto");
-            return StatusCode(500, new { 
+            return StatusCode(500, new {
                 Error = "UnexpectedError",
                 Message = ex.Message,
                 StackTrace = ex.StackTrace
@@ -338,5 +338,49 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
             Logger.LogError(ex, "⚠️ Error in RegisterCatToEvent");
             return StatusCode(500, new { Message = $"An error occurred while registering cat to event: {ex.Message}" });
         }
+    }
+
+    /// <summary>
+    /// Mark a cat as adopted
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> MarkCatAsAdopted([FromBody] MarkCatAsAdoptedRequest request)
+    {
+        try
+        {
+            var result = await CatService.MarkCatAsAdopted(request.CatRecordId, request.AdoptionComment);
+            return Ok(new ApiResponse
+            {
+                Success = result,
+                Message = result
+                    ? $"🎉 Cat successfully marked as adopted. Cat ID: {request.CatRecordId}"
+                    : $"Failed to mark cat as adopted. Cat ID: {request.CatRecordId}"
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in MarkCatAsAdopted - Validation error");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in MarkCatAsAdopted");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+    }
+
+
+    public class MarkCatAsAdoptedRequest
+    {
+        public string CatRecordId { get; set; } = string.Empty;
+        public string? AdoptionComment { get; set; }
     }
 }

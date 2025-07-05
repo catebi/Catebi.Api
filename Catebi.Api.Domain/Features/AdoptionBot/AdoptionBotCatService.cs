@@ -436,4 +436,58 @@ public class AdoptionBotCatService(
 
         return true;
     }
+
+    public async Task<bool> MarkCatAsAdopted(string catRecordId, string? adoptionComment = null)
+    {
+        Logger.LogInformation($"Marking cat as adopted: {catRecordId}");
+
+        // Validate cat exists
+        var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catRecordId);
+        if (!catResponse.Success || catResponse.Record == null)
+        {
+            throw new Exception($"Cat with ID {catRecordId} not found.");
+        }
+
+        var catModel = catResponse.Record.Fields;
+        Logger.LogInformation($"Cat found: {catModel.Name} (Owner: {catModel.OwnerName})");
+
+        // Check if cat is already adopted
+        if (catModel.Status == CatStatuses.Adopted)
+        {
+            throw new Exception($"Cat '{catModel.Name}' is already marked as adopted.");
+        }
+
+        // Update cat status to Adopted and add adoption comment if provided
+        var updatedFields = new Fields();
+        updatedFields.AddField("Status", CatStatuses.Adopted.ToString());
+        
+        if (!string.IsNullOrWhiteSpace(adoptionComment))
+        {
+            updatedFields.AddField("AdoptionComment", adoptionComment);
+            Logger.LogInformation($"Adding adoption comment for cat '{catModel.Name}': {adoptionComment}");
+        }
+
+        var updateResponse = await AirtableRepository.UpdateRecord(CatTableName, updatedFields, catRecordId);
+
+        if (!updateResponse.Success)
+        {
+            Logger.LogError($"Error marking cat as adopted: {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error marking cat '{catModel.Name}' as adopted: {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        Logger.LogInformation($"Successfully marked cat '{catModel.Name}' as adopted");
+
+        // Notify admins about the adoption
+        try
+        {
+            await AdminService.NotifyAdminsAboutCatAdoption(catModel.Name, catModel.OwnerName!, catRecordId, adoptionComment);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to notify admins about cat adoption for {catModel.Name}");
+            // Don't throw here - status change was successful, notification failure shouldn't fail the operation
+        }
+
+        return true;
+    }
 }

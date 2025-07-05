@@ -51,6 +51,9 @@ public class AtCat
     [JsonPropertyName("OwnerNotes")]
     public string? OwnerNotes { get; set; }
 
+    [JsonPropertyName("AdoptionComment")]
+    public string? AdoptionComment { get; set; }
+
     [JsonPropertyName("Sex")]
     public string SexValue { get; set; } = string.Empty;
 

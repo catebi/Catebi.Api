@@ -366,109 +366,170 @@ public class AdoptionBotAdminService(
     {
         Logger.LogInformation($"Notifying admins about new user registration: {userName}");
 
-        // Get all admin users
-        var adminsResponse = await AirtableRepository.ListRecords<AtUser>(
-            UserTableName,
-            filterByFormula: $"{{Role}} = '{UserRoles.Admin}'"
-        );
-
-        if (!adminsResponse.Success)
+        try
         {
-            Logger.LogWarning($"Error getting admin users: {adminsResponse.AirtableApiError.ErrorMessage}");
-            return false;
-        }
+            var adminUsers = await GetAdminUsers();
 
-        var adminUsers = adminsResponse.Records.Select(r => r.Fields).ToList();
-        Logger.LogInformation($"Found {adminUsers.Count} admin users to notify");
+            // Send notification to all admin users
+            var successCount = 0;
+            var failCount = 0;
 
-        // Send notification to all admin users
-        var successCount = 0;
-        var failCount = 0;
-
-        foreach (var admin in adminUsers)
-        {
-            try
+            foreach (var admin in adminUsers)
             {
-                if (admin.TelegramChatId != 0)
+                try
                 {
-                    var message = LocalizationService.GetAdminUserRegistrationNotification(
-                        admin.Language, userName, userTelegram, userRecordId);
+                    if (admin.TelegramChatId != 0)
+                    {
+                        var message = LocalizationService.GetAdminUserRegistrationNotification(
+                            admin.Language, userName, userTelegram, userRecordId);
 
-                    // Create inline keyboard with button to open admin users page
-                    var keyboard = new InlineKeyboardMarkup(
-                    [
+                        // Create inline keyboard with button to open admin users page
+                        var keyboard = new InlineKeyboardMarkup(
                         [
-                            InlineKeyboardButton.WithWebApp("👥 Open Admin Users", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/users" })
-                        ]
-                    ]);
+                            [
+                                InlineKeyboardButton.WithWebApp("👥 Open Admin Users", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/users" })
+                            ]
+                        ]);
 
-                    await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
-                    successCount++;
+                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
+                        successCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Failed to send registration notification to admin {admin.Name} (ID: {admin.RecordId})");
+                    failCount++;
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, $"Failed to send registration notification to admin {admin.Name} (ID: {admin.RecordId})");
-                failCount++;
-            }
-        }
 
-        Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
-        return successCount > 0;
+            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
+            return successCount > 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting admin users for registration notification");
+            return false;
+        }
     }
 
     public async Task<bool> NotifyAdminsAboutPaymentSubmission(string catName, string ownerName, string catRecordId, string paymentRecordId)
     {
         Logger.LogInformation($"Notifying admins about new payment submission for cat: {catName}");
 
-        // Get all admin users
+        try
+        {
+            var adminUsers = await GetAdminUsers();
+
+            // Send notification to all admin users
+            var successCount = 0;
+            var failCount = 0;
+
+            foreach (var admin in adminUsers)
+            {
+                try
+                {
+                    if (admin.TelegramChatId != 0)
+                    {
+                        var message = LocalizationService.GetAdminPaymentSubmissionNotification(
+                            admin.Language, catName, ownerName, catRecordId, paymentRecordId);
+
+                        // Create inline keyboard with button to open admin payments page
+                        var keyboard = new InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton.WithWebApp("💳 Open Admin Payments", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/payments" })
+                            ]
+                        ]);
+
+                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
+                        successCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Failed to send payment notification to admin {admin.Name} (ID: {admin.RecordId})");
+                    failCount++;
+                }
+            }
+
+            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
+            return successCount > 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting admin users for payment notification");
+            return false;
+        }
+    }
+
+    public async Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null)
+    {
+        Logger.LogInformation($"Notifying admins about cat adoption: {catName}");
+
+        try
+        {
+            var adminUsers = await GetAdminUsers();
+
+            // Send notification to all admin users
+            var successCount = 0;
+            var failCount = 0;
+
+            foreach (var admin in adminUsers)
+            {
+                try
+                {
+                    if (admin.TelegramChatId != 0)
+                    {
+                        var message = LocalizationService.GetAdminCatAdoptionNotification(
+                            admin.Language, catName, ownerName, catRecordId, adoptionComment);
+
+                        // Create inline keyboard with button to open specific cat's profile page
+                        var keyboard = new InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton.WithWebApp("🐱 View Cat Profile", new WebAppInfo { Url = $"https://catebi-adoption-miniapp.catebi.ge/cat-profile/{catRecordId}" })
+                            ]
+                        ]);
+
+                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
+                        successCount++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Failed to send adoption notification to admin {admin.Name} (ID: {admin.RecordId})");
+                    failCount++;
+                }
+            }
+
+            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
+            return successCount > 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting admin users for adoption notification");
+            return false;
+        }
+    }
+
+    public async Task<IEnumerable<AtUser>> GetAdminUsers()
+    {
+        Logger.LogInformation("Getting all admin users");
+
         var adminsResponse = await AirtableRepository.ListRecords<AtUser>(
             UserTableName,
-            filterByFormula: $"{{Role}} = '{UserRoles.Admin}'"
+            filterByFormula: $"AND({{Role}} = '{UserRoles.Admin}')"
         );
 
         if (!adminsResponse.Success)
         {
             Logger.LogWarning($"Error getting admin users: {adminsResponse.AirtableApiError.ErrorMessage}");
-            return false;
+            throw new Exception($"Error getting admin users: {adminsResponse.AirtableApiError.ErrorMessage}");
         }
 
         var adminUsers = adminsResponse.Records.Select(r => r.Fields).ToList();
-        Logger.LogInformation($"Found {adminUsers.Count} admin users to notify");
+        Logger.LogInformation($"Found {adminUsers.Count} admin users");
 
-        // Send notification to all admin users
-        var successCount = 0;
-        var failCount = 0;
-
-        foreach (var admin in adminUsers)
-        {
-            try
-            {
-                if (admin.TelegramChatId != 0)
-                {
-                    var message = LocalizationService.GetAdminPaymentSubmissionNotification(
-                        admin.Language, catName, ownerName, catRecordId, paymentRecordId);
-
-                    // Create inline keyboard with button to open admin payments page
-                    var keyboard = new InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton.WithWebApp("💳 Open Admin Payments", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/payments" })
-                        ]
-                    ]);
-
-                    await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
-                    successCount++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, $"Failed to send payment notification to admin {admin.Name} (ID: {admin.RecordId})");
-                failCount++;
-            }
-        }
-
-        Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
-        return successCount > 0;
+        return adminUsers;
     }
 }

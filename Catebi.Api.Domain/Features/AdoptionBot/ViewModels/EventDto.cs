@@ -6,7 +6,8 @@ public class EventDto
     public int? EventId { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public int RegisteredCatCount { get; set; }
+    public int RegisteredPaidCatCount { get; set; }
+    public int RegisteredFreeCatCount { get; set; }
     public int CatCount { get; set; }
     public string When { get; set; }
     public string Where { get; set; }
