@@ -48,7 +48,7 @@ public interface IAdoptionBotAdminService
     /// <summary>
     /// Send notification to all admin users about cat adoption
     /// </summary>
-    Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null);
+    Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null);
 
     /// <summary>
     /// Get all admin users from the system

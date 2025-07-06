@@ -149,7 +149,7 @@ You can now access to push your cat to the Catbook or to book event for them."
         };
     }
 
-    public string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null)
+    public string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null)
     {
         var baseMessage = language switch
         {
@@ -157,6 +157,7 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 🐱 <b>Кошка (кот):</b> {catName}
 👤 <b>Владелец:</b> {ownerName}
+🆔 <b>Cat Record ID:</b> {catRecordId}
 
 ✅ Статус изменен на 'Укотовление'",
 
@@ -176,6 +177,24 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 ✅ Status changed to 'Adopted'"
         };
+
+        // Add action by user information if provided
+        if (!string.IsNullOrWhiteSpace(actionByUserName))
+        {
+            var actionSection = language switch
+            {
+                Languages.ru => $"\n\n🧑‍💼 <b>Действие выполнено:</b> {actionByUserName}",
+                Languages.en => $"\n\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}",
+                _ => $"\n\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}"
+            };
+            
+            if (!string.IsNullOrWhiteSpace(actionByUserTelegram))
+            {
+                actionSection += $" ({actionByUserTelegram})";
+            }
+            
+            baseMessage += actionSection;
+        }
 
         // Add adoption comment if provided
         if (!string.IsNullOrWhiteSpace(adoptionComment))

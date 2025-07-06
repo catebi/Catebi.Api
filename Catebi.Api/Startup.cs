@@ -73,6 +73,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IAdoptionBotEventService, AdoptionBotEventService>();
         services.AddScoped<IAdoptionBotCatService, AdoptionBotCatService>();
         services.AddScoped<IAdoptionBotAdminService, AdoptionBotAdminService>();
+        services.AddScoped<ISettingsService, SettingsService>();
 
         services.AddTransient<IEmailSender, EmailSender>();
 
@@ -92,6 +93,14 @@ public class Startup(IConfiguration configuration)
             var configuration = provider.GetRequiredService<IConfiguration>();
             var botToken = configuration["AdoptionBot:Telegram:Token"]!;
             return new TelegramBotClient(botToken);
+        });
+
+        // Common telegram bot for work chat notifications
+        services.AddSingleton<CommonTelegramBotClient>(provider =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var botToken = configuration["AdoptionBot:Telegram:CommonBotToken"]!;
+            return new CommonTelegramBotClient(new TelegramBotClient(botToken));
         });
 
         services.AddCors(options =>
@@ -162,7 +171,7 @@ public class Startup(IConfiguration configuration)
         //             ResourceBuilder.CreateDefault()
         //                 .AddService("Catebi.Api"))
         //     )
-        // );        
+        // );
 
         // Register localization service
         services.AddScoped<ILocalizationService, LocalizationService>();

@@ -48,7 +48,7 @@ public interface IAdoptionBotCatService
     /// <summary>
     /// Mark a cat as adopted and notify admins.
     /// </summary>
-    Task<bool> MarkCatAsAdopted(string catRecordId, string? adoptionComment = null);
+    Task<bool> MarkCatAsAdopted(string catRecordId, string userRecordId, string? adoptionComment = null);
 
     /// <summary>
     /// Get cats for admin management with filtering and pagination.

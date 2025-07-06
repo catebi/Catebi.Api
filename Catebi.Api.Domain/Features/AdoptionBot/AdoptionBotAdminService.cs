@@ -11,6 +11,8 @@ namespace Catebi.Api.Domain.Features.AdoptionBot;
 public class AdoptionBotAdminService(
     IAirtableRepository AirtableRepository,
     TelegramBotClient TelegramBotClient,
+    CommonTelegramBotClient CommonTelegramBotClient,
+    ISettingsService SettingsService,
     ILocalizationService LocalizationService,
     ILogger<AdoptionBotAdminService> Logger) : IAdoptionBotAdminService
 {
@@ -364,150 +366,120 @@ public class AdoptionBotAdminService(
 
     public async Task<bool> NotifyAdminsAboutUserRegistration(string userName, string userTelegram, string userRecordId)
     {
-        Logger.LogInformation($"Notifying admins about new user registration: {userName}");
+        Logger.LogInformation($"Notifying work chat about new user registration: {userName}");
 
-        try
-        {
-            var adminUsers = await GetAdminUsers();
-
-            // Send notification to all admin users
-            var successCount = 0;
-            var failCount = 0;
-
-            foreach (var admin in adminUsers)
-            {
                 try
-                {
-                    if (admin.TelegramChatId != 0)
-                    {
-                        var message = LocalizationService.GetAdminUserRegistrationNotification(
-                            admin.Language, userName, userTelegram, userRecordId);
+        {
+            // add started -100 at the start of the workChatId
+            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
+            var eventTopicId = await SettingsService.GetEventTopicId();
 
-                        // Create inline keyboard with button to open admin users page
-                        var keyboard = new InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton.WithWebApp("👥 Open Admin Users", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/users" })
-                            ]
-                        ]);
+            // Use Russian language for work chat notifications (can be made configurable)
+            var message = LocalizationService.GetAdminUserRegistrationNotification(
+                Languages.ru, userName, userTelegram, userRecordId);
 
-                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
-                        successCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, $"Failed to send registration notification to admin {admin.Name} (ID: {admin.RecordId})");
-                    failCount++;
-                }
-            }
+            // Create inline keyboard with direct mini app link to admin users
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("👥 Open Admin Users", "t.me/catebi_adoption_bot/admin?startapp=users")
+                ]
+            ]);
 
-            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
-            return successCount > 0;
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                message,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
+
+            Logger.LogInformation($"Work chat notification sent successfully for user registration: {userName}");
+            return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting admin users for registration notification");
+            Logger.LogError(ex, $"Error sending work chat notification for user registration: {userName}");
             return false;
         }
     }
 
     public async Task<bool> NotifyAdminsAboutPaymentSubmission(string catName, string ownerName, string catRecordId, string paymentRecordId)
     {
-        Logger.LogInformation($"Notifying admins about new payment submission for cat: {catName}");
+        Logger.LogInformation($"Notifying work chat about new payment submission for cat: {catName}");
 
         try
         {
-            var adminUsers = await GetAdminUsers();
+            // add started -100 at the start of the workChatId
+            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
+            var eventTopicId = await SettingsService.GetEventTopicId();
 
-            // Send notification to all admin users
-            var successCount = 0;
-            var failCount = 0;
+            // Use Russian language for work chat notifications (can be made configurable)
+            var message = LocalizationService.GetAdminPaymentSubmissionNotification(
+                Languages.ru, catName, ownerName, catRecordId, paymentRecordId);
 
-            foreach (var admin in adminUsers)
-            {
-                try
-                {
-                    if (admin.TelegramChatId != 0)
-                    {
-                        var message = LocalizationService.GetAdminPaymentSubmissionNotification(
-                            admin.Language, catName, ownerName, catRecordId, paymentRecordId);
+            // Create inline keyboard with direct mini app link to admin payments
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("💳 Open Admin Payments", "t.me/catebi_adoption_bot/admin?startapp=payments")
+                ]
+            ]);
 
-                        // Create inline keyboard with button to open admin payments page
-                        var keyboard = new InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton.WithWebApp("💳 Open Admin Payments", new WebAppInfo { Url = "https://catebi-adoption-miniapp.catebi.ge/admin/payments" })
-                            ]
-                        ]);
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                message,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
 
-                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
-                        successCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, $"Failed to send payment notification to admin {admin.Name} (ID: {admin.RecordId})");
-                    failCount++;
-                }
-            }
-
-            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
-            return successCount > 0;
+            Logger.LogInformation($"Work chat notification sent successfully for payment submission: {catName}");
+            return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting admin users for payment notification");
+            Logger.LogError(ex, $"Error sending work chat notification for payment submission: {catName}");
             return false;
         }
     }
 
-    public async Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null)
+    public async Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null)
     {
-        Logger.LogInformation($"Notifying admins about cat adoption: {catName}");
+        Logger.LogInformation($"Notifying work chat about cat adoption: {catName} (action by: {actionByUserName} {actionByUserTelegram})");
 
         try
         {
-            var adminUsers = await GetAdminUsers();
+            // add started -100 at the start of the workChatId
+            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
+            var eventTopicId = await SettingsService.GetEventTopicId();
 
-            // Send notification to all admin users
-            var successCount = 0;
-            var failCount = 0;
+            // Use Russian language for work chat notifications (can be made configurable)
+            var message = LocalizationService.GetAdminCatAdoptionNotification(
+                Languages.ru, catName, ownerName, catRecordId, adoptionComment, actionByUserName, actionByUserTelegram);
 
-            foreach (var admin in adminUsers)
-            {
-                try
-                {
-                    if (admin.TelegramChatId != 0)
-                    {
-                        var message = LocalizationService.GetAdminCatAdoptionNotification(
-                            admin.Language, catName, ownerName, catRecordId, adoptionComment);
+            // Create inline keyboard with direct mini app link to specific cat profile
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("🐱 View Cat Profile", $"t.me/CatebiAdoptionBot/eventappa?startapp=cat_{catRecordId}")
+                ]
+            ]);
 
-                        // Create inline keyboard with button to open specific cat's profile page
-                        var keyboard = new InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton.WithWebApp("🐱 View Cat Profile", new WebAppInfo { Url = $"https://catebi-adoption-miniapp.catebi.ge/cat-profile/{catRecordId}" })
-                            ]
-                        ]);
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                message,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
 
-                        await TelegramBotClient.SendMessage(admin.TelegramChatId, message, parseMode: ParseMode.Html, replyMarkup: keyboard);
-                        successCount++;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, $"Failed to send adoption notification to admin {admin.Name} (ID: {admin.RecordId})");
-                    failCount++;
-                }
-            }
-
-            Logger.LogInformation($"Admin notification completed: {successCount} success, {failCount} failed");
-            return successCount > 0;
+            Logger.LogInformation($"Work chat notification sent successfully for cat adoption: {catName}");
+            return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting admin users for adoption notification");
+            Logger.LogError(ex, $"Error sending work chat notification for cat adoption: {catName}");
             return false;
         }
     }

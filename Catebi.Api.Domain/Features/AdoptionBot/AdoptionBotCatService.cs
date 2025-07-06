@@ -425,9 +425,9 @@ public class AdoptionBotCatService(
         return true;
     }
 
-    public async Task<bool> MarkCatAsAdopted(string catRecordId, string? adoptionComment = null)
+        public async Task<bool> MarkCatAsAdopted(string catRecordId, string userRecordId, string? adoptionComment = null)
     {
-        Logger.LogInformation($"Marking cat as adopted: {catRecordId}");
+        Logger.LogInformation($"Marking cat as adopted: {catRecordId} by user: {userRecordId}");
 
         // Validate cat exists
         var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, catRecordId);
@@ -439,6 +439,28 @@ public class AdoptionBotCatService(
         var catModel = catResponse.Record.Fields;
         Logger.LogInformation($"Cat found: {catModel.Name} (Owner: {catModel.OwnerName})");
 
+        // Validate user exists and get user details
+        var userResponse = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, userRecordId);
+        if (!userResponse.Success || userResponse.Record == null)
+        {
+            throw new Exception($"User with ID {userRecordId} not found.");
+        }
+
+        var userModel = userResponse.Record.Fields;
+        Logger.LogInformation($"User found: {userModel.Name} ({userModel.Telegram}) - Role: {userModel.Role}");
+
+        // Validate user permissions: must be the owner OR have Admin role
+        var isOwner = catModel.OwnerRecordId == userRecordId;
+        var isAdmin = userModel.Role == UserRoles.Admin;
+
+        if (!isOwner && !isAdmin)
+        {
+            throw new Exception($"Access denied. User '{userModel.Name}' ({userModel.Telegram}) is not the owner of cat '{catModel.Name}' and does not have Admin role. " +
+                $"Only the cat owner or admins can mark a cat as adopted.");
+        }
+
+        Logger.LogInformation($"Permission granted: User '{userModel.Name}' is {(isOwner ? "the owner" : "an admin")}");
+
         // Check if cat is already adopted
         if (catModel.Status == CatStatuses.Adopted)
         {
@@ -448,7 +470,7 @@ public class AdoptionBotCatService(
         // Update cat status to Adopted and add adoption comment if provided
         var updatedFields = new Fields();
         updatedFields.AddField("Status", CatStatuses.Adopted.ToString());
-
+        
         if (!string.IsNullOrWhiteSpace(adoptionComment))
         {
             updatedFields.AddField("AdoptionComment", adoptionComment);
@@ -463,12 +485,12 @@ public class AdoptionBotCatService(
             throw new Exception($"Error marking cat '{catModel.Name}' as adopted: {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        Logger.LogInformation($"Successfully marked cat '{catModel.Name}' as adopted");
+        Logger.LogInformation($"Successfully marked cat '{catModel.Name}' as adopted by user '{userModel.Name}'");
 
-        // Notify admins about the adoption
+        // Notify admins about the adoption, including who performed the action
         try
         {
-            await AdminService.NotifyAdminsAboutCatAdoption(catModel.Name, catModel.OwnerName!, catRecordId, adoptionComment);
+            await AdminService.NotifyAdminsAboutCatAdoption(catModel.Name, catModel.OwnerName!, catRecordId, adoptionComment, userModel.Name, userModel.Telegram);
         }
         catch (Exception ex)
         {

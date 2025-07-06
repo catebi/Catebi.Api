@@ -341,14 +341,14 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService,
     }
 
     /// <summary>
-    /// Mark a cat as adopted
+    /// Mark a cat as adopted with user validation (owner or admin only)
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> MarkCatAsAdopted([FromBody] MarkCatAsAdoptedRequest request)
     {
         try
         {
-            var result = await CatService.MarkCatAsAdopted(request.CatRecordId, request.AdoptionComment);
+            var result = await CatService.MarkCatAsAdopted(request.CatRecordId, request.UserRecordId, request.AdoptionComment);
             return Ok(new ApiResponse
             {
                 Success = result,
