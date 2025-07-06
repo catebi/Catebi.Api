@@ -1,3 +1,6 @@
+using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
+using Catebi.Api.Domain.Features.AdoptionBot.Enums;
+
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public interface IAdoptionBotCatService
@@ -46,4 +49,9 @@ public interface IAdoptionBotCatService
     /// Mark a cat as adopted and notify admins.
     /// </summary>
     Task<bool> MarkCatAsAdopted(string catRecordId, string? adoptionComment = null);
+
+    /// <summary>
+    /// Get cats for admin management with filtering and pagination.
+    /// </summary>
+    Task<ViewModels.PaginatedResponse<CatDto>> GetCatsForAdmin(GetCatsForAdminRequest request);
 }

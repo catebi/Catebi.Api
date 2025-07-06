@@ -24,9 +24,9 @@ public class LocalizationService : ILocalizationService
         return language switch
         {
             Languages.ru => $@"Привет, {ownerName} 👋
-Платеж за вашего кота {catName} подтвержден. Поздравляем!
+Платеж за вашу кошку (кота) {catName} подтвержден. Поздравляем!
 
-Теперь вы можете добавить своего кота в Кэтбук или забронировать для него мероприятие.",
+Теперь вы можете добавить свою кошку (кота) в Кэтбук или забронировать для него мероприятие.",
 
             Languages.en => $@"Hello {ownerName} 👋
 Payment for your cat {catName} has been confirmed. Congrats!
@@ -37,16 +37,6 @@ You can now access to push your cat to the Catbook or to book event for them.",
 Payment for your cat {catName} has been confirmed. Congrats!
 
 You can now access to push your cat to the Catbook or to book event for them."
-        };
-    }
-
-    public string GetCatPhotoAddedMessage(Languages language, string ownerName, string catName)
-    {
-        return language switch
-        {
-            Languages.ru => $"Привет, {ownerName} 👋\nФото для вашего кота {catName} было успешно добавлено!",
-            Languages.en => $"Hello {ownerName} 👋\nPhoto for your cat {catName} has been successfully added!",
-            _ => $"Hello {ownerName} 👋\nPhoto for your cat {catName} has been successfully added!"
         };
     }
 
@@ -63,7 +53,7 @@ You can now access to push your cat to the Catbook or to book event for them."
 📝 <b>Описание:</b>
 {eventDescription}
 
-🐱 Теперь вы можете зарегистрировать своих котов на это мероприятие! Не упустите возможность!",
+🐱 Теперь вы можете зарегистрировать своих кошек и котов на это мероприятие! Не упустите возможность!",
 
             Languages.en => $@"🎉 <b>New Event Open for Registration!</b> 🎉
 
@@ -132,7 +122,7 @@ You can now access to push your cat to the Catbook or to book event for them."
         {
             Languages.ru => $@"💳 <b>Новая подача платежной информации</b>
 
-🐱 <b>Кот:</b> {catName}
+🐱 <b>Кошка (кот):</b> {catName}
 👤 <b>Владелец:</b> {ownerName}
 🆔 <b>Cat Record ID:</b> {catRecordId}
 🆔 <b>Payment Record ID:</b> {paymentRecordId}
@@ -165,7 +155,7 @@ You can now access to push your cat to the Catbook or to book event for them."
         {
             Languages.ru => $@"🎉 <b>Случилось укотовление!</b>
 
-🐱 <b>Кот:</b> {catName}
+🐱 <b>Кошка (кот):</b> {catName}
 👤 <b>Владелец:</b> {ownerName}
 
 ✅ Статус изменен на 'Укотовление'",
@@ -216,7 +206,7 @@ You can now access to push your cat to the Catbook or to book event for them."
     {
         return language switch
         {
-            Languages.ru => "как владелец кота",
+            Languages.ru => "как владелец кошки (кота)",
             Languages.en => "as a cat owner",
             _ => "as a cat owner"
         };

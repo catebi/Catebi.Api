@@ -4,6 +4,7 @@ using Catebi.Api.Domain.Features.AdoptionBot.Enums;
 using Catebi.Api.Domain.Features.AdoptionBot.Converters;
 using Catebi.Api.Domain.Contracts.Services;
 
+
 namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public class AdoptionBotCatService(
@@ -249,19 +250,6 @@ public class AdoptionBotCatService(
             throw new Exception($"Error updating status for the cat {catModel.Name} (owner: {catModel.OwnerName}, atId {catRecordId}): {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        // Get owner's language for localized message
-        var ownerRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catModel.OwnerRecordId!);
-        var ownerLanguage = Languages.ru; // Default fallback
-        
-        if (ownerRecord.Success && ownerRecord.Record != null)
-        {
-            ownerLanguage = ownerRecord.Record.Fields.Language;
-        }
-
-        // Send a localized Telegram message
-        var message = LocalizationService.GetCatPhotoAddedMessage(ownerLanguage, catModel.OwnerName!, catModel.Name);
-        await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
-
         return true;
     }
 
@@ -343,9 +331,9 @@ public class AdoptionBotCatService(
         try
         {
             await AdminService.NotifyAdminsAboutPaymentSubmission(
-                catModel.Name, 
-                catModel.OwnerName!, 
-                catRecordId, 
+                catModel.Name,
+                catModel.OwnerName!,
+                catRecordId,
                 updateResponse.Record.Id);
         }
         catch (Exception ex)
@@ -460,7 +448,7 @@ public class AdoptionBotCatService(
         // Update cat status to Adopted and add adoption comment if provided
         var updatedFields = new Fields();
         updatedFields.AddField("Status", CatStatuses.Adopted.ToString());
-        
+
         if (!string.IsNullOrWhiteSpace(adoptionComment))
         {
             updatedFields.AddField("AdoptionComment", adoptionComment);
@@ -489,5 +477,123 @@ public class AdoptionBotCatService(
         }
 
         return true;
+    }
+
+    public async Task<ViewModels.PaginatedResponse<CatDto>> GetCatsForAdmin(GetCatsForAdminRequest request)
+    {
+        Logger.LogInformation($"Getting cats for admin - Status: {request.Status}, Offset: {request.Offset}, Filter: {request.CatNameFilter}");
+
+        // Build filter formula for Airtable
+        var filters = new List<string>();
+
+        // Add status filter if provided
+        if (!string.IsNullOrWhiteSpace(request.Status))
+        {
+            filters.Add($"{{Status}} = '{request.Status}'");
+        }
+
+        // Add cat name filter if provided
+        if (!string.IsNullOrWhiteSpace(request.CatNameFilter))
+        {
+            filters.Add($"FIND(LOWER('{request.CatNameFilter.ToLower()}'), LOWER({{Name}})) > 0");
+        }
+
+        // Combine filters with AND
+        string filterFormula = string.Empty;
+        if (filters.Any())
+        {
+            filterFormula = filters.Count == 1
+                ? filters[0]
+                : $"AND({string.Join(", ", filters)})";
+        }
+
+        try
+        {
+            // Configure pagination
+            const int pageSize = 10;
+
+            // Set up sorting to get consistent results
+            var sort = new List<Sort>
+            {
+                new() { Field = "Created", Direction = SortDirection.Desc }
+            };
+
+                        // Use offset for pagination (null for first page)
+            var offsetToUse = request.Offset;
+            
+            if (string.IsNullOrEmpty(offsetToUse))
+            {
+                Logger.LogInformation("Starting pagination from first page");
+            }
+            else
+            {
+                Logger.LogInformation($"Using provided offset for pagination: {offsetToUse}");
+            }
+
+            var response = await AirtableRepository.ListRecords<AtCat>(
+                CatTableName,
+                filterByFormula: filterFormula,
+                pageSize: pageSize,
+                offset: offsetToUse,
+                sort: sort
+            );
+
+            if (!response.Success)
+            {
+                Logger.LogError($"Error getting cats for admin: {response.AirtableApiError.ErrorMessage}");
+                throw new Exception($"Error getting cats for admin: {response.AirtableApiError.ErrorMessage}");
+            }
+
+            var cats = new List<CatDto>();
+
+            foreach (var record in response.Records)
+            {
+                try
+                {
+                    // Get payment option price for each cat
+                    var paymentOptionType = record.Fields.OwnerIsVolunteer
+                        ? PaymentOptions.CatbookVolunteerPrice
+                        : PaymentOptions.CatbookStandardPrice;
+
+                    var paymentOptions = await AirtableRepository.ListRecords<AtPaymentOption>(
+                        PaymentOptionTableName,
+                        filterByFormula: $"{{Name}}='{paymentOptionType}'"
+                    );
+
+                    var price = 0;
+                    if (paymentOptions.Success && paymentOptions.Records.Any())
+                    {
+                        price = paymentOptions.Records.First().Fields.Price;
+                    }
+
+                    cats.Add(CatConverter.ToDto(record.Fields, price, record.Id));
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Error processing cat record {record.Id}. Skipping...");
+                    // Continue with other cats
+                }
+            }
+
+                        // Use Airtable's native pagination response
+            var totalCats = cats.Count;
+
+            // The cats list already contains the correct page from Airtable
+            // No need for client-side pagination since Airtable handled it
+
+                        Logger.LogInformation($"Retrieved {totalCats} cats from Airtable for request (Offset: {request.Offset})");
+            
+            return new ViewModels.PaginatedResponse<CatDto>
+            {
+                Records = cats,
+                NextPageOffset = response.Offset, // Use actual Airtable offset for next page
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error in GetCatsForAdmin");
+            throw;
+        }
     }
 }

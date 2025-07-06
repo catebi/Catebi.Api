@@ -312,7 +312,7 @@ public class AdoptionBotAdminService(
     {
         Logger.LogInformation("Getting all broadcast messages");
 
-        var response = await AirtableRepository.ListRecords<AtMessage>(MessageTableName);
+        var response = await AirtableRepository.ListRecords<AtMessage>(MessageTableName, filterByFormula: null);
 
         if (!response.Success)
         {

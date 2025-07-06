@@ -34,6 +34,31 @@ public class AirtableRepository(AirtableBase AirtableBase, ILogger<AirtableRepos
         }
     }
 
+    public async Task<AirtableListRecordsResponse<T>> ListRecords<T>(
+        string tableName, 
+        string? filterByFormula = null, 
+        int? pageSize = null, 
+        string? offset = null, 
+        IEnumerable<Sort>? sort = null) where T : class
+    {
+        try
+        {
+            Logger.LogInformation($"Listing records from table {tableName} with filter: {filterByFormula}, pageSize: {pageSize}, offset: {offset}");
+            return await AirtableBase.ListRecords<T>(
+                tableName, 
+                filterByFormula: filterByFormula,
+                pageSize: pageSize,
+                offset: offset,
+                sort: sort
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error listing records from table {tableName}");
+            throw;
+        }
+    }
+
     public async Task<AirtableCreateUpdateReplaceRecordResponse> CreateRecord(string tableName, Fields fields)
     {
         try

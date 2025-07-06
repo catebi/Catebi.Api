@@ -15,11 +15,6 @@ public interface ILocalizationService
     string GetCatPaymentConfirmationMessage(Languages language, string ownerName, string catName);
 
     /// <summary>
-    /// Get localized message for cat photo added
-    /// </summary>
-    string GetCatPhotoAddedMessage(Languages language, string ownerName, string catName);
-
-    /// <summary>
     /// Get localized message for event opening notification
     /// </summary>
     string GetEventOpenNotificationMessage(Languages language, string eventName, DateTime eventDate, string eventLocation, string eventDescription);
