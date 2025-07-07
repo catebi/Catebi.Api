@@ -425,6 +425,195 @@ public class AdoptionBotCatService(
         return true;
     }
 
+    public async Task<bool> RegisterCatToEvent(CatToEventRequest request)
+    {
+        Logger.LogInformation($"Registering cat {request.CatRecordId} to event {request.EventRecordId} by user {request.UserRecordId}");
+
+        // Validate cat exists
+        var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, request.CatRecordId);
+        if (!catResponse.Success || catResponse.Record == null)
+        {
+            throw new Exception($"Cat with ID {request.CatRecordId} not found.");
+        }
+
+        var catModel = catResponse.Record.Fields;
+        Logger.LogInformation($"Cat found: {catModel.Name} (Owner: {catModel.OwnerName})");
+
+        // Validate user exists and get user details
+        var userResponse = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, request.UserRecordId);
+        if (!userResponse.Success || userResponse.Record == null)
+        {
+            throw new Exception($"User with ID {request.UserRecordId} not found.");
+        }
+
+        var userModel = userResponse.Record.Fields;
+        Logger.LogInformation($"User found: {userModel.Name} ({userModel.Telegram}) - Role: {userModel.Role}");
+
+        // Validate user permissions: must be the owner OR have Admin role
+        var isOwner = catModel.OwnerRecordId == request.UserRecordId;
+        var isAdmin = userModel.Role == UserRoles.Admin;
+
+        if (!isOwner && !isAdmin)
+        {
+            throw new Exception($"Access denied. User '{userModel.Name}' ({userModel.Telegram}) is not the owner of cat '{catModel.Name}' and does not have Admin role. " +
+                $"Only the cat owner or admins can register a cat to an event.");
+        }
+
+        Logger.LogInformation($"Permission granted: User '{userModel.Name}' is {(isOwner ? "the owner" : "an admin")}");
+
+        // Validate event exists and get current state
+        var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, request.EventRecordId);
+        if (!eventResponse.Success || eventResponse.Record == null)
+        {
+            throw new Exception($"Event with ID {request.EventRecordId} not found.");
+        }
+
+        var eventModel = eventResponse.Record.Fields;
+        Logger.LogInformation($"Event found: {eventModel.Name}");
+
+        // Validate event is open for registration
+        if (eventModel.Status != EventStatuses.BookingOpen)
+        {
+            throw new Exception($"Event '{eventModel.Name}' is not open for registration. Current status: {eventModel.Status}");
+        }
+
+        // Check if cat is already registered
+        var currentCats = eventModel.Cats ?? Array.Empty<string>();
+        if (currentCats.Contains(request.CatRecordId))
+        {
+            throw new Exception($"Cat '{catModel.Name}' is already registered for event '{eventModel.Name}'");
+        }
+
+        // Check if there are available slots
+        var currentCatCount = eventModel.Cats.Count();
+        var maxCatSlots = eventModel.PaidSlotCount + eventModel.FreeSlotCount;
+
+        if (currentCatCount >= maxCatSlots)
+        {
+            throw new Exception($"Event '{eventModel.Name}' is full. No available slots (current: {currentCatCount}/{maxCatSlots})");
+        }
+
+        // Add cat to event
+        var updatedCats = currentCats.Append(request.CatRecordId).ToArray();
+        var updatedFields = new Fields();
+        updatedFields.AddField("Cats", updatedCats);
+
+        var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, request.EventRecordId);
+
+        if (!updateResponse.Success)
+        {
+            Logger.LogError($"Error registering cat to event: {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error registering cat '{catModel.Name}' to event '{eventModel.Name}': {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        Logger.LogInformation($"Successfully registered cat '{catModel.Name}' to event '{eventModel.Name}' by user '{userModel.Name}'");
+
+        // Optional: Send notification to cat owner
+        if (catModel.OwnerTelegramChatId != 0)
+        {
+            try
+            {
+                var message = $"🎉 Great news! Your cat '{catModel.Name}' has been successfully registered for the event '{eventModel.Name}' on {eventModel.When:yyyy-MM-dd} at {eventModel.Where}.";
+                await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
+                Logger.LogInformation($"Notification sent to cat owner: {catModel.OwnerName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to send notification to cat owner {catModel.OwnerName}");
+                // Don't throw here, registration was successful
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> ExcludeCatFromEvent(CatToEventRequest request)
+    {
+        Logger.LogInformation($"Excluding cat {request.CatRecordId} from event {request.EventRecordId} by user {request.UserRecordId}");
+
+        // Validate cat exists
+        var catResponse = await AirtableRepository.RetrieveRecord<AtCat>(CatTableName, request.CatRecordId);
+        if (!catResponse.Success || catResponse.Record == null)
+        {
+            throw new Exception($"Cat with ID {request.CatRecordId} not found.");
+        }
+
+        var catModel = catResponse.Record.Fields;
+        Logger.LogInformation($"Cat found: {catModel.Name} (Owner: {catModel.OwnerName})");
+
+        // Validate user exists and get user details
+        var userResponse = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, request.UserRecordId);
+        if (!userResponse.Success || userResponse.Record == null)
+        {
+            throw new Exception($"User with ID {request.UserRecordId} not found.");
+        }
+
+        var userModel = userResponse.Record.Fields;
+        Logger.LogInformation($"User found: {userModel.Name} ({userModel.Telegram}) - Role: {userModel.Role}");
+
+        // Validate user permissions: must be the owner OR have Admin role
+        var isOwner = catModel.OwnerRecordId == request.UserRecordId;
+        var isAdmin = userModel.Role == UserRoles.Admin;
+
+        if (!isOwner && !isAdmin)
+        {
+            throw new Exception($"Access denied. User '{userModel.Name}' ({userModel.Telegram}) is not the owner of cat '{catModel.Name}' and does not have Admin role. " +
+                $"Only the cat owner or admins can exclude a cat from an event.");
+        }
+
+        Logger.LogInformation($"Permission granted: User '{userModel.Name}' is {(isOwner ? "the owner" : "an admin")}");
+
+        // Validate event exists and get current state
+        var eventResponse = await AirtableRepository.RetrieveRecord<AtEvent>(EventTableName, request.EventRecordId);
+        if (!eventResponse.Success || eventResponse.Record == null)
+        {
+            throw new Exception($"Event with ID {request.EventRecordId} not found.");
+        }
+
+        var eventModel = eventResponse.Record.Fields;
+        Logger.LogInformation($"Event found: {eventModel.Name}");
+
+        // Check if cat is registered for this event
+        var currentCats = eventModel.Cats ?? Array.Empty<string>();
+        if (!currentCats.Contains(request.CatRecordId))
+        {
+            throw new Exception($"Cat '{catModel.Name}' is not registered for event '{eventModel.Name}'");
+        }
+
+        // Remove cat from event
+        var updatedCats = currentCats.Where(catId => catId != request.CatRecordId).ToArray();
+        var updatedFields = new Fields();
+        updatedFields.AddField("Cats", updatedCats);
+
+        var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, request.EventRecordId);
+
+        if (!updateResponse.Success)
+        {
+            Logger.LogError($"Error excluding cat from event: {updateResponse.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error excluding cat '{catModel.Name}' from event '{eventModel.Name}': {updateResponse.AirtableApiError.ErrorMessage}");
+        }
+
+        Logger.LogInformation($"Successfully excluded cat '{catModel.Name}' from event '{eventModel.Name}' by user '{userModel.Name}'");
+
+        // Optional: Send notification to cat owner
+        if (catModel.OwnerTelegramChatId != 0)
+        {
+            try
+            {
+                var message = $"Your cat '{catModel.Name}' has been removed from the event '{eventModel.Name}' on {eventModel.When:yyyy-MM-dd} at {eventModel.Where}.";
+                await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
+                Logger.LogInformation($"Notification sent to cat owner: {catModel.OwnerName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to send notification to cat owner {catModel.OwnerName}");
+                // Don't throw here, exclusion was successful
+            }
+        }
+
+        return true;
+    }
+
         public async Task<bool> MarkCatAsAdopted(string catRecordId, string userRecordId, string? adoptionComment = null)
     {
         Logger.LogInformation($"Marking cat as adopted: {catRecordId} by user: {userRecordId}");

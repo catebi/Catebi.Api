@@ -46,6 +46,16 @@ public interface IAdoptionBotCatService
     Task<bool> RegisterCatToEvent(string catRecordId, string eventRecordId);
 
     /// <summary>
+    /// Register a cat to an event with user validation.
+    /// </summary>
+    Task<bool> RegisterCatToEvent(CatToEventRequest request);
+
+    /// <summary>
+    /// Exclude a cat from an event.
+    /// </summary>
+    Task<bool> ExcludeCatFromEvent(CatToEventRequest request);
+
+    /// <summary>
     /// Mark a cat as adopted and notify admins.
     /// </summary>
     Task<bool> MarkCatAsAdopted(string catRecordId, string userRecordId, string? adoptionComment = null);

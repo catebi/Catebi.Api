@@ -368,17 +368,12 @@ public class AdoptionBotAdminService(
     {
         Logger.LogInformation($"Notifying work chat about new user registration: {userName}");
 
-                try
+        try
         {
-            // add started -100 at the start of the workChatId
-            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
-            var eventTopicId = await SettingsService.GetEventTopicId();
-
-            // Use Russian language for work chat notifications (can be made configurable)
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
             var message = LocalizationService.GetAdminUserRegistrationNotification(
                 Languages.ru, userName, userTelegram, userRecordId);
 
-            // Create inline keyboard with direct mini app link to admin users
             var keyboard = new InlineKeyboardMarkup(
             [
                 [
@@ -410,15 +405,9 @@ public class AdoptionBotAdminService(
 
         try
         {
-            // add started -100 at the start of the workChatId
-            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
-            var eventTopicId = await SettingsService.GetEventTopicId();
-
-            // Use Russian language for work chat notifications (can be made configurable)
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
             var message = LocalizationService.GetAdminPaymentSubmissionNotification(
                 Languages.ru, catName, ownerName, catRecordId, paymentRecordId);
-
-            // Create inline keyboard with direct mini app link to admin payments
             var keyboard = new InlineKeyboardMarkup(
             [
                 [
@@ -450,9 +439,7 @@ public class AdoptionBotAdminService(
 
         try
         {
-            // add started -100 at the start of the workChatId
-            var workChatId = "-100" + (await SettingsService.GetWorkChatId()).ToString();
-            var eventTopicId = await SettingsService.GetEventTopicId();
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
 
             // Use Russian language for work chat notifications (can be made configurable)
             var message = LocalizationService.GetAdminCatAdoptionNotification(
@@ -462,7 +449,7 @@ public class AdoptionBotAdminService(
             var keyboard = new InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton.WithUrl("🐱 View Cat Profile", $"t.me/CatebiAdoptionBot/eventappa?startapp=cat_{catRecordId}")
+                    InlineKeyboardButton.WithUrl("🐱 View Cat Profile", $"t.me/CatebiAdoptionBot/eventappa?startapp=admin_cat_{catRecordId}")
                 ]
             ]);
 

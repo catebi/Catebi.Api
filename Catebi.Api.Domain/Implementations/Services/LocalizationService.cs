@@ -155,17 +155,17 @@ You can now access to push your cat to the Catbook or to book event for them."
         {
             Languages.ru => $@"🎉 <b>Случилось укотовление!</b>
 
-🐱 <b>Кошка (кот):</b> {catName}
-👤 <b>Владелец:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
+<b>Кошка (кот):</b> {catName}
+<b>Владелец:</b> {ownerName}
+<b>CatRecordId:</b> {catRecordId}
 
 ✅ Статус изменен на 'Укотовление'",
 
             Languages.en => $@"🎉 <b>Cat Found a New Home!</b>
 
-🐱 <b>Cat:</b> {catName}
-👤 <b>Owner:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
+<b>Cat:</b> {catName}
+<b>Owner:</b> {ownerName}
+<b>CatRecordId:</b> {catRecordId}
 
 ✅ Status changed to 'Adopted'",
 
@@ -183,16 +183,16 @@ You can now access to push your cat to the Catbook or to book event for them."
         {
             var actionSection = language switch
             {
-                Languages.ru => $"\n\n🧑‍💼 <b>Действие выполнено:</b> {actionByUserName}",
-                Languages.en => $"\n\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}",
+                Languages.ru => $"\n🧑‍💼 <b>инициатор_ка:</b> {actionByUserName}",
+                Languages.en => $"\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}",
                 _ => $"\n\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}"
             };
-            
+
             if (!string.IsNullOrWhiteSpace(actionByUserTelegram))
             {
                 actionSection += $" ({actionByUserTelegram})";
             }
-            
+
             baseMessage += actionSection;
         }
 
@@ -201,9 +201,9 @@ You can now access to push your cat to the Catbook or to book event for them."
         {
             var commentSection = language switch
             {
-                Languages.ru => $"\n\n💬 <b>Комментарий:</b> {adoptionComment}",
-                Languages.en => $"\n\n💬 <b>Comment:</b> {adoptionComment}",
-                _ => $"\n\n💬 <b>Comment:</b> {adoptionComment}"
+                Languages.ru => $"\n💬 <b>Комментарий:</b> {adoptionComment}",
+                Languages.en => $"\n💬 <b>Comment:</b> {adoptionComment}",
+                _ => $"\n💬 <b>Comment:</b> {adoptionComment}"
             };
             baseMessage += commentSection;
         }

@@ -28,20 +28,17 @@ public class SettingsService(
 
         // Use TestValue in Development environment, Value in Production
         var isDevelopment = Environment.IsDevelopment();
-        var value = isDevelopment ? setting.Value : setting.Value;
+        var value = isDevelopment ? setting.TestValue : setting.Value;
 
         Logger.LogInformation($"Retrieved setting {keyString}: {value} (Environment: {(isDevelopment ? "Development" : "Production")})");
         return value;
     }
 
-    public async Task<long> GetWorkChatId()
+    public async Task<(long ChatId, long TopicId)> GetChatTopicInfo()
     {
-        return await GetSettingValue(SettingValues.WorkChatId);
-    }
-
-    public async Task<long> GetEventTopicId()
-    {
-        return await GetSettingValue(SettingValues.EventTopicId);
+        var workChatId = await GetSettingValue(SettingValues.WorkChatId);
+        var eventTopicId = await GetSettingValue(SettingValues.EventTopicId);
+        return (Convert.ToInt64($"-100{workChatId}"), eventTopicId);
     }
 
     private async Task EnsureSettingsLoaded()

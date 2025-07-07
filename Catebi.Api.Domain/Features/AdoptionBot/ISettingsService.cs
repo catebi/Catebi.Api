@@ -10,12 +10,8 @@ public interface ISettingsService
     Task<long> GetSettingValue(SettingValues key);
 
     /// <summary>
-    /// Get work chat ID for notifications
+    /// Get the chat ID and topic ID for the adoption bot
     /// </summary>
-    Task<long> GetWorkChatId();
-
-    /// <summary>
-    /// Get event topic ID for work chat notifications
-    /// </summary>
-    Task<long> GetEventTopicId();
-} 
+    /// <returns>Tuple containing chat ID and topic ID</returns>
+    Task<(long ChatId, long TopicId)> GetChatTopicInfo();
+}

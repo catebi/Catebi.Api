@@ -86,5 +86,78 @@ public class AdoptionBotAdminCatController(IAdoptionBotCatService CatService,
         }
     }
 
+    /// <summary>
+    /// Register a cat to an event with user validation (owner or admin only)
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> RegisterCatToEvent([FromBody] CatToEventRequest request)
+    {
+        try
+        {
+            var result = await CatService.RegisterCatToEvent(request);
+            return Ok(new ApiResponse
+            {
+                Success = result,
+                Message = result
+                    ? $"🎉 Cat successfully registered to event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+                    : $"Failed to register cat to event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in RegisterCatToEvent - Validation error");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in RegisterCatToEvent");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+    }
+
+    /// <summary>
+    /// Exclude a cat from an event with user validation (owner or admin only)
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> ExcludeCatFromEvent([FromBody] CatToEventRequest request)
+    {
+        try
+        {
+            var result = await CatService.ExcludeCatFromEvent(request);
+            return Ok(new ApiResponse
+            {
+                Success = result,
+                Message = result
+                    ? $"🎉 Cat successfully excluded from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+                    : $"Failed to exclude cat from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in ExcludeCatFromEvent - Validation error");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "⚠️ Error in ExcludeCatFromEvent");
+            return Ok(new ApiResponse
+            {
+                Success = false,
+                Message = ex.Message
+            });
+        }
+    }
 
 }
