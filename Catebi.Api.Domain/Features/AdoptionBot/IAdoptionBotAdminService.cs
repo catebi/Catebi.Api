@@ -51,6 +51,16 @@ public interface IAdoptionBotAdminService
     Task<bool> NotifyAdminsAboutCatAdoption(string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null);
 
     /// <summary>
+    /// Send notification to all admin users about cat registered to event
+    /// </summary>
+    Task<bool> NotifyAdminsAboutCatRegisteredToEvent(string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null);
+
+    /// <summary>
+    /// Send notification to all admin users about cat removed from event
+    /// </summary>
+    Task<bool> NotifyAdminsAboutCatRemovedFromEvent(string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null);
+
+    /// <summary>
     /// Get all admin users from the system
     /// </summary>
     Task<IEnumerable<AtUser>> GetAdminUsers();

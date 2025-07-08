@@ -38,4 +38,24 @@ public interface ILocalizationService
     /// Get admin notification message for cat adoption
     /// </summary>
     string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null);
+
+    /// <summary>
+    /// Get localized message for cat registration to event (for user)
+    /// </summary>
+    string GetCatRegisteredToEventMessage(Languages language, string catName, string eventName, DateTime eventDate, string eventLocation);
+
+    /// <summary>
+    /// Get localized message for cat removal from event (for user)
+    /// </summary>
+    string GetCatRemovedFromEventMessage(Languages language, string catName, string eventName, DateTime eventDate, string eventLocation);
+
+    /// <summary>
+    /// Get admin notification message for cat registered to event
+    /// </summary>
+    string GetAdminCatRegisteredToEventNotification(Languages language, string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null);
+
+    /// <summary>
+    /// Get admin notification message for cat removed from event
+    /// </summary>
+    string GetAdminCatRemovedFromEventNotification(Languages language, string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null);
 } 

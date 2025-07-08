@@ -471,6 +471,68 @@ public class AdoptionBotAdminService(
         }
     }
 
+    public async Task<bool> NotifyAdminsAboutCatRegisteredToEvent(string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null)
+    {
+        Logger.LogInformation($"Notifying work chat about cat registered to event: {catName} (event: {eventName}, action by: {actionByUserName} {actionByUserTelegram})");
+        try
+        {
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
+            var message = LocalizationService.GetAdminCatRegisteredToEventNotification(
+                Languages.ru, catName, ownerName, catRecordId, eventName, eventRecordId, actionByUserName, actionByUserTelegram);
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("🐱 View Cat Profile", $"t.me/CatebiAdoptionBot/eventappa?startapp=admin_cat_{catRecordId}")
+                ]
+            ]);
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                message,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
+            Logger.LogInformation($"Work chat notification sent successfully for cat registered to event: {catName}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error sending work chat notification for cat registered to event: {catName}");
+            return false;
+        }
+    }
+
+    public async Task<bool> NotifyAdminsAboutCatRemovedFromEvent(string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null)
+    {
+        Logger.LogInformation($"Notifying work chat about cat removed from event: {catName} (event: {eventName}, action by: {actionByUserName} {actionByUserTelegram})");
+        try
+        {
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
+            var message = LocalizationService.GetAdminCatRemovedFromEventNotification(
+                Languages.ru, catName, ownerName, catRecordId, eventName, eventRecordId, actionByUserName, actionByUserTelegram);
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("🐱 View Cat Profile", $"t.me/CatebiAdoptionBot/eventappa?startapp=admin_cat_{catRecordId}")
+                ]
+            ]);
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                message,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
+            Logger.LogInformation($"Work chat notification sent successfully for cat removed from event: {catName}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error sending work chat notification for cat removed from event: {catName}");
+            return false;
+        }
+    }
+
     public async Task<IEnumerable<AtUser>> GetAdminUsers()
     {
         Logger.LogInformation("Getting all admin users");

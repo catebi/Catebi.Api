@@ -124,25 +124,25 @@ public class AdoptionBotAdminCatController(IAdoptionBotCatService CatService,
     }
 
     /// <summary>
-    /// Exclude a cat from an event with user validation (owner or admin only)
+    /// Remove a cat from an event with user validation (owner or admin only)
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> ExcludeCatFromEvent([FromBody] CatToEventRequest request)
+    public async Task<IActionResult> RemoveCatFromEvent([FromBody] CatToEventRequest request)
     {
         try
         {
-            var result = await CatService.ExcludeCatFromEvent(request);
+            var result = await CatService.RemoveCatFromEvent(request);
             return Ok(new ApiResponse
             {
                 Success = result,
                 Message = result
-                    ? $"🎉 Cat successfully excluded from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
-                    : $"Failed to exclude cat from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+                    ? $"🎉 Cat successfully removed from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
+                    : $"Failed to remove cat from event. Cat ID: {request.CatRecordId}, Event ID: {request.EventRecordId}"
             });
         }
         catch (ArgumentException ex)
         {
-            Logger.LogError(ex, "⚠️ Error in ExcludeCatFromEvent - Validation error");
+            Logger.LogError(ex, "⚠️ Error in RemoveCatFromEvent - Validation error");
             return Ok(new ApiResponse
             {
                 Success = false,
@@ -151,7 +151,7 @@ public class AdoptionBotAdminCatController(IAdoptionBotCatService CatService,
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "⚠️ Error in ExcludeCatFromEvent");
+            Logger.LogError(ex, "⚠️ Error in RemoveCatFromEvent");
             return Ok(new ApiResponse
             {
                 Success = false,

@@ -513,7 +513,14 @@ public class AdoptionBotCatService(
         {
             try
             {
-                var message = $"🎉 Great news! Your cat '{catModel.Name}' has been successfully registered for the event '{eventModel.Name}' on {eventModel.When:yyyy-MM-dd} at {eventModel.Where}.";
+                // Use the owner's language for localization
+                var ownerLanguage = Languages.en;
+                var ownerResponse = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catModel.OwnerRecordId);
+                if (ownerResponse.Success && ownerResponse.Record != null)
+                {
+                    ownerLanguage = ownerResponse.Record.Fields.Language;
+                }
+                var message = LocalizationService.GetCatRegisteredToEventMessage(ownerLanguage, catModel.Name, eventModel.Name, eventModel.When, eventModel.Where);
                 await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
                 Logger.LogInformation($"Notification sent to cat owner: {catModel.OwnerName}");
             }
@@ -523,11 +530,28 @@ public class AdoptionBotCatService(
                 // Don't throw here, registration was successful
             }
         }
+        // Send admin notification
+        try
+        {
+            await AdminService.NotifyAdminsAboutCatRegisteredToEvent(
+                catModel.Name,
+                catModel.OwnerName!,
+                catModel.RecordId!,
+                eventModel.Name,
+                eventModel.RecordId!,
+                userModel.Name,
+                userModel.Telegram
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to notify admins about cat registration to event for {catModel.Name}");
+        }
 
         return true;
     }
 
-    public async Task<bool> ExcludeCatFromEvent(CatToEventRequest request)
+    public async Task<bool> RemoveCatFromEvent(CatToEventRequest request)
     {
         Logger.LogInformation($"Excluding cat {request.CatRecordId} from event {request.EventRecordId} by user {request.UserRecordId}");
 
@@ -558,7 +582,7 @@ public class AdoptionBotCatService(
         if (!isOwner && !isAdmin)
         {
             throw new Exception($"Access denied. User '{userModel.Name}' ({userModel.Telegram}) is not the owner of cat '{catModel.Name}' and does not have Admin role. " +
-                $"Only the cat owner or admins can exclude a cat from an event.");
+                $"Only the cat owner or admins can remove a cat from an event.");
         }
 
         Logger.LogInformation($"Permission granted: User '{userModel.Name}' is {(isOwner ? "the owner" : "an admin")}");
@@ -593,14 +617,21 @@ public class AdoptionBotCatService(
             throw new Exception($"Error excluding cat '{catModel.Name}' from event '{eventModel.Name}': {updateResponse.AirtableApiError.ErrorMessage}");
         }
 
-        Logger.LogInformation($"Successfully excluded cat '{catModel.Name}' from event '{eventModel.Name}' by user '{userModel.Name}'");
+        Logger.LogInformation($"Successfully removed cat '{catModel.Name}' from event '{eventModel.Name}' by user '{userModel.Name}'");
 
         // Optional: Send notification to cat owner
         if (catModel.OwnerTelegramChatId != 0)
         {
             try
             {
-                var message = $"Your cat '{catModel.Name}' has been removed from the event '{eventModel.Name}' on {eventModel.When:yyyy-MM-dd} at {eventModel.Where}.";
+                // Use the owner's language for localization
+                var ownerLanguage = Languages.en;
+                var ownerResponse = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, catModel.OwnerRecordId);
+                if (ownerResponse.Success && ownerResponse.Record != null)
+                {
+                    ownerLanguage = ownerResponse.Record.Fields.Language;
+                }
+                var message = LocalizationService.GetCatRemovedFromEventMessage(ownerLanguage, catModel.Name, eventModel.Name, eventModel.When, eventModel.Where);
                 await TelegramBotClient.SendMessage(catModel.OwnerTelegramChatId, message);
                 Logger.LogInformation($"Notification sent to cat owner: {catModel.OwnerName}");
             }
@@ -609,6 +640,23 @@ public class AdoptionBotCatService(
                 Logger.LogWarning(ex, $"Failed to send notification to cat owner {catModel.OwnerName}");
                 // Don't throw here, exclusion was successful
             }
+        }
+        // Send admin notification
+        try
+        {
+            await AdminService.NotifyAdminsAboutCatRemovedFromEvent(
+                catModel.Name,
+                catModel.OwnerName!,
+                catModel.RecordId!,
+                eventModel.Name,
+                eventModel.RecordId!,
+                userModel.Name,
+                userModel.Telegram
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to notify admins about cat removal from event for {catModel.Name}");
         }
 
         return true;
@@ -659,7 +707,7 @@ public class AdoptionBotCatService(
         // Update cat status to Adopted and add adoption comment if provided
         var updatedFields = new Fields();
         updatedFields.AddField("Status", CatStatuses.Adopted.ToString());
-        
+
         if (!string.IsNullOrWhiteSpace(adoptionComment))
         {
             updatedFields.AddField("AdoptionComment", adoptionComment);
@@ -731,7 +779,7 @@ public class AdoptionBotCatService(
 
                         // Use offset for pagination (null for first page)
             var offsetToUse = request.Offset;
-            
+
             if (string.IsNullOrEmpty(offsetToUse))
             {
                 Logger.LogInformation("Starting pagination from first page");
@@ -793,7 +841,7 @@ public class AdoptionBotCatService(
             // No need for client-side pagination since Airtable handled it
 
                         Logger.LogInformation($"Retrieved {totalCats} cats from Airtable for request (Offset: {request.Offset})");
-            
+
             return new ViewModels.PaginatedResponse<CatDto>
             {
                 Records = cats,

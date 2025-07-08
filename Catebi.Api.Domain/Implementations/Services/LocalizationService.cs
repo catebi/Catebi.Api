@@ -211,6 +211,76 @@ You can now access to push your cat to the Catbook or to book event for them."
         return baseMessage;
     }
 
+    public string GetCatRegisteredToEventMessage(Languages language, string catName, string eventName, DateTime eventDate, string eventLocation)
+    {
+        return language switch
+        {
+            Languages.ru => $"🎉 Отличные новости! Ваша кошка (кот) '{catName}' успешно зарегистрирована на мероприятие '{eventName}' {eventDate:yyyy-MM-dd} в {eventLocation}.",
+            Languages.en => $"🎉 Great news! Your cat '{catName}' has been successfully registered for the event '{eventName}' on {eventDate:yyyy-MM-dd} at {eventLocation}.",
+            _ => $"🎉 Great news! Your cat '{catName}' has been successfully registered for the event '{eventName}' on {eventDate:yyyy-MM-dd} at {eventLocation}."
+        };
+    }
+
+    public string GetCatRemovedFromEventMessage(Languages language, string catName, string eventName, DateTime eventDate, string eventLocation)
+    {
+        return language switch
+        {
+            Languages.ru => $"❗️ Ваша кошка (кот) '{catName}' была удалена из мероприятия '{eventName}' {eventDate:yyyy-MM-dd} в {eventLocation}.",
+            Languages.en => $"❗️ Your cat '{catName}' has been removed from the event '{eventName}' on {eventDate:yyyy-MM-dd} at {eventLocation}.",
+            _ => $"❗️ Your cat '{catName}' has been removed from the event '{eventName}' on {eventDate:yyyy-MM-dd} at {eventLocation}."
+        };
+    }
+
+    public string GetAdminCatRegisteredToEventNotification(Languages language, string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null)
+    {
+        var baseMessage = language switch
+        {
+            Languages.ru => $"\uD83C\uDF89 <b>Кошка (кот) зарегистрирована на мероприятие</b>\n\n<b>Кошка (кот):</b> {catName}\n<b>Владелец:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Мероприятие:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}",
+            Languages.en => $"\uD83C\uDF89 <b>Cat registered to event</b>\n\n<b>Cat:</b> {catName}\n<b>Owner:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Event:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}",
+            _ => $"\uD83C\uDF89 <b>Cat registered to event</b>\n\n<b>Cat:</b> {catName}\n<b>Owner:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Event:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}"
+        };
+        if (!string.IsNullOrWhiteSpace(actionByUserName))
+        {
+            var actionSection = language switch
+            {
+                Languages.ru => $"\n🧑‍💼 <b>инициатор_ка:</b> {actionByUserName}",
+                Languages.en => $"\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}",
+                _ => $"\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}"
+            };
+            if (!string.IsNullOrWhiteSpace(actionByUserTelegram))
+            {
+                actionSection += $" ({actionByUserTelegram})";
+            }
+            baseMessage += actionSection;
+        }
+        return baseMessage;
+    }
+
+    public string GetAdminCatRemovedFromEventNotification(Languages language, string catName, string ownerName, string catRecordId, string eventName, string eventRecordId, string? actionByUserName = null, string? actionByUserTelegram = null)
+    {
+        var baseMessage = language switch
+        {
+            Languages.ru => $"❗️ <b>Кошка (кот) удалена из мероприятия</b>\n\n<b>Кошка (кот):</b> {catName}\n<b>Владелец:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Мероприятие:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}",
+            Languages.en => $"❗️ <b>Cat removed from event</b>\n\n<b>Cat:</b> {catName}\n<b>Owner:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Event:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}",
+            _ => $"❗️ <b>Cat removed from event</b>\n\n<b>Cat:</b> {catName}\n<b>Owner:</b> {ownerName}\n<b>CatRecordId:</b> {catRecordId}\n<b>Event:</b> {eventName}\n<b>EventRecordId:</b> {eventRecordId}"
+        };
+        if (!string.IsNullOrWhiteSpace(actionByUserName))
+        {
+            var actionSection = language switch
+            {
+                Languages.ru => $"\n🧑‍💼 <b>инициатор_ка:</b> {actionByUserName}",
+                Languages.en => $"\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}",
+                _ => $"\n🧑‍💼 <b>Action performed by:</b> {actionByUserName}"
+            };
+            if (!string.IsNullOrWhiteSpace(actionByUserTelegram))
+            {
+                actionSection += $" ({actionByUserTelegram})";
+            }
+            baseMessage += actionSection;
+        }
+        return baseMessage;
+    }
+
     private string GetVolunteerStatusText(Languages language)
     {
         return language switch

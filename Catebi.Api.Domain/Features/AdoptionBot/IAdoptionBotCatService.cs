@@ -51,9 +51,9 @@ public interface IAdoptionBotCatService
     Task<bool> RegisterCatToEvent(CatToEventRequest request);
 
     /// <summary>
-    /// Exclude a cat from an event.
+    /// Remove a cat from an event.
     /// </summary>
-    Task<bool> ExcludeCatFromEvent(CatToEventRequest request);
+    Task<bool> RemoveCatFromEvent(CatToEventRequest request);
 
     /// <summary>
     /// Mark a cat as adopted and notify admins.
