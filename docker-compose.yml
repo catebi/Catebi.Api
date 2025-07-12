@@ -24,6 +24,7 @@ services:
       - VersionInfo__Version=${VERSION}
       - VersionInfo__Build=${BUILD}
       - AdoptionBot__Telegram__Token=${ADOPTIONBOT_TELEGRAM_TOKEN}
+      - AdoptionBot__Telegram__CommonBotToken=${ADOPTIONBOT_COMMON_BOT_TOKEN}
       - AdoptionBot__Airtable__ApiKey=${ADOPTIONBOT_AIRTABLE_APIKEY}
       - AdoptionBot__Airtable__BaseId=${ADOPTIONBOT_AIRTABLE_BASEID}
     networks:
