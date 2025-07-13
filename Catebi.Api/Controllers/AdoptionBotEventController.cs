@@ -6,8 +6,7 @@ namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionBotEventController(IAdoptionBotEventService EventService,
-                                      ILogger<AdoptionBotEventController> Logger) : ControllerBase
+public class AdoptionBotEventController(IAdoptionBotEventService EventService) : ControllerBase
 {
     /// <summary>
     /// Get all events
@@ -15,16 +14,8 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpGet]
     public async Task<IActionResult> GetAllEvents()
     {
-        try
-        {
-            var events = await EventService.GetAllEvents();
-            return Ok(events);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting all events");
-            return StatusCode(500, new { ex.Message });
-        }
+        var events = await EventService.GetAllEvents();
+        return Ok(events);
     }
 
     /// <summary>
@@ -33,16 +24,8 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpGet]
     public async Task<IActionResult> GetEventsByStatus([FromQuery] string status)
     {
-        try
-        {
-            var events = await EventService.GetEventsByStatus(status);
-            return Ok(events);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting events by status");
-            return StatusCode(500, new { ex.Message });
-        }
+        var events = await EventService.GetEventsByStatus(status);
+        return Ok(events);
     }
 
     /// <summary>
@@ -51,20 +34,12 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpGet]
     public async Task<IActionResult> GetEventById([FromQuery] string recordId)
     {
-        try
+        var event_ = await EventService.GetEventById(recordId);
+        if (event_ == null)
         {
-            var event_ = await EventService.GetEventById(recordId);
-            if (event_ == null)
-            {
-                return NotFound(new { Message = $"Event with ID {recordId} not found." });
-            }
-            return Ok(event_);
+            return NotFound(new { Message = $"Event with ID {recordId} not found." });
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting event by ID");
-            return StatusCode(500, new { ex.Message });
-        }
+        return Ok(event_);
     }
 
     /// <summary>
@@ -73,16 +48,8 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpPost]
     public async Task<IActionResult> AddEvent([FromBody] EventDto event_)
     {
-        try
-        {
-            var result = await EventService.AddEvent(event_);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error adding event");
-            return StatusCode(500, new { ex.Message });
-        }
+        var result = await EventService.AddEvent(event_);
+        return Ok(result);
     }
 
     /// <summary>
@@ -91,61 +58,37 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpPut]
     public async Task<IActionResult> UpdateEvent([FromBody] EventDto event_)
     {
-        try
+        if (string.IsNullOrEmpty(event_.RecordId))
         {
-            if (string.IsNullOrEmpty(event_.RecordId))
-            {
-                return BadRequest(new { Message = "Record ID is required for updating an event." });
-            }
+            return BadRequest(new { Message = "Record ID is required for updating an event." });
+        }
 
-            var result = await EventService.UpdateEvent(event_);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error updating event");
-            return StatusCode(500, new { ex.Message });
-        }
+        var result = await EventService.UpdateEvent(event_);
+        return Ok(result);
     }
 
     [HttpGet]
     public async Task<IActionResult> OpenEventRegistration([FromQuery] string id)
     {
-        try
+        var result = await EventService.OpenEventRegistration(id);
+        if (result)
         {
-            var result = await EventService.OpenEventRegistration(id);
-            if (result)
-            {
-                return Ok(new { Message = $"🎉 event registration ({id}) opened." });
-            }
+            return Ok(new { Message = $"🎉 event registration ({id}) opened." });
+        }
 
-            return StatusCode(500, new { Message = $"Failed to open event registration {id}." });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error opening event registration");
-            return StatusCode(500, new { ex.Message });
-        }
+        return StatusCode(500, new { Message = $"Failed to open event registration {id}." });
     }
 
     [HttpGet]
     public async Task<IActionResult> CloseEventRegistration([FromQuery] string id)
     {
-        try
+        var result = await EventService.CloseEventRegistration(id);
+        if (result)
         {
-            var result = await EventService.CloseEventRegistration(id);
-            if (result)
-            {
-                return Ok(new { Message = $"🎉 event registration ({id}) closed." });
-            }
+            return Ok(new { Message = $"🎉 event registration ({id}) closed." });
+        }
 
-            return StatusCode(500, new { Message = $"Failed to close event registration {id}." });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error closing event registration");
-            return StatusCode(500, new { ex.Message });
-        }
+        return StatusCode(500, new { Message = $"Failed to close event registration {id}." });
     }
 
     /// <summary>
@@ -154,15 +97,7 @@ public class AdoptionBotEventController(IAdoptionBotEventService EventService,
     [HttpGet]
     public async Task<IActionResult> GetEventCats([FromQuery] string eventRecordId)
     {
-        try
-        {
-            var cats = await EventService.GetEventCats(eventRecordId);
-            return Ok(cats);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting event cats");
-            return StatusCode(500, new { ex.Message });
-        }
+        var cats = await EventService.GetEventCats(eventRecordId);
+        return Ok(cats);
     }
 } 

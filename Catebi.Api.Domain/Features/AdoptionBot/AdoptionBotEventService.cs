@@ -16,8 +16,7 @@ public class AdoptionBotEventService(
 {
     private readonly string EventTableName = AirTables.Event.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
-    private readonly string UserTableName = AirTables.User.ToString();
-    private readonly string StatusColumnName = "Status";
+    private readonly string UserTableName = AirTables.User.ToString();    
 
     public async Task<IEnumerable<EventDto>> GetAllEvents()
     {
@@ -174,7 +173,7 @@ public class AdoptionBotEventService(
         }
 
         var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, EventStatuses.BookingOpen.ToString());
+        updatedFields.AddField("Status", EventStatuses.BookingOpen.ToString());
         var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
 
         if (!updateResponse.Success)
@@ -255,7 +254,7 @@ public class AdoptionBotEventService(
         }
 
         var updatedFields = new Fields();
-        updatedFields.AddField(StatusColumnName, EventStatuses.Finished.ToString());
+        updatedFields.AddField("Status", EventStatuses.Finished.ToString());
         var updateResponse = await AirtableRepository.UpdateRecord(EventTableName, updatedFields, atEventId);
 
         if (!updateResponse.Success)

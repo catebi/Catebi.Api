@@ -10,6 +10,7 @@ using Telegram.Bot;
 
 using Catebi.Api.HealthChecks;
 using Catebi.Api.Domain.Features.AdoptionBot;
+using Catebi.Api.ExceptionHandlers;
 
 namespace Catebi.Api;
 
@@ -66,7 +67,6 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<ICatService, CatService>();
         services.AddScoped<IFreeganService, FreeganService>();
         services.AddScoped<IWorkTaskService, WorkTaskService>();
-        services.AddScoped<IAdoptionBotActionService, AdoptionBotActionService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IAirtableRepository, AirtableRepository>();
         services.AddScoped<IAdoptionBotUserService, AdoptionBotUserService>();
@@ -175,6 +175,11 @@ public class Startup(IConfiguration configuration)
 
         // Register localization service
         services.AddScoped<ILocalizationService, LocalizationService>();
+
+        // Register exception handlers
+        services.AddExceptionHandler<ValidationExceptionHandler>();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -194,6 +199,9 @@ public class Startup(IConfiguration configuration)
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
+
+        // Add exception handling middleware
+        app.UseExceptionHandler();
 
         app.UseCors("CorsPolicy");
 

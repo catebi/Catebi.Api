@@ -6,8 +6,7 @@ namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionBotUserController( IAdoptionBotUserService             UserService ,
-                                        ILogger<AdoptionBotUserController>  Logger        ) : ControllerBase
+public class AdoptionBotUserController(IAdoptionBotUserService UserService) : ControllerBase
 {
     /// <summary>
     /// Register a new user
@@ -15,16 +14,8 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     [HttpPost]
     public async Task<IActionResult> RegisterUser([FromBody] UserDto user)
     {
-        try
-        {
-            var result = await UserService.RegisterUser(user);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error registering user");
-            return StatusCode(500, new { ex.Message });
-        }
+        var result = await UserService.RegisterUser(user);
+        return Ok(result);
     }
 
     /// <summary>
@@ -33,20 +24,12 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     [HttpGet]
     public async Task<IActionResult> FindUserByTelegramId([FromQuery] long telegramId)
     {
-        try
+        var result = await UserService.FindUserByTelegramId(telegramId);
+        if (result == null)
         {
-            var result = await UserService.FindUserByTelegramId(telegramId);
-            if (result == null)
-            {
-                return NotFound(new { Message = $"User with Telegram ID {telegramId} not found." });
-            }
-            return Ok(result);
+            return NotFound(new { Message = $"User with Telegram ID {telegramId} not found." });
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error finding user by Telegram ID");
-            return StatusCode(500, new { ex.Message });
-        }
+        return Ok(result);
     }
 
     /// <summary>
@@ -55,36 +38,20 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     [HttpPut]
     public async Task<IActionResult> UpdateUser([FromBody] UserDto user)
     {
-        try
+        if (string.IsNullOrEmpty(user.RecordId))
         {
-            if (string.IsNullOrEmpty(user.RecordId))
-            {
-                return BadRequest(new { Message = "Record ID is required for updating a user." });
-            }
+            return BadRequest(new { Message = "Record ID is required for updating a user." });
+        }
 
-            var result = await UserService.UpdateUser(user);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error updating user");
-            return StatusCode(500, new { ex.Message });
-        }
+        var result = await UserService.UpdateUser(user);
+        return Ok(result);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetUserPayments([FromQuery] string userRecordId)
     {
-        try
-        {
-            var payments = await UserService.GetUserPayments(userRecordId);
-            return Ok(payments);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting user payments");
-            return StatusCode(500, new { ex.Message });
-        }
+        var payments = await UserService.GetUserPayments(userRecordId);
+        return Ok(payments);
     }
 
     /// <summary>
@@ -93,15 +60,7 @@ public class AdoptionBotUserController( IAdoptionBotUserService             User
     [HttpGet]
     public async Task<IActionResult> GetCats([FromQuery] string userRecordId)
     {
-        try
-        {
-            var cats = await UserService.GetCats(userRecordId);
-            return Ok(cats);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error getting cats for user");
-            return StatusCode(500, new { ex.Message });
-        }
+        var cats = await UserService.GetCats(userRecordId);
+        return Ok(cats);
     }
 }

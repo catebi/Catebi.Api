@@ -22,7 +22,7 @@ public class AdoptionBotAdminService(
     private readonly string MessageTableName = AirTables.Message.ToString();
     private readonly string StatusColumnName = "Status";
 
-        private static string ConvertHtmlToTelegramFormat(string htmlContent)
+    private static string ConvertHtmlToTelegramFormat(string htmlContent)
     {
         if (string.IsNullOrEmpty(htmlContent))
             return htmlContent;

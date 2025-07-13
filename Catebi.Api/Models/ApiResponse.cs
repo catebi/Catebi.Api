@@ -1,4 +1,4 @@
-namespace Catebi.Api.Controllers;
+namespace Catebi.Api.Models;
 
 public class ApiResponse
 {

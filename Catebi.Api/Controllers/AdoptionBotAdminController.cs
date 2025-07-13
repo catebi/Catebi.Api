@@ -6,8 +6,7 @@ namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService,
-                                      ILogger<AdoptionBotAdminController> Logger) : ControllerBase
+public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService) : ControllerBase
 {
     /// <summary>
     /// User account confirmation with additional details
@@ -15,33 +14,21 @@ public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService,
     [HttpPost]
     public async Task<IActionResult> ConfirmUser([FromBody] ConfirmUserRequest request)
     {
-        try
+        var result = await AdminService.ConfirmUser(request.RecordId, request.IsVolunteer, request.Notes);
+        if (result)
         {
-            var result = await AdminService.ConfirmUser(request.RecordId, request.IsVolunteer, request.Notes);
-            if (result)
+            return Ok(new ApiResponse
             {
-                return Ok(new ApiResponse
-                {
-                    Success = true,
-                    Message = $"🎉 user {request.RecordId} confirmed and notified."
-                });
-            }
+                Success = true,
+                Message = $"🎉 user {request.RecordId} confirmed and notified."
+            });
+        }
 
-            return Ok(new ApiResponse
-            {
-                Success = false,
-                Message = $"Failed to confirm user {request.RecordId}."
-            });
-        }
-        catch (Exception ex)
+        return Ok(new ApiResponse
         {
-            Logger.LogError(ex, "⚠️ Error confirming user");
-            return Ok(new ApiResponse
-            {
-                Success = false,
-                Message = ex.Message
-            });
-        }
+            Success = false,
+            Message = $"Failed to confirm user {request.RecordId}."
+        });
     }
 
     /// <summary>
@@ -50,62 +37,27 @@ public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService,
     [HttpGet]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsersToConfirm()
     {
-        try
-        {
-            var users = await AdminService.GetUsersToConfirm();
-            return Ok(users);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error getting users to confirm");
-            return BadRequest(new { message = ex.Message });
-        }
+        var users = await AdminService.GetUsersToConfirm();
+        return Ok(users);
     }
 
     [HttpGet]
     public async Task<IActionResult> ConfirmCatPayment([FromQuery] string paymentRecordId)
     {
-        try
+        var result = await AdminService.ConfirmCatPayment(paymentRecordId);
+        return Ok(new ApiResponse
         {
-            var result = await AdminService.ConfirmCatPayment(paymentRecordId);
-            return Ok(new ApiResponse
-            {
-                Success = result,
-                Message = result
-                    ? $"🎉 cat payment ({paymentRecordId}) confirmed and notified."
-                    : $"Failed to confirm cat payment {paymentRecordId}."
-            });
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "⚠️ Error confirming cat payment");
-            return Ok(new ApiResponse
-            {
-                Success = false,
-                Message = ex.Message
-            });
-        }
+            Success = result,
+            Message = result
+                ? $"🎉 cat payment ({paymentRecordId}) confirmed and notified."
+                : $"Failed to confirm cat payment {paymentRecordId}."
+        });
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CatPaymentDto>>> GetPaymentsToConfirm()
     {
-        try
-        {
-            var payments = await AdminService.GetPaymentsToConfirm();
-            return Ok(payments);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error getting payments to confirm");
-            return BadRequest(new { message = ex.Message });
-        }
+        var payments = await AdminService.GetPaymentsToConfirm();
+        return Ok(payments);
     }
-}
-
-public class ConfirmUserRequest
-{
-    public string RecordId { get; set; }
-    public bool IsVolunteer { get; set; }
-    public string? Notes { get; set; }
 }
