@@ -8,11 +8,8 @@ namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public partial class AdoptionBotCatController(IAdoptionBotCatService CatService,
-                                      IFileService FileService,
-                                      ILogger<AdoptionBotCatController> Logger) : ControllerBase
+public class AdoptionBotCatController(IAdoptionBotCatService CatService, IFileService FileService) : ControllerBase
 {
-
     /// <summary>
     /// Add a new cat record
     /// </summary>
@@ -24,34 +21,7 @@ public partial class AdoptionBotCatController(IAdoptionBotCatService CatService,
         // Handle main photo upload if provided
         if (mainPhoto != null)
         {
-            Logger.LogInformation($"📄 Received main photo for new cat: {mainPhoto.FileName}");
-            Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
-
-            using var memoryStream = new MemoryStream();
-            await mainPhoto.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-            var extension = Path.GetExtension(mainPhoto.FileName);
-            var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
-            var fileSize = mainPhoto.Length;
-            var fileType = mainPhoto.ContentType;
-
-            Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
-
-            var fileRequest = new FileStorageDto
-            {
-                FileName = fileName,
-                Size = fileSize,
-                ContentType = fileType,
-                Data = memoryStream.ToArray()
-            };
-
-            Logger.LogInformation($"💾 About to save file to storage...");
-            var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-            Logger.LogInformation($"✅ Main photo uploaded successfully: {uploadedFile.FileStorageId}");
-
-            fileRequest.FileStorageId = uploadedFile.FileStorageId;
-            mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
-            Logger.LogInformation($"🔗 Generated main photo URL: {mainPhotoUrl}");
+            mainPhotoUrl = await FileService.ProcessFileUploadAsync(mainPhoto, "main_photo");
         }
 
         // Create CatDto from request
@@ -105,34 +75,7 @@ public partial class AdoptionBotCatController(IAdoptionBotCatService CatService,
         // Handle main photo upload if provided
         if (mainPhoto != null)
         {
-            Logger.LogInformation($"📄 Received main photo for cat update: {mainPhoto.FileName}");
-            Logger.LogInformation($"📊 File details - Size: {mainPhoto.Length} bytes, ContentType: '{mainPhoto.ContentType}'");
-
-            using var memoryStream = new MemoryStream();
-            await mainPhoto.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
-            var extension = Path.GetExtension(mainPhoto.FileName);
-            var fileName = Path.GetFileName(mainPhoto.FileName) ?? $"main_photo_{DateTime.UtcNow:yyyyMMddHHmmss}.{extension}";
-            var fileSize = mainPhoto.Length;
-            var fileType = mainPhoto.ContentType;
-
-            Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
-
-            var fileRequest = new FileStorageDto
-            {
-                FileName = fileName,
-                Size = fileSize,
-                ContentType = fileType,
-                Data = memoryStream.ToArray()
-            };
-
-            Logger.LogInformation($"💾 About to save file to storage...");
-            var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-            Logger.LogInformation($"✅ Main photo uploaded successfully: {uploadedFile.FileStorageId}");
-
-            fileRequest.FileStorageId = uploadedFile.FileStorageId;
-            mainPhotoUrl = FileService.GenerateFileUrl(fileRequest);
-            Logger.LogInformation($"🔗 Generated main photo URL: {mainPhotoUrl}");
+            mainPhotoUrl = await FileService.ProcessFileUploadAsync(mainPhoto, "main_photo");
         }
 
         // Create CatDto from request
@@ -166,36 +109,7 @@ public partial class AdoptionBotCatController(IAdoptionBotCatService CatService,
     [HttpPost]
     public async Task<IActionResult> AddCatPhoto(string catRecordId, IFormFile file)
     {
-        Logger.LogInformation($"📄 Received file for cat record: {file.FileName}");
-        Logger.LogInformation($"📊 File details - Size: {file.Length} bytes, ContentType: '{file.ContentType}'");
-
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-        var extension = Path.GetExtension(file.FileName);
-        var fileName = Path.GetFileName(file.FileName) ?? $"cat_{catRecordId}.{extension}";
-        var fileSize = file.Length;
-        var fileType = file.ContentType;
-
-        Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
-
-        var fileRequest = new FileStorageDto
-        {
-            FileName = fileName,
-            Size = fileSize,
-            ContentType = fileType,
-            Data = memoryStream.ToArray()
-        };
-
-        Logger.LogInformation($"💾 About to save file to storage...");
-        var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-
-        Logger.LogInformation($"✅ File uploaded successfully: {uploadedFile.FileStorageId}");
-
-        fileRequest.FileStorageId = uploadedFile.FileStorageId;
-        var fileUrl = FileService.GenerateFileUrl(fileRequest);
-
-        Logger.LogInformation($"🔗 Generated file URL: {fileUrl}");
+        var fileUrl = await FileService.ProcessFileUploadAsync(file, $"cat_{catRecordId}");
 
         var result = await CatService.AddCatPhoto(catRecordId, fileUrl);
         if (result)

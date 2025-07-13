@@ -7,9 +7,7 @@ namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-public class AdoptionBotCatPaymentController(IAdoptionBotCatService CatService,
-                                      IFileService FileService,
-                                      ILogger<AdoptionBotCatPaymentController> Logger) : ControllerBase
+public class AdoptionBotCatPaymentController(IAdoptionBotCatService CatService, IFileService FileService) : ControllerBase
 {
     /// <summary>
     /// Get payments for a specific cat
@@ -24,31 +22,7 @@ public class AdoptionBotCatPaymentController(IAdoptionBotCatService CatService,
     [HttpPost]
     public async Task<IActionResult> AddCatPayment(string catRecordId, IFormFile file)
     {
-        Logger.LogInformation($"Received file for cat payment confirmation: {file.FileName}");
-        using var memoryStream = new MemoryStream();
-        await file.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-        var extension = Path.GetExtension(file.FileName);
-        var fileName = Path.GetFileName(file.FileName) ?? $"confirmation_{catRecordId}.{extension}";
-        var fileSize = file.Length;
-        var fileType = file.ContentType;
-
-        var fileRequest = new FileStorageDto
-        {
-            FileName = fileName,
-            Size = fileSize,
-            ContentType = fileType,
-            Data = memoryStream.ToArray()
-        };
-
-        var uploadedFile = await FileService.SaveFileAsync(fileRequest);
-
-        Logger.LogInformation($"File uploaded successfully: {uploadedFile.FileStorageId}");
-
-        fileRequest.FileStorageId = uploadedFile.FileStorageId;
-        var fileUrl = FileService.GenerateFileUrl(fileRequest);
-
-        Logger.LogInformation($"Generated file URL: {fileUrl}");
+        var fileUrl = await FileService.ProcessFileUploadAsync(file, $"confirmation_{catRecordId}");
 
         var result = await CatService.AddCatPayment(catRecordId, fileUrl);
         if (result != null)

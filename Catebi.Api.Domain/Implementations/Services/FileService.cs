@@ -6,7 +6,8 @@ using System.Text;
 namespace Catebi.Api.Domain.Implementations.Services;
 
 public class FileService( CatebiContext        Context,
-                          IHttpContextAccessor HttpContextAccessor) : IFileService
+                          IHttpContextAccessor HttpContextAccessor,
+                          ILogger<FileService> Logger) : IFileService
 {
     private const int MaxFileSize = 10 * 1024 * 1024;
     private static readonly string[] AllowedMimeTypes = [ "image/jpeg", "image/png", "image/gif", "image/heic", "image/heif" ];
@@ -134,4 +135,39 @@ public class FileService( CatebiContext        Context,
     }
 
     private async Task<FileStorage?> GetFileAsync(Guid id) => await Context.FileStorage.FindAsync(id);
+
+    public async Task<string> ProcessFileUploadAsync(IFormFile file, string? prefix = null)
+    {
+        Logger.LogInformation($"📄 Received file: {file.FileName}");
+        Logger.LogInformation($"📊 File details - Size: {file.Length} bytes, ContentType: '{file.ContentType}'");
+
+        using var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        var extension = Path.GetExtension(file.FileName);
+        var fileName = Path.GetFileName(file.FileName) ?? $"{prefix ?? "file"}_{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
+        var fileSize = file.Length;
+        var fileType = file.ContentType;
+
+        Logger.LogInformation($"🔄 Processing file - Name: '{fileName}', Size: {fileSize}, Type: '{fileType}', Extension: '{extension}'");
+
+        var fileRequest = new FileStorageDto
+        {
+            FileName = fileName,
+            Size = fileSize,
+            ContentType = fileType,
+            Data = memoryStream.ToArray()
+        };
+
+        Logger.LogInformation($"💾 About to save file to storage...");
+        var uploadedFile = await SaveFileAsync(fileRequest);
+        Logger.LogInformation($"✅ File uploaded successfully: {uploadedFile.FileStorageId}");
+
+        fileRequest.FileStorageId = uploadedFile.FileStorageId;
+        var fileUrl = GenerateFileUrl(fileRequest);
+        Logger.LogInformation($"🔗 Generated file URL: {fileUrl}");
+
+        return fileUrl;
+    }
 }
