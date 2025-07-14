@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using AirtableApiClient;
@@ -11,6 +12,9 @@ using Telegram.Bot;
 using Catebi.Api.HealthChecks;
 using Catebi.Api.Domain.Features.AdoptionBot;
 using Catebi.Api.ExceptionHandlers;
+using Catebi.Api.Authorization;
+using Catebi.Api.Authorization.Requirements;
+using Catebi.Api.Middleware;
 
 namespace Catebi.Api;
 
@@ -22,6 +26,27 @@ public class Startup(IConfiguration configuration)
     };
 
     public IConfiguration Configuration { get; } = configuration;
+
+    private string[] GetAllowedOrigins()
+    {
+        // First try to get from appsettings as array
+        var originsFromArray = Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        if (originsFromArray != null && originsFromArray.Length > 0)
+        {
+            return originsFromArray;
+        }
+
+        // If not found as array, try to get as comma-separated string (for environment variables)
+        var originsFromString = Configuration["Cors:AllowedOrigins"];
+        if (!string.IsNullOrEmpty(originsFromString))
+        {
+            return originsFromString.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                   .Select(origin => origin.Trim())
+                                   .ToArray();
+        }
+
+        return [];
+    }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -38,8 +63,35 @@ public class Startup(IConfiguration configuration)
           .AddEntityFrameworkStores<IdentityContext>()
           .AddDefaultTokenProviders();
 
-        services.AddAuthentication();
-        services.AddAuthorization();
+        // Add Telegram authentication
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "Telegram";
+            options.DefaultChallengeScheme = "Telegram";
+        })
+        .AddScheme<TelegramAuthenticationSchemeOptions, TelegramAuthenticationHandler>("Telegram", null);
+
+        // Add authorization with policies
+        services.AddAuthorization(options =>
+        {
+            // Default policy requires authenticated user
+            options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes("Telegram")
+                .Build();
+
+            // Registered user policy
+            options.AddPolicy("RegisteredUser", policy =>
+                policy.Requirements.Add(new RegisteredUserRequirement()));
+
+            // Admin policy
+            options.AddPolicy("Admin", policy =>
+                policy.Requirements.Add(new AdminRequirement()));
+        });
+
+        // Register authorization handlers
+        services.AddScoped<IAuthorizationHandler, RegisteredUserHandler>();
+        services.AddScoped<IAuthorizationHandler, AdminHandler>();
 
         services.Configure<NotionApiSettings>(Configuration.GetSection("NotionApi"));
         var notionAuthToken = Configuration.GetSection("NotionApi:AuthToken").Value;
@@ -103,11 +155,13 @@ public class Startup(IConfiguration configuration)
             return new CommonTelegramBotClient(new TelegramBotClient(botToken));
         });
 
-        services.AddCors(options =>
+                services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                builder.WithOrigins("http://localhost:4200", "https://catebi.ge", "https://api.catebi.ge", "https://catebi-adoption-miniapp.catebi.ge")
+                var allowedOrigins = GetAllowedOrigins();
+                
+                builder.WithOrigins(allowedOrigins)
                        .AllowAnyMethod()
                        .AllowAnyHeader()
                        .AllowCredentials();
@@ -206,6 +260,10 @@ public class Startup(IConfiguration configuration)
         app.UseCors("CorsPolicy");
 
         app.UseRouting();
+
+        // Add Telegram authentication middleware before UseAuthentication
+        app.UseMiddleware<TelegramAuthenticationMiddleware>();
+
         app.UseAuthentication();
         app.UseAuthorization();
 

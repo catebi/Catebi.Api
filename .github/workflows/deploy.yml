@@ -93,6 +93,7 @@ jobs:
           echo "ADOPTIONBOT_COMMON_BOT_TOKEN=${{ secrets.ADOPTIONBOT_COMMON_BOT_TOKEN }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_APIKEY=${{ secrets.ADOPTIONBOT_AIRTABLE_APIKEY }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_BASEID=${{ secrets.ADOPTIONBOT_AIRTABLE_BASEID }}" >> .env
+          echo "CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}" >> .env
           docker-compose down
           docker-compose up --build -d
           sleep 10  # Wait for 10 seconds before performing health check
