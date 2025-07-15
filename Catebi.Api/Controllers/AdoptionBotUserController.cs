@@ -3,23 +3,24 @@ using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Catebi.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
+using Catebi.Api.Services;
 
 namespace Catebi.Api.Controllers;
 
 [Route("[controller]/[action]")]
 [ApiController]
-[TelegramAuthorize] // Requires authenticated Telegram user
-public class AdoptionBotUserController(IAdoptionBotUserService UserService) : ControllerBase
+[TelegramAuthorize]
+public class AdoptionBotUserController(
+    IAdoptionBotUserService UserService,
+    ICurrentUserService CurrentUserService) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> RegisterUser([FromBody] UserDto user)
     {
-        // Get current user's Telegram ID from claims
-        var currentTelegramId = User.FindFirst("TelegramId")?.Value;
+        var currentTelegramId = CurrentUserService.GetCurrentTelegramId();
 
         // Verify they're registering themselves
-        if (currentTelegramId != null && user.TelegramChatId.ToString() != currentTelegramId)
+        if (user.TelegramChatId != currentTelegramId)
         {
             return Forbid("You can only register yourself");
         }
@@ -29,7 +30,7 @@ public class AdoptionBotUserController(IAdoptionBotUserService UserService) : Co
     }
 
     [HttpGet]
-    [AllowAnonymous] // Allow checking user status without authentication
+    [AllowAnonymous]
     public async Task<IActionResult> FindUserByTelegramId([FromQuery] long telegramId)
     {
         var result = await UserService.FindUserByTelegramId(telegramId);
@@ -49,13 +50,10 @@ public class AdoptionBotUserController(IAdoptionBotUserService UserService) : Co
             return BadRequest(new { Message = "Record ID is required for updating a user." });
         }
 
-        // Get current user's info from claims
-        var currentTelegramId = User.FindFirst("TelegramId")?.Value;
-        var currentUserRecordId = User.FindFirst("UserRecordId")?.Value;
-        var isAdmin = User.IsInRole("Admin");
+        var currentUser = await CurrentUserService.GetRequiredCurrentUserAsync();
 
         // Verify they're updating their own record (unless admin)
-        if (!isAdmin && currentUserRecordId != user.RecordId)
+        if (!currentUser.IsAdmin && currentUser.RecordId != user.RecordId)
         {
             return Forbid("You can only update your own information");
         }
@@ -68,12 +66,10 @@ public class AdoptionBotUserController(IAdoptionBotUserService UserService) : Co
     [Authorize(Policy = "RegisteredUser")]
     public async Task<IActionResult> GetUserPayments([FromQuery] string userRecordId)
     {
-        // Get current user's info from claims
-        var currentUserRecordId = User.FindFirst("UserRecordId")?.Value;
-        var isAdmin = User.IsInRole("Admin");
+        var currentUser = await CurrentUserService.GetRequiredCurrentUserAsync();
 
         // Verify they're accessing their own payments (unless admin)
-        if (!isAdmin && currentUserRecordId != userRecordId)
+        if (!currentUser.IsAdmin && currentUser.RecordId != userRecordId)
         {
             return Forbid("You can only view your own payments");
         }
@@ -86,12 +82,10 @@ public class AdoptionBotUserController(IAdoptionBotUserService UserService) : Co
     [Authorize(Policy = "RegisteredUser")]
     public async Task<IActionResult> GetCats([FromQuery] string userRecordId)
     {
-        // Get current user's info from claims
-        var currentUserRecordId = User.FindFirst("UserRecordId")?.Value;
-        var isAdmin = User.IsInRole("Admin");
+        var currentUser = await CurrentUserService.GetRequiredCurrentUserAsync();
 
         // Verify they're accessing their own cats (unless admin)
-        if (!isAdmin && currentUserRecordId != userRecordId)
+        if (!currentUser.IsAdmin && currentUser.RecordId != userRecordId)
         {
             return Forbid("You can only view your own cats");
         }
@@ -104,39 +98,39 @@ public class AdoptionBotUserController(IAdoptionBotUserService UserService) : Co
     [Authorize(Policy = "RegisteredUser")]
     public async Task<IActionResult> GetCurrentUser()
     {
-        // Get current user's Telegram ID from claims
-        var telegramIdClaim = User.FindFirst("TelegramId")?.Value;
+        var currentUser = await CurrentUserService.GetRequiredCurrentUserAsync();
 
-        if (string.IsNullOrEmpty(telegramIdClaim) || !long.TryParse(telegramIdClaim, out var telegramId))
-        {
-            return BadRequest(new { Message = "Invalid user context" });
-        }
-
-        var user = await UserService.FindUserByTelegramId(telegramId);
-        if (user == null)
-        {
-            return NotFound(new { Message = "Current user not found" });
-        }
-
-        // Add additional info from claims
+        // Return comprehensive user information
         var userInfo = new
         {
-            user.RecordId,
-            user.Name,
-            user.Telegram,
-            user.TelegramChatId,
-            user.Status,
-            user.Role,
-            user.Language,
-            user.IsVolunteer,
-            user.UsePayedAccount,
-            user.AdditionalContact,
-            user.Notes,
-            // Additional info from claims
-            IsPremium = User.FindFirst("IsPremium")?.Value == "True",
-            FirstName = User.FindFirst("FirstName")?.Value,
-            LastName = User.FindFirst("LastName")?.Value,
-            Username = User.FindFirst("Username")?.Value
+            // Database user info
+            currentUser.RecordId,
+            currentUser.Name,
+            currentUser.Telegram,
+            TelegramChatId = currentUser.TelegramId, // Keep compatibility with existing API
+            currentUser.Status,
+            Role = currentUser.Role?.ToString(),
+            currentUser.Language,
+            currentUser.IsVolunteer,
+            currentUser.UsePayedAccount,
+            currentUser.AdditionalContact,
+            currentUser.Notes,
+
+            // Telegram user info
+            currentUser.IsPremium,
+            currentUser.FirstName,
+            currentUser.LastName,
+            currentUser.Username,
+            currentUser.LanguageCode,
+            currentUser.PhotoUrl,
+            currentUser.AllowsWriteToPm,
+
+            // Computed properties
+            currentUser.DisplayName,
+            currentUser.FullName,
+            currentUser.IsAuthenticated,
+            currentUser.IsAdmin,
+            currentUser.IsRegistered
         };
 
         return Ok(userInfo);

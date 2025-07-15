@@ -377,7 +377,7 @@ public class AdoptionBotAdminService(
             var keyboard = new InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton.WithUrl("👥 Open Admin Users", "t.me/catebi_adoption_bot/admin?startapp=users")
+                    InlineKeyboardButton.WithUrl("👥 Open Admin Users", "t.me/CatebiAdoptionBot/eventappa?startapp=admin_users")
                 ]
             ]);
 
@@ -411,7 +411,7 @@ public class AdoptionBotAdminService(
             var keyboard = new InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton.WithUrl("💳 Open Admin Payments", "t.me/catebi_adoption_bot/admin?startapp=payments")
+                    InlineKeyboardButton.WithUrl("💳 Open Admin Payments", "t.me/CatebiAdoptionBot/eventappa?startapp=admin_payments")
                 ]
             ]);
 

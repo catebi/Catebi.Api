@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Web;
 using Catebi.Api.Domain.Features.AdoptionBot;
+using Catebi.Api.Domain.Features.AdoptionBot.Enums;
 using Catebi.Api.Models.Telegram;
 
 namespace Catebi.Api.Middleware;
@@ -65,7 +66,10 @@ public class TelegramAuthenticationMiddleware(
             new("FirstName", telegramUser.FirstName),
             new("LastName", telegramUser.LastName ?? ""),
             new("Username", telegramUser.Username ?? ""),
-            new("IsPremium", (telegramUser.IsPremium ?? false).ToString())
+            new("LanguageCode", telegramUser.LanguageCode ?? ""),
+            new("IsPremium", (telegramUser.IsPremium ?? false).ToString()),
+            new("PhotoUrl", telegramUser.PhotoUrl ?? ""),
+            new("AllowsWriteToPm", (telegramUser.AllowsWriteToPm ?? false).ToString())
         };
 
         // Look up user in Airtable to get their status and role
@@ -77,9 +81,16 @@ public class TelegramAuthenticationMiddleware(
                 var user = await userService.FindUserByTelegramId(telegramUser.Id);
                 if (user != null)
                 {
-                    claims.Add(new Claim("UserStatus", user.Status ?? ""));
-                    claims.Add(new Claim("UserRole", user.Role ?? ""));
+                    // Add all user data as claims for easy access in CurrentUserService
                     claims.Add(new Claim("UserRecordId", user.RecordId ?? ""));
+                    claims.Add(new Claim("UserName", user.Name ?? ""));
+                    claims.Add(new Claim("UserTelegram", user.Telegram ?? ""));
+                    claims.Add(new Claim("UserStatus", user.Status ?? ""));
+                    claims.Add(new Claim("UserLanguage", user.Language ?? ""));
+                    claims.Add(new Claim("IsVolunteer", (user.IsVolunteer ?? false).ToString()));
+                    claims.Add(new Claim("UsePayedAccount", (user.UsePayedAccount ?? false).ToString()));
+                    claims.Add(new Claim("AdditionalContact", user.AdditionalContact ?? ""));
+                    claims.Add(new Claim("UserNotes", user.Notes ?? ""));
 
                     // Add role claim for authorization
                     if (!string.IsNullOrEmpty(user.Role))

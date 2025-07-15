@@ -15,6 +15,7 @@ using Catebi.Api.ExceptionHandlers;
 using Catebi.Api.Authorization;
 using Catebi.Api.Authorization.Requirements;
 using Catebi.Api.Middleware;
+using Catebi.Api.Services;
 
 namespace Catebi.Api;
 
@@ -93,6 +94,9 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IAuthorizationHandler, RegisteredUserHandler>();
         services.AddScoped<IAuthorizationHandler, AdminHandler>();
 
+        // Add current user service
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+
         services.Configure<NotionApiSettings>(Configuration.GetSection("NotionApi"));
         var notionAuthToken = Configuration.GetSection("NotionApi:AuthToken").Value;
 
@@ -160,7 +164,7 @@ public class Startup(IConfiguration configuration)
             options.AddPolicy("CorsPolicy", builder =>
             {
                 var allowedOrigins = GetAllowedOrigins();
-                
+
                 builder.WithOrigins(allowedOrigins)
                        .AllowAnyMethod()
                        .AllowAnyHeader()
