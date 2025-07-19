@@ -94,7 +94,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 👤 <b>Имя:</b> {userName}
 📱 <b>Telegram:</b> {userTelegram}
-🆔 <b>Record ID:</b> {userRecordId}
 
 ⏳ Требует подтверждения администратором",
 
@@ -102,7 +101,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 👤 <b>Name:</b> {userName}
 📱 <b>Telegram:</b> {userTelegram}
-🆔 <b>Record ID:</b> {userRecordId}
 
 ⏳ Requires admin confirmation",
 
@@ -110,7 +108,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 👤 <b>Name:</b> {userName}
 📱 <b>Telegram:</b> {userTelegram}
-🆔 <b>Record ID:</b> {userRecordId}
 
 ⏳ Requires admin confirmation"
         };
@@ -124,8 +121,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 🐱 <b>Кошка (кот):</b> {catName}
 👤 <b>Владелец:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
-🆔 <b>Payment Record ID:</b> {paymentRecordId}
 
 ⏳ Требует подтверждения администратором",
 
@@ -133,8 +128,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 🐱 <b>Cat:</b> {catName}
 👤 <b>Owner:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
-🆔 <b>Payment Record ID:</b> {paymentRecordId}
 
 ⏳ Requires admin confirmation",
 
@@ -142,14 +135,12 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 🐱 <b>Cat:</b> {catName}
 👤 <b>Owner:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
-🆔 <b>Payment Record ID:</b> {paymentRecordId}
 
 ⏳ Requires admin confirmation"
         };
     }
 
-    public string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null)
+    public string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null)
     {
         var baseMessage = language switch
         {
@@ -157,7 +148,6 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 <b>Кошка (кот):</b> {catName}
 <b>Владелец:</b> {ownerName}
-<b>CatRecordId:</b> {catRecordId}
 
 ✅ Статус изменен на 'Укотовление'",
 
@@ -165,15 +155,13 @@ You can now access to push your cat to the Catbook or to book event for them."
 
 <b>Cat:</b> {catName}
 <b>Owner:</b> {ownerName}
-<b>CatRecordId:</b> {catRecordId}
 
 ✅ Status changed to 'Adopted'",
 
             _ => $@"🎉 <b>Cat Found a New Home!</b>
 
-🐱 <b>Cat:</b> {catName}
-👤 <b>Owner:</b> {ownerName}
-🆔 <b>Cat Record ID:</b> {catRecordId}
+<b>Cat:</b> {catName}
+<b>Owner:</b> {ownerName}
 
 ✅ Status changed to 'Adopted'"
         };
@@ -281,23 +269,17 @@ You can now access to push your cat to the Catbook or to book event for them."
         return baseMessage;
     }
 
-    private string GetVolunteerStatusText(Languages language)
+    private string GetVolunteerStatusText(Languages language) => language switch
     {
-        return language switch
-        {
-            Languages.ru => "как волонтер",
-            Languages.en => "as a volunteer",
-            _ => "as a volunteer"
-        };
-    }
+        Languages.ru => "как волонтер",
+        Languages.en => "as a volunteer",
+        _ => "as a volunteer"
+    };
 
-    private string GetCatOwnerStatusText(Languages language)
+    private string GetCatOwnerStatusText(Languages language) => language switch
     {
-        return language switch
-        {
-            Languages.ru => "как владелец кошки (кота)",
-            Languages.en => "as a cat owner",
-            _ => "as a cat owner"
-        };
-    }
+        Languages.ru => "как владелец кошки (кота)",
+        Languages.en => "as a cat owner",
+        _ => "as a cat owner"
+    };
 }

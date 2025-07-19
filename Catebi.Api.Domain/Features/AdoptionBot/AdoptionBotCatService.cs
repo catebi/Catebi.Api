@@ -48,6 +48,7 @@ public class AdoptionBotCatService(
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", CatStatuses.SearchingForHome.ToString());
         fields.AddField("Owner", new string[] { catDto.OwnerRecordId });
+        fields.AddField("IsCatebiCat", catDto.IsCatebiCat);
 
         // Add vaccination fields if provided
         if (catDto.IsVaccinatedComplex.HasValue)
@@ -145,6 +146,7 @@ public class AdoptionBotCatService(
         fields.AddField("Sex", catDto.Sex);
         fields.AddField("DateOfBirth", DateTime.Parse(catDto.DateOfBirth));
         fields.AddField("Status", catDto.Status);
+        fields.AddField("IsCatebiCat", catDto.IsCatebiCat);
 
         // Add vaccination fields if provided
         if (catDto.IsVaccinatedComplex.HasValue)
@@ -740,7 +742,7 @@ public class AdoptionBotCatService(
 
     public async Task<ViewModels.PaginatedResponse<CatDto>> GetCatsForAdmin(GetCatsForAdminRequest request)
     {
-        Logger.LogInformation($"Getting cats for admin - Status: {request.Status}, Offset: {request.Offset}, Filter: {request.CatNameFilter}");
+        Logger.LogInformation($"Getting cats for admin - Status: {request.Status}, Offset: {request.Offset}, TextFilter: {request.TextFilter}, PaidFilter: {request.PaidFilter}, FreeFilter: {request.FreeFilter}, IsCatebiFilter: {request.IsCatebiFilter}");
 
         // Build filter formula for Airtable
         var filters = new List<string>();
@@ -751,10 +753,32 @@ public class AdoptionBotCatService(
             filters.Add($"{{Status}} = '{request.Status}'");
         }
 
-        // Add cat name filter if provided
-        if (!string.IsNullOrWhiteSpace(request.CatNameFilter))
+        // Add text filter if provided (searches in cat name, owner name, and owner telegram)
+        if (!string.IsNullOrWhiteSpace(request.TextFilter))
         {
-            filters.Add($"FIND(LOWER('{request.CatNameFilter.ToLower()}'), LOWER({{Name}})) > 0");
+            var textSearchFilter = $"OR(" +
+                $"FIND(LOWER('{request.TextFilter.ToLower()}'), LOWER({{Name}})) > 0, " +
+                $"FIND(LOWER('{request.TextFilter.ToLower()}'), LOWER(ARRAYJOIN({{OwnerName}}, ','))) > 0, " +
+                $"FIND(LOWER('{request.TextFilter.ToLower()}'), LOWER(ARRAYJOIN({{OwnerTelegram}}, ','))) > 0" +
+                $")";
+            filters.Add(textSearchFilter);
+        }
+
+        // Add payment status filters
+        if (request.PaidFilter.HasValue && request.PaidFilter.Value)
+        {
+            filters.Add($"{{AccountPaymentStatus}} = '{CatPaymentStatuses.Confirmed}'");
+        }
+
+        if (request.FreeFilter.HasValue && request.FreeFilter.Value)
+        {
+            filters.Add($"OR({{AccountPaymentStatus}} = '', {{AccountPaymentStatus}} != '{CatPaymentStatuses.Confirmed}')");
+        }
+
+        // Add IsCatebiCat filter
+        if (request.IsCatebiFilter.HasValue)
+        {
+            filters.Add($"{{IsCatebiCat}} = {(request.IsCatebiFilter.Value ? "1" : "0")}");
         }
 
         // Combine filters with AND
@@ -807,42 +831,13 @@ public class AdoptionBotCatService(
 
             foreach (var record in response.Records)
             {
-                try
-                {
-                    // Get payment option price for each cat
-                    var paymentOptionType = record.Fields.OwnerIsVolunteer
-                        ? PaymentOptions.CatbookVolunteerPrice
-                        : PaymentOptions.CatbookStandardPrice;
-
-                    var paymentOptions = await AirtableRepository.ListRecords<AtPaymentOption>(
-                        PaymentOptionTableName,
-                        filterByFormula: $"{{Name}}='{paymentOptionType}'"
-                    );
-
-                    var price = 0;
-                    if (paymentOptions.Success && paymentOptions.Records.Any())
-                    {
-                        price = paymentOptions.Records.First().Fields.Price;
-                    }
-
-                    cats.Add(CatConverter.ToDto(record.Fields, price, record.Id));
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, $"Error processing cat record {record.Id}. Skipping...");
-                    // Continue with other cats
-                }
+                cats.Add(CatConverter.ToDto(record.Fields, 0, record.Id));
             }
 
-                        // Use Airtable's native pagination response
             var totalCats = cats.Count;
+            Logger.LogInformation($"Retrieved {totalCats} cats from Airtable for request (Offset: {request.Offset})");
 
-            // The cats list already contains the correct page from Airtable
-            // No need for client-side pagination since Airtable handled it
-
-                        Logger.LogInformation($"Retrieved {totalCats} cats from Airtable for request (Offset: {request.Offset})");
-
-            return new ViewModels.PaginatedResponse<CatDto>
+            return new PaginatedResponse<CatDto>
             {
                 Records = cats,
                 NextPageOffset = response.Offset, // Use actual Airtable offset for next page

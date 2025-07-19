@@ -128,6 +128,7 @@ public class Startup(IConfiguration configuration)
         services.AddScoped<IAdoptionBotUserService, AdoptionBotUserService>();
         services.AddScoped<IAdoptionBotEventService, AdoptionBotEventService>();
         services.AddScoped<IAdoptionBotCatService, AdoptionBotCatService>();
+        services.AddScoped<IAdoptionBotCatbookService, AdoptionBotCatbookService>();
         services.AddScoped<IAdoptionBotAdminService, AdoptionBotAdminService>();
         services.AddScoped<ISettingsService, SettingsService>();
 

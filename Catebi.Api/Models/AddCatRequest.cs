@@ -9,4 +9,5 @@ public class AddCatRequest
     public string Status { get; set; } = string.Empty;
     public bool? IsVaccinatedComplex { get; set; }
     public bool? IsVaccinatedRabies { get; set; }
+    public bool IsCatebiCat { get; set; }
 }

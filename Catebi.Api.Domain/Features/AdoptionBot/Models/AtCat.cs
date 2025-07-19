@@ -57,6 +57,9 @@ public class AtCat
     [JsonPropertyName("Sex")]
     public string SexValue { get; set; } = string.Empty;
 
+    [JsonPropertyName("IsCatebiCat")]
+    public bool? IsCatebiCat { get; set; }
+
     public DateTime Created { get; set; }
 
     [JsonIgnore]

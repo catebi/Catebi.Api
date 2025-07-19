@@ -37,7 +37,7 @@ public interface ILocalizationService
     /// <summary>
     /// Get admin notification message for cat adoption
     /// </summary>
-    string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string catRecordId, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null);
+    string GetAdminCatAdoptionNotification(Languages language, string catName, string ownerName, string? adoptionComment = null, string? actionByUserName = null, string? actionByUserTelegram = null);
 
     /// <summary>
     /// Get localized message for cat registration to event (for user)

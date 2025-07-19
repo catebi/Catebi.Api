@@ -8,6 +8,7 @@ public enum AirTables
     CatPayment,
     PaymentOption,
     Message,
-    Settings
+    Settings,
+    Catbook
 }
 

@@ -11,4 +11,5 @@ public class UpdateCatRequest
     public bool? IsVaccinatedComplex { get; set; }
     public bool? IsVaccinatedRabies { get; set; }
     public string? OwnerNotes { get; set; }
+    public bool IsCatebiCat { get; set; }
 }

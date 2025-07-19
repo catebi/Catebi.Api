@@ -21,6 +21,7 @@ public static class CatConverter
         OwnerIsVolunteer = cat.OwnerIsVolunteer,
         PaidAccountPrice = paidAccountPrice,
         ConfirmedPaymentAccount = cat.AccountPaymentStatus == Enums.CatPaymentStatuses.Confirmed,
+        IsCatebiCat = cat.IsCatebiCat ?? false,
         Created = cat.Created.ToString("yyyy-MM-dd HH:mm:ss")
     };
 }

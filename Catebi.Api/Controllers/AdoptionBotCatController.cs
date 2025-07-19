@@ -33,7 +33,8 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService, IFileSe
             DateOfBirth = request.DateOfBirth,
             Status = request.Status,
             IsVaccinatedComplex = request.IsVaccinatedComplex,
-            IsVaccinatedRabies = request.IsVaccinatedRabies
+            IsVaccinatedRabies = request.IsVaccinatedRabies,
+            IsCatebiCat = request.IsCatebiCat
         };
 
         // Set the main photo URL in the cat DTO if uploaded
@@ -89,7 +90,8 @@ public class AdoptionBotCatController(IAdoptionBotCatService CatService, IFileSe
             Status = request.Status,
             IsVaccinatedComplex = request.IsVaccinatedComplex,
             IsVaccinatedRabies = request.IsVaccinatedRabies,
-            OwnerNotes = request.OwnerNotes
+            OwnerNotes = request.OwnerNotes,
+            IsCatebiCat = request.IsCatebiCat
         };
 
         // Set the main photo URL in the cat DTO if uploaded

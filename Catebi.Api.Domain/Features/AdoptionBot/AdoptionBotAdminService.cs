@@ -442,8 +442,7 @@ public class AdoptionBotAdminService(
             var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
 
             // Use Russian language for work chat notifications (can be made configurable)
-            var message = LocalizationService.GetAdminCatAdoptionNotification(
-                Languages.ru, catName, ownerName, catRecordId, adoptionComment, actionByUserName, actionByUserTelegram);
+            var message = LocalizationService.GetAdminCatAdoptionNotification(Languages.ru, catName, ownerName, adoptionComment, actionByUserName, actionByUserTelegram);
 
             // Create inline keyboard with direct mini app link to specific cat profile
             var keyboard = new InlineKeyboardMarkup(

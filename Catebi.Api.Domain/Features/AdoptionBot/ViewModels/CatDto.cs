@@ -19,5 +19,6 @@ public class CatDto
     public bool OwnerIsVolunteer { get; set; }
     public int PaidAccountPrice { get; set; }
     public bool ConfirmedPaymentAccount { get; set; }
+    public bool IsCatebiCat { get; set; }
     public string Created { get; set; }
 }
