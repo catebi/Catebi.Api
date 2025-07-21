@@ -1,7 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using Catebi.Api.Domain.Features.AdoptionBot;
 using Catebi.Api.Domain.Features.AdoptionBot.ViewModels;
-using Catebi.Api.Models;
-using Microsoft.AspNetCore.Mvc;
 using Catebi.Api.Authorization;
 using Microsoft.AspNetCore.Authorization;
 
@@ -87,5 +86,12 @@ public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService) :
     {
         var messages = await AdminService.GetBroadcastMessages();
         return Ok(messages);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboardInfo()
+    {
+        var dashboardInfo = await AdminService.GetDashboardInfo();
+        return Ok(dashboardInfo);
     }
 }

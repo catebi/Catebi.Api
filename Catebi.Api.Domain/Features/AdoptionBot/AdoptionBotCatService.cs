@@ -12,7 +12,8 @@ public class AdoptionBotCatService(
     TelegramBotClient TelegramBotClient,
     ILocalizationService LocalizationService,
     IAdoptionBotAdminService AdminService,
-    ILogger<AdoptionBotCatService> Logger) : IAdoptionBotCatService
+    ILogger<AdoptionBotCatService> Logger,
+    AirtableBase Airtable) : IAdoptionBotCatService
 {
     private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
@@ -740,7 +741,7 @@ public class AdoptionBotCatService(
         return true;
     }
 
-    public async Task<ViewModels.PaginatedResponse<CatDto>> GetCatsForAdmin(GetCatsForAdminRequest request)
+    public async Task<PaginatedResponse<CatDto>> GetCatsForAdmin(GetCatsForAdminRequest request)
     {
         Logger.LogInformation($"Getting cats for admin - Status: {request.Status}, Offset: {request.Offset}, TextFilter: {request.TextFilter}, PaidFilter: {request.PaidFilter}, FreeFilter: {request.FreeFilter}, IsCatebiFilter: {request.IsCatebiFilter}");
 

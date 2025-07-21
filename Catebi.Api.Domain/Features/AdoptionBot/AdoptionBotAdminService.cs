@@ -18,8 +18,10 @@ public class AdoptionBotAdminService(
 {
     private readonly string UserTableName = AirTables.User.ToString();
     private readonly string CatTableName = AirTables.Cat.ToString();
+    private readonly string EventTableName = AirTables.Event.ToString();
     private readonly string CatPaymentName = AirTables.CatPayment.ToString();
     private readonly string MessageTableName = AirTables.Message.ToString();
+    private readonly string CatbookTableName = AirTables.Catbook.ToString();
     private readonly string StatusColumnName = "Status";
 
     private static string ConvertHtmlToTelegramFormat(string htmlContent)
@@ -263,7 +265,7 @@ public class AdoptionBotAdminService(
             }
         }
 
-                Logger.LogInformation($"Broadcast completed: {successCount} success, {failCount} failed");
+        Logger.LogInformation($"Broadcast completed: {successCount} success, {failCount} failed");
 
         // Build log information
         var logEntries = new List<string>();
@@ -551,5 +553,51 @@ public class AdoptionBotAdminService(
         Logger.LogInformation($"Found {adminUsers.Count} admin users");
 
         return adminUsers;
+    }
+
+    public async Task<DashboardInfoDto> GetDashboardInfo()
+    {
+        var result = new DashboardInfoDto();
+
+        var users    = await AirtableRepository.ListRecordsAutoFields<AtUserShort>(UserTableName);
+        var cats     = await AirtableRepository.ListRecordsAutoFields<AtCatShort>(CatTableName);
+        var payments = await AirtableRepository.ListRecordsAutoFields<AtCatPaymentShort>(CatPaymentName);
+        var events   = await AirtableRepository.ListRecordsAutoFields<AtEventShort>(EventTableName);
+        var catbooks = await AirtableRepository.ListRecordsAutoFields<AtCatbookShort>(CatbookTableName);
+
+        result.Items.Add(new DashboardInfoItemDto
+        {
+            Type = DashboardItemType.Users.ToString(),
+            Count = users.Count(),
+            ToConfirmCount = users.Count(u => u.Status == UserStatuses.ToConfirm)
+        });
+
+        result.Items.Add(new DashboardInfoItemDto
+        {
+            Type = DashboardItemType.Payments.ToString(),
+            Count = payments.Count(),
+            ToConfirmCount = payments.Count(p => p.Status == CatPaymentStatuses.ToConfirm)
+        });
+
+        result.Items.Add(new DashboardInfoItemDto
+        {
+            Type = DashboardItemType.Catbook.ToString(),
+            Count = catbooks.Count(),
+            ToConfirmCount = catbooks.Count(c => c.Status == CatbookStatuses.ToConfirm)
+        });
+
+        result.Items.Add(new DashboardInfoItemDto
+        {
+            Type = DashboardItemType.Cats.ToString(),
+            Count = cats.Count()
+        });
+
+        result.Items.Add(new DashboardInfoItemDto
+        {
+            Type = DashboardItemType.Events.ToString(),
+            Count = events.Count()
+        });
+
+        return result;
     }
 }
