@@ -18,7 +18,6 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     /// Webhook endpoint for new subscription events from Tribute
     /// </summary>
     [HttpPost]
-    [TributeWebhookAuthorize]
     public async Task<IActionResult> WebhookNewSubscription([FromBody] TributeWebhookRequest request)
     {
         try
@@ -68,7 +67,6 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     /// Webhook endpoint for recurrent donation events from Tribute
     /// </summary>
     [HttpPost]
-    [TributeWebhookAuthorize]
     public async Task<IActionResult> WebhookRecurrentDonation([FromBody] TributeWebhookRequest request)
     {
         try

@@ -287,6 +287,9 @@ public class Startup(IConfiguration configuration)
 
         app.UseCors("CorsPolicy");
 
+        // Add Tribute webhook authentication middleware before routing
+        app.UseMiddleware<TributeWebhookAuthenticationMiddleware>();
+
         app.UseRouting();
 
         // Add Telegram authentication middleware before UseAuthentication
