@@ -11,6 +11,7 @@ using Telegram.Bot;
 
 using Catebi.Api.HealthChecks;
 using Catebi.Api.Domain.Features.AdoptionBot;
+using Catebi.Api.Domain.Features.Finance.Tribute;
 using Catebi.Api.ExceptionHandlers;
 using Catebi.Api.Authorization;
 using Catebi.Api.Authorization.Requirements;
@@ -135,12 +136,31 @@ public class Startup(IConfiguration configuration)
         services.AddTransient<IEmailSender, EmailSender>();
 
         // airtable initialization for AdoptionBot
+        services.AddKeyedScoped("AdoptionBot", (provider, key) =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var apiKey = configuration["AdoptionBot:Airtable:ApiKey"];
+            var baseId = configuration["AdoptionBot:Airtable:BaseId"];
+
+            return new AirtableBase(apiKey, baseId);
+        });
+
+        // Default AirtableBase for AdoptionBot (for backward compatibility)
         services.AddScoped(provider =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
             var apiKey = configuration["AdoptionBot:Airtable:ApiKey"];
             var baseId = configuration["AdoptionBot:Airtable:BaseId"];
 
+            return new AirtableBase(apiKey, baseId);
+        });
+
+        // Finance Airtable initialization
+        services.AddKeyedScoped("Finance", (provider, key) =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var apiKey = configuration["Finance:Airtable:ApiKey"];
+            var baseId = configuration["Finance:Airtable:BaseId"];
             return new AirtableBase(apiKey, baseId);
         });
 
@@ -160,7 +180,10 @@ public class Startup(IConfiguration configuration)
             return new CommonTelegramBotClient(new TelegramBotClient(botToken));
         });
 
-                services.AddCors(options =>
+        // Finance Tribute service
+        services.AddScoped<ITributeService, TributeService>();
+
+        services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy", builder =>
             {

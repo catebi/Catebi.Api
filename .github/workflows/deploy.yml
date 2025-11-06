@@ -93,6 +93,11 @@ jobs:
           echo "ADOPTIONBOT_COMMON_BOT_TOKEN=${{ secrets.ADOPTIONBOT_COMMON_BOT_TOKEN }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_APIKEY=${{ secrets.ADOPTIONBOT_AIRTABLE_APIKEY }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_BASEID=${{ secrets.ADOPTIONBOT_AIRTABLE_BASEID }}" >> .env
+          echo "FINANCE_TRIBUTE_APIKEY=${{ secrets.FINANCE_TRIBUTE_APIKEY }}" >> .env
+          echo "CATEBI_TELEGRAM_SUPERCHAT_ID=${{ secrets.CATEBI_TELEGRAM_SUPERCHAT_ID }}" >> .env
+          echo "CATEBI_FINANCE_TELEGRAM_TOPIC_ID=${{ secrets.CATEBI_FINANCE_TELEGRAM_TOPIC_ID }}" >> .env
+          echo "FINANCE_AIRTABLE_APIKEY=${{ secrets.FINANCE_AIRTABLE_APIKEY }}" >> .env
+          echo "FINANCE_AIRTABLE_BASEID=${{ secrets.FINANCE_AIRTABLE_BASEID }}" >> .env
           echo "CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}" >> .env
           docker-compose down
           docker-compose up --build -d

@@ -27,6 +27,11 @@ services:
       - AdoptionBot__Telegram__CommonBotToken=${ADOPTIONBOT_COMMON_BOT_TOKEN}
       - AdoptionBot__Airtable__ApiKey=${ADOPTIONBOT_AIRTABLE_APIKEY}
       - AdoptionBot__Airtable__BaseId=${ADOPTIONBOT_AIRTABLE_BASEID}
+      - Finance__Tribute__ApiKey=${FINANCE_TRIBUTE_APIKEY}
+      - Finance__Telegram__SuperchatId=${CATEBI_TELEGRAM_SUPERCHAT_ID}
+      - Finance__Telegram__TopicId=${CATEBI_FINANCE_TELEGRAM_TOPIC_ID}
+      - Finance__Airtable__ApiKey=${FINANCE_AIRTABLE_APIKEY}
+      - Finance__Airtable__BaseId=${FINANCE_AIRTABLE_BASEID}
       - Cors__AllowedOrigins=${CORS_ALLOWED_ORIGINS}
     networks:
       - dev
