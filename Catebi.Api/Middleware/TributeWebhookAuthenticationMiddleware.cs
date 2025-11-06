@@ -53,9 +53,9 @@ public class TributeWebhookAuthenticationMiddleware(
             detectEncodingFromByteOrderMarks: false,
             bufferSize: 1024,
             leaveOpen: true);
-        
+
         var body = await reader.ReadToEndAsync();
-        
+
         // Reset the stream position for the next middleware/controller
         context.Request.Body.Position = 0;
 
@@ -69,6 +69,7 @@ public class TributeWebhookAuthenticationMiddleware(
         }
 
         _logger.LogInformation($"Request body length: {body.Length}");
+        _logger.LogDebug($"Request body content: {body}");
 
         // Calculate HMAC-SHA256 signature
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(apiKey));
@@ -86,7 +87,9 @@ public class TributeWebhookAuthenticationMiddleware(
         }
 
         _logger.LogInformation("Tribute webhook signature validated successfully");
-        
+        _logger.LogDebug($"Stream position before controller: {context.Request.Body.Position}");
+        _logger.LogDebug($"Stream can seek: {context.Request.Body.CanSeek}");
+
         // Continue to the next middleware/controller
         await _next(context);
     }

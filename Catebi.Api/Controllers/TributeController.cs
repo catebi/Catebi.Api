@@ -22,11 +22,33 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogInformation($"Received webhook: {request.Name}");
+            _logger.LogDebug($"Request object is null: {request == null}");
+            if (request != null)
+            {
+                _logger.LogDebug($"Request.Name: '{request.Name}'");
+                _logger.LogDebug($"Request.CreatedAt: {request.CreatedAt}");
+                _logger.LogDebug($"Request.SentAt: {request.SentAt}");
+                _logger.LogDebug($"Request.Payload.ValueKind: {request.Payload.ValueKind}");
+            }
+
+            _logger.LogInformation($"Received webhook: {request?.Name ?? "NULL"}");
 
             // Deserialize the payload
+            _logger.LogDebug($"About to call GetRawText on Payload");
+            string payloadJson;
+            try
+            {
+                payloadJson = request.Payload.GetRawText();
+                _logger.LogDebug($"Payload JSON: {payloadJson}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error calling GetRawText. Payload.ValueKind: {request.Payload.ValueKind}");
+                throw;
+            }
+
             var payload = JsonSerializer.Deserialize<NewSubscriptionPayload>(
-                request.Payload.GetRawText(),
+                payloadJson,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (payload == null)
@@ -66,11 +88,39 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogInformation($"Received webhook: {request.Name}");
+            _logger.LogDebug($"Request object is null: {request == null}");
+            if (request != null)
+            {
+                _logger.LogDebug($"Request.Name: '{request.Name}'");
+                _logger.LogDebug($"Request.CreatedAt: {request.CreatedAt}");
+                _logger.LogDebug($"Request.SentAt: {request.SentAt}");
+                _logger.LogDebug($"Request.Payload.ValueKind: {request.Payload.ValueKind}");
+            }
+
+            _logger.LogInformation($"Received webhook: {request?.Name ?? "NULL"}");
+
+            if (request == null)
+            {
+                _logger.LogError("Request is null");
+                return BadRequest(new { error = "Invalid request" });
+            }
 
             // Deserialize the payload
+            _logger.LogDebug($"About to call GetRawText on Payload");
+            string payloadJson;
+            try
+            {
+                payloadJson = request.Payload.GetRawText();
+                _logger.LogDebug($"Payload JSON: {payloadJson}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error calling GetRawText. Payload.ValueKind: {request.Payload.ValueKind}");
+                throw;
+            }
+
             var payload = JsonSerializer.Deserialize<RecurrentDonationPayload>(
-                request.Payload.GetRawText(),
+                payloadJson,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (payload == null)

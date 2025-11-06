@@ -13,29 +13,19 @@ using Telegram.Bot.Types.Enums;
 
 namespace Catebi.Api.Domain.Features.Finance.Tribute;
 
-public class TributeService : ITributeService
+public class TributeService(
+    [FromKeyedServices("Finance")] AirtableBase airtableBase,
+    CommonTelegramBotClient telegramBotClient,
+    IConfiguration configuration,
+    ILogger<TributeService> logger,
+    ILogger<AirtableRepository> airtableLogger) : ITributeService
 {
-    private readonly AirtableBase _airtableBase;
-    private readonly AirtableRepository _airtableRepository;
-    private readonly CommonTelegramBotClient _telegramBotClient;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<TributeService> _logger;
+    private readonly AirtableRepository _airtableRepository = new(airtableBase, airtableLogger);
+    private readonly CommonTelegramBotClient _telegramBotClient = telegramBotClient;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<TributeService> _logger = logger;
     private readonly string _subscriptionTableName = TributeAirTables.TributeSubscription.ToString();
     private readonly string _donationTableName = TributeAirTables.TributeDonation.ToString();
-
-    public TributeService(
-        [FromKeyedServices("Finance")] AirtableBase airtableBase,
-        CommonTelegramBotClient telegramBotClient,
-        IConfiguration configuration,
-        ILogger<TributeService> logger,
-        ILogger<AirtableRepository> airtableLogger)
-    {
-        _airtableBase = airtableBase;
-        _airtableRepository = new AirtableRepository(airtableBase, airtableLogger);
-        _telegramBotClient = telegramBotClient;
-        _configuration = configuration;
-        _logger = logger;
-    }
 
     public async Task<SubscriptionDto> ProcessNewSubscription(string webhookName, NewSubscriptionPayload payload, DateTime createdAt, DateTime sentAt)
     {
@@ -222,11 +212,7 @@ public class TributeService : ITributeService
                 return;
             }
 
-            // Get Telegram username
-            var userIdentifier = await GetTelegramUserIdentifier(payload.TelegramUserId);
-
-            // Simplified message format
-            var message = $"🎉 New Subscription! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} from {userIdentifier}";
+            var message = $"🎉 New Subscription! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period}";
 
             await _telegramBotClient.Client.SendMessage(
                 chatId: long.Parse(superchatId),
@@ -256,13 +242,7 @@ public class TributeService : ITributeService
                 return;
             }
 
-            // Get user identifier (handle anonymous donations)
-            var userIdentifier = payload.Anonymously
-                ? "Anonymous"
-                : await GetTelegramUserIdentifier(payload.TelegramUserId);
-
-            // Simplified message format
-            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} from {userIdentifier}";
+            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period}";
 
             await _telegramBotClient.Client.SendMessage(
                 chatId: long.Parse(superchatId),
@@ -290,35 +270,6 @@ public class TributeService : ITributeService
         {
             _logger.LogWarning(ex, $"Failed to get Telegram user info for ID {telegramUserId}");
             return null;
-        }
-    }
-
-    private async Task<string> GetTelegramUserIdentifier(long telegramUserId)
-    {
-        try
-        {
-            var user = await _telegramBotClient.Client.GetChat(telegramUserId);
-
-            // Try to get username, first name, or fallback to ID
-            if (!string.IsNullOrEmpty(user.Username))
-            {
-                return $"@{user.Username}";
-            }
-
-            if (!string.IsNullOrEmpty(user.FirstName))
-            {
-                var fullName = !string.IsNullOrEmpty(user.LastName)
-                    ? $"{user.FirstName} {user.LastName}"
-                    : user.FirstName;
-                return fullName;
-            }
-
-            return $"User {telegramUserId}";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, $"Failed to get Telegram user info for ID {telegramUserId}, using ID instead");
-            return $"User {telegramUserId}";
         }
     }
 }
