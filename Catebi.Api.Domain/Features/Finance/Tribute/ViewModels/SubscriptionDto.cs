@@ -13,6 +13,7 @@ public class SubscriptionDto
     public string Currency { get; set; } = string.Empty;
     public int UserId { get; set; }
     public long TelegramUserId { get; set; }
+    public string? TelegramUsername { get; set; }
     public int ChannelId { get; set; }
     public string ChannelName { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }

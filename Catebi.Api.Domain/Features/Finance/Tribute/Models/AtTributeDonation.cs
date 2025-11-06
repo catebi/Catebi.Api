@@ -36,6 +36,9 @@ public class AtTributeDonation
     [JsonPropertyName("TelegramUserId")]
     public long TelegramUserId { get; set; }
 
+    [JsonPropertyName("TelegramUsername")]
+    public string? TelegramUsername { get; set; }
+
     [JsonPropertyName("CreatedAt")]
     public DateTime CreatedAt { get; set; }
 

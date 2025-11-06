@@ -18,6 +18,7 @@ public static class TributeConverter
         Currency = subscription.Currency,
         UserId = subscription.UserId,
         TelegramUserId = subscription.TelegramUserId,
+        TelegramUsername = subscription.TelegramUsername,
         ChannelId = subscription.ChannelId,
         ChannelName = subscription.ChannelName,
         ExpiresAt = subscription.ExpiresAt,
@@ -38,6 +39,7 @@ public static class TributeConverter
         WebAppLink = donation.WebAppLink,
         UserId = donation.UserId,
         TelegramUserId = donation.TelegramUserId,
+        TelegramUsername = donation.TelegramUsername,
         CreatedAt = donation.CreatedAt,
         SentAt = donation.SentAt
     };

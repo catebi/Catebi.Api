@@ -41,6 +41,9 @@ public class TributeService : ITributeService
     {
         _logger.LogInformation($"Processing webhook '{webhookName}': {payload.SubscriptionName} for user {payload.TelegramUserId}");
 
+        // Get Telegram username
+        var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+
         // Create Airtable record
         var fields = new Fields();
         fields.AddField("WebhookName", webhookName);
@@ -53,6 +56,10 @@ public class TributeService : ITributeService
         fields.AddField("Currency", payload.Currency);
         fields.AddField("UserId", payload.UserId);
         fields.AddField("TelegramUserId", payload.TelegramUserId.ToString());
+        if (!string.IsNullOrEmpty(telegramUsername))
+        {
+            fields.AddField("TelegramUsername", telegramUsername);
+        }
         fields.AddField("ChannelId", payload.ChannelId);
         fields.AddField("ChannelName", payload.ChannelName);
         fields.AddField("ExpiresAt", payload.ExpiresAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
@@ -86,6 +93,7 @@ public class TributeService : ITributeService
             Currency = payload.Currency,
             UserId = payload.UserId,
             TelegramUserId = payload.TelegramUserId,
+            TelegramUsername = telegramUsername,
             ChannelId = payload.ChannelId,
             ChannelName = payload.ChannelName,
             ExpiresAt = payload.ExpiresAt,
@@ -100,6 +108,9 @@ public class TributeService : ITributeService
     {
         _logger.LogInformation($"Processing webhook '{webhookName}': {payload.DonationName} for user {payload.TelegramUserId}");
 
+        // Get Telegram username
+        var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+
         // Create Airtable record
         var fields = new Fields();
         fields.AddField("WebhookName", webhookName);
@@ -112,8 +123,12 @@ public class TributeService : ITributeService
         fields.AddField("WebAppLink", payload.WebAppLink);
         fields.AddField("UserId", payload.UserId);
         fields.AddField("TelegramUserId", payload.TelegramUserId.ToString());
-        fields.AddField("CreatedAt", createdAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
-        fields.AddField("SentAt", sentAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
+        if (!string.IsNullOrEmpty(telegramUsername))
+        {
+            fields.AddField("TelegramUsername", telegramUsername);
+        }
+        fields.AddField("CreatedAt", createdAt);
+        fields.AddField("SentAt", sentAt);
 
         var response = await _airtableRepository.CreateRecord(_donationTableName, fields);
 
@@ -142,6 +157,7 @@ public class TributeService : ITributeService
             WebAppLink = payload.WebAppLink,
             UserId = payload.UserId,
             TelegramUserId = payload.TelegramUserId,
+            TelegramUsername = telegramUsername,
             CreatedAt = createdAt,
             SentAt = sentAt
         };
@@ -206,15 +222,11 @@ public class TributeService : ITributeService
                 return;
             }
 
-            var message = $"🎉 <b>New Subscription!</b>\n\n" +
-                         $"📝 <b>Name:</b> {payload.SubscriptionName}\n" +
-                         $"💰 <b>Amount:</b> {payload.Amount / 100.0:F2} {payload.Currency.ToUpper()}\n" +
-                         $"⏰ <b>Period:</b> {payload.Period}\n" +
-                         $"👤 <b>User ID:</b> {payload.UserId}\n" +
-                         $"📱 <b>Telegram ID:</b> {payload.TelegramUserId}\n" +
-                         $"📺 <b>Channel:</b> {payload.ChannelName}\n" +
-                         $"📅 <b>Expires:</b> {payload.ExpiresAt:yyyy-MM-dd HH:mm}\n" +
-                         $"🆔 <b>Record ID:</b> {recordId}";
+            // Get Telegram username
+            var userIdentifier = await GetTelegramUserIdentifier(payload.TelegramUserId);
+
+            // Simplified message format
+            var message = $"🎉 New Subscription! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} from {userIdentifier}";
 
             await _telegramBotClient.Client.SendMessage(
                 chatId: long.Parse(superchatId),
@@ -244,15 +256,13 @@ public class TributeService : ITributeService
                 return;
             }
 
-            var donorInfo = payload.Anonymously ? "Anonymous" : $"User {payload.UserId} (TG: {payload.TelegramUserId})";
+            // Get user identifier (handle anonymous donations)
+            var userIdentifier = payload.Anonymously
+                ? "Anonymous"
+                : await GetTelegramUserIdentifier(payload.TelegramUserId);
 
-            var message = $"💝 <b>New Donation!</b>\n\n" +
-                         $"📝 <b>Name:</b> {payload.DonationName}\n" +
-                         $"💰 <b>Amount:</b> {payload.Amount / 100.0:F2} {payload.Currency.ToUpper()}\n" +
-                         $"⏰ <b>Period:</b> {payload.Period}\n" +
-                         $"👤 <b>Donor:</b> {donorInfo}\n" +
-                         $"🔗 <b>Link:</b> {payload.WebAppLink}\n" +
-                         $"🆔 <b>Record ID:</b> {recordId}";
+            // Simplified message format
+            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} from {userIdentifier}";
 
             await _telegramBotClient.Client.SendMessage(
                 chatId: long.Parse(superchatId),
@@ -266,6 +276,49 @@ public class TributeService : ITributeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send donation notification to Telegram");
+        }
+    }
+
+    private async Task<string?> GetTelegramUsername(long telegramUserId)
+    {
+        try
+        {
+            var user = await _telegramBotClient.Client.GetChat(telegramUserId);
+            return user.Username;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, $"Failed to get Telegram user info for ID {telegramUserId}");
+            return null;
+        }
+    }
+
+    private async Task<string> GetTelegramUserIdentifier(long telegramUserId)
+    {
+        try
+        {
+            var user = await _telegramBotClient.Client.GetChat(telegramUserId);
+
+            // Try to get username, first name, or fallback to ID
+            if (!string.IsNullOrEmpty(user.Username))
+            {
+                return $"@{user.Username}";
+            }
+
+            if (!string.IsNullOrEmpty(user.FirstName))
+            {
+                var fullName = !string.IsNullOrEmpty(user.LastName)
+                    ? $"{user.FirstName} {user.LastName}"
+                    : user.FirstName;
+                return fullName;
+            }
+
+            return $"User {telegramUserId}";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, $"Failed to get Telegram user info for ID {telegramUserId}, using ID instead");
+            return $"User {telegramUserId}";
         }
     }
 }

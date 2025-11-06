@@ -176,7 +176,7 @@ public class Startup(IConfiguration configuration)
         services.AddSingleton<CommonTelegramBotClient>(provider =>
         {
             var configuration = provider.GetRequiredService<IConfiguration>();
-            var botToken = configuration["AdoptionBot:Telegram:CommonBotToken"]!;
+            var botToken = configuration["VolunteerBot:Telegram:Token"]!;
             return new CommonTelegramBotClient(new TelegramBotClient(botToken));
         });
 

@@ -13,6 +13,7 @@ public class DonationDto
     public string WebAppLink { get; set; } = string.Empty;
     public int UserId { get; set; }
     public long TelegramUserId { get; set; }
+    public string? TelegramUsername { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime SentAt { get; set; }
 }

@@ -93,6 +93,7 @@ jobs:
           echo "ADOPTIONBOT_COMMON_BOT_TOKEN=${{ secrets.ADOPTIONBOT_COMMON_BOT_TOKEN }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_APIKEY=${{ secrets.ADOPTIONBOT_AIRTABLE_APIKEY }}" >> .env
           echo "ADOPTIONBOT_AIRTABLE_BASEID=${{ secrets.ADOPTIONBOT_AIRTABLE_BASEID }}" >> .env
+          echo "VOLUNTEER_BOT_TOKEN=${{ secrets.VOLUNTEER_BOT_TOKEN }}" >> .env
           echo "FINANCE_TRIBUTE_APIKEY=${{ secrets.FINANCE_TRIBUTE_APIKEY }}" >> .env
           echo "CATEBI_TELEGRAM_SUPERCHAT_ID=${{ secrets.CATEBI_TELEGRAM_SUPERCHAT_ID }}" >> .env
           echo "CATEBI_FINANCE_TELEGRAM_TOPIC_ID=${{ secrets.CATEBI_FINANCE_TELEGRAM_TOPIC_ID }}" >> .env

@@ -8,4 +8,4 @@ namespace Catebi.Api.Domain.Features.AdoptionBot;
 public class CommonTelegramBotClient(TelegramBotClient client)
 {
     public TelegramBotClient Client { get; } = client;
-} 
+}

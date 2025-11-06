@@ -36,6 +36,9 @@ public class AtTributeSubscription
     [JsonPropertyName("TelegramUserId")]
     public long TelegramUserId { get; set; }
 
+    [JsonPropertyName("TelegramUsername")]
+    public string? TelegramUsername { get; set; }
+
     [JsonPropertyName("ChannelId")]
     public int ChannelId { get; set; }
 
