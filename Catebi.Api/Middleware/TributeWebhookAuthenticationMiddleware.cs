@@ -68,8 +68,13 @@ public class TributeWebhookAuthenticationMiddleware(
             return;
         }
 
-        _logger.LogInformation($"Request body length: {body.Length}");
-        _logger.LogDebug($"Request body content: {body}");
+        // Log request details
+        var contentType = context.Request.ContentType ?? "N/A";
+        var userAgent = context.Request.Headers["User-Agent"].ToString() ?? "N/A";
+        
+        _logger.LogInformation($"Tribute webhook received - Path: {path}, Content-Type: {contentType}, Body length: {body.Length}");
+        _logger.LogInformation($"Request headers - User-Agent: {userAgent}");
+        _logger.LogInformation($"Request body: {body}");
 
         // Calculate HMAC-SHA256 signature
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(apiKey));
@@ -86,9 +91,7 @@ public class TributeWebhookAuthenticationMiddleware(
             return;
         }
 
-        _logger.LogInformation("Tribute webhook signature validated successfully");
-        _logger.LogDebug($"Stream position before controller: {context.Request.Body.Position}");
-        _logger.LogDebug($"Stream can seek: {context.Request.Body.CanSeek}");
+        _logger.LogInformation($"Tribute webhook signature validated successfully - Signature: {receivedSignature.Substring(0, 10)}...");
 
         // Continue to the next middleware/controller
         await _next(context);

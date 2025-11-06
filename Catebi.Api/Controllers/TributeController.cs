@@ -22,19 +22,15 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogDebug($"Request object is null: {request == null}");
-            if (request != null)
+            _logger.LogInformation($"Processing webhook: {request?.Name ?? "NULL"} (CreatedAt: {request?.CreatedAt}, SentAt: {request?.SentAt})");
+
+            if (request == null)
             {
-                _logger.LogDebug($"Request.Name: '{request.Name}'");
-                _logger.LogDebug($"Request.CreatedAt: {request.CreatedAt}");
-                _logger.LogDebug($"Request.SentAt: {request.SentAt}");
-                _logger.LogDebug($"Request.Payload.ValueKind: {request.Payload.ValueKind}");
+                _logger.LogError("Request is null");
+                return BadRequest(new { error = "Invalid request" });
             }
 
-            _logger.LogInformation($"Received webhook: {request?.Name ?? "NULL"}");
-
             // Deserialize the payload
-            _logger.LogDebug($"About to call GetRawText on Payload");
             string payloadJson;
             try
             {
@@ -57,6 +53,8 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 return BadRequest(new { error = "Invalid payload format" });
             }
 
+            _logger.LogInformation($"Parsed subscription - Name: '{payload.SubscriptionName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}");
+
             // Process the subscription with webhook name
             var subscriptionDto = await _tributeService.ProcessNewSubscription(
                 request.Name,
@@ -64,7 +62,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 request.CreatedAt,
                 request.SentAt);
 
-            _logger.LogInformation($"Successfully processed subscription with ID: {subscriptionDto.RecordId}");
+            _logger.LogInformation($"Successfully processed subscription - RecordId: {subscriptionDto.RecordId}, SubscriptionId: {payload.SubscriptionId}, User: {payload.TelegramUserId}");
 
             return Ok(new
             {
@@ -88,16 +86,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogDebug($"Request object is null: {request == null}");
-            if (request != null)
-            {
-                _logger.LogDebug($"Request.Name: '{request.Name}'");
-                _logger.LogDebug($"Request.CreatedAt: {request.CreatedAt}");
-                _logger.LogDebug($"Request.SentAt: {request.SentAt}");
-                _logger.LogDebug($"Request.Payload.ValueKind: {request.Payload.ValueKind}");
-            }
-
-            _logger.LogInformation($"Received webhook: {request?.Name ?? "NULL"}");
+            _logger.LogInformation($"Processing webhook: {request?.Name ?? "NULL"} (CreatedAt: {request?.CreatedAt}, SentAt: {request?.SentAt})");
 
             if (request == null)
             {
@@ -106,7 +95,6 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
             }
 
             // Deserialize the payload
-            _logger.LogDebug($"About to call GetRawText on Payload");
             string payloadJson;
             try
             {
@@ -129,6 +117,8 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 return BadRequest(new { error = "Invalid payload format" });
             }
 
+            _logger.LogInformation($"Parsed donation - Name: '{payload.DonationName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}, Anonymous: {payload.Anonymously}");
+
             // Process the donation with webhook name
             var donationDto = await _tributeService.ProcessRecurrentDonation(
                 request.Name,
@@ -136,7 +126,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 request.CreatedAt,
                 request.SentAt);
 
-            _logger.LogInformation($"Successfully processed donation with ID: {donationDto.RecordId}");
+            _logger.LogInformation($"Successfully processed donation - RecordId: {donationDto.RecordId}, DonationRequestId: {payload.DonationRequestId}, User: {payload.TelegramUserId}");
 
             return Ok(new
             {

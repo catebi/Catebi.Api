@@ -212,16 +212,21 @@ public class TributeService(
                 return;
             }
 
+            var chatId = long.Parse(superchatId);
+            var threadId = int.Parse(topicId);
+            
+            _logger.LogInformation($"Attempting to send subscription notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
+
             var message = $"🎉 New Subscription! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period}";
 
             await _telegramBotClient.Client.SendMessage(
-                chatId: long.Parse(superchatId),
+                chatId: chatId,
                 text: message,
                 parseMode: ParseMode.Html,
-                messageThreadId: int.Parse(topicId)
+                messageThreadId: threadId
             );
 
-            _logger.LogInformation($"Subscription notification sent to Telegram");
+            _logger.LogInformation($"Subscription notification sent successfully - ChatId: {chatId}, TopicId: {threadId}");
         }
         catch (Exception ex)
         {
@@ -242,16 +247,21 @@ public class TributeService(
                 return;
             }
 
+            var chatId = long.Parse(superchatId);
+            var threadId = int.Parse(topicId);
+            
+            _logger.LogInformation($"Attempting to send donation notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
+
             var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period}";
 
             await _telegramBotClient.Client.SendMessage(
-                chatId: long.Parse(superchatId),
+                chatId: chatId,
                 text: message,
                 parseMode: ParseMode.Html,
-                messageThreadId: int.Parse(topicId)
+                messageThreadId: threadId
             );
 
-            _logger.LogInformation($"Donation notification sent to Telegram");
+            _logger.LogInformation($"Donation notification sent successfully - ChatId: {chatId}, TopicId: {threadId}");
         }
         catch (Exception ex)
         {
