@@ -6,6 +6,9 @@ public class AtTributeSubscription
 {
     public string? RecordId { get; set; }
 
+    [JsonPropertyName("WebhookName")]
+    public string WebhookName { get; set; } = string.Empty;
+
     [JsonPropertyName("SubscriptionName")]
     public string SubscriptionName { get; set; } = string.Empty;
 

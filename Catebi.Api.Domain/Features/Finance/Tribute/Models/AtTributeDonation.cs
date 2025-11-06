@@ -6,6 +6,9 @@ public class AtTributeDonation
 {
     public string? RecordId { get; set; }
 
+    [JsonPropertyName("WebhookName")]
+    public string WebhookName { get; set; } = string.Empty;
+
     [JsonPropertyName("DonationRequestId")]
     public int DonationRequestId { get; set; }
 

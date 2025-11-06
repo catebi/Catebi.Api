@@ -37,12 +37,13 @@ public class TributeService : ITributeService
         _logger = logger;
     }
 
-    public async Task<SubscriptionDto> ProcessNewSubscription(NewSubscriptionPayload payload, DateTime createdAt, DateTime sentAt)
+    public async Task<SubscriptionDto> ProcessNewSubscription(string webhookName, NewSubscriptionPayload payload, DateTime createdAt, DateTime sentAt)
     {
-        _logger.LogInformation($"Processing new subscription: {payload.SubscriptionName} for user {payload.TelegramUserId}");
+        _logger.LogInformation($"Processing webhook '{webhookName}': {payload.SubscriptionName} for user {payload.TelegramUserId}");
 
         // Create Airtable record
         var fields = new Fields();
+        fields.AddField("WebhookName", webhookName);
         fields.AddField("SubscriptionName", payload.SubscriptionName);
         fields.AddField("SubscriptionId", payload.SubscriptionId);
         fields.AddField("PeriodId", payload.PeriodId);
@@ -75,6 +76,7 @@ public class TributeService : ITributeService
         var subscriptionDto = new SubscriptionDto
         {
             RecordId = response.Record.Id,
+            WebhookName = webhookName,
             SubscriptionName = payload.SubscriptionName,
             SubscriptionId = payload.SubscriptionId,
             PeriodId = payload.PeriodId,
@@ -94,12 +96,13 @@ public class TributeService : ITributeService
         return subscriptionDto;
     }
 
-    public async Task<DonationDto> ProcessRecurrentDonation(RecurrentDonationPayload payload, DateTime createdAt, DateTime sentAt)
+    public async Task<DonationDto> ProcessRecurrentDonation(string webhookName, RecurrentDonationPayload payload, DateTime createdAt, DateTime sentAt)
     {
-        _logger.LogInformation($"Processing recurrent donation: {payload.DonationName} for user {payload.TelegramUserId}");
+        _logger.LogInformation($"Processing webhook '{webhookName}': {payload.DonationName} for user {payload.TelegramUserId}");
 
         // Create Airtable record
         var fields = new Fields();
+        fields.AddField("WebhookName", webhookName);
         fields.AddField("DonationRequestId", payload.DonationRequestId);
         fields.AddField("DonationName", payload.DonationName);
         fields.AddField("Period", payload.Period);
@@ -129,6 +132,7 @@ public class TributeService : ITributeService
         var donationDto = new DonationDto
         {
             RecordId = response.Record.Id,
+            WebhookName = webhookName,
             DonationRequestId = payload.DonationRequestId,
             DonationName = payload.DonationName,
             Period = payload.Period,

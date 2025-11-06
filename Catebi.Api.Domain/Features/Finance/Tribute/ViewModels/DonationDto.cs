@@ -3,6 +3,7 @@ namespace Catebi.Api.Domain.Features.Finance.Tribute.ViewModels;
 public class DonationDto
 {
     public string? RecordId { get; set; }
+    public string WebhookName { get; set; } = string.Empty;
     public int DonationRequestId { get; set; }
     public string DonationName { get; set; } = string.Empty;
     public string Period { get; set; } = string.Empty;

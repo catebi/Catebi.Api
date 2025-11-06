@@ -8,12 +8,12 @@ public interface ITributeService
     /// <summary>
     /// Process a new subscription webhook payload
     /// </summary>
-    Task<SubscriptionDto> ProcessNewSubscription(NewSubscriptionPayload payload, DateTime createdAt, DateTime sentAt);
+    Task<SubscriptionDto> ProcessNewSubscription(string webhookName, NewSubscriptionPayload payload, DateTime createdAt, DateTime sentAt);
 
     /// <summary>
     /// Process a recurrent donation webhook payload
     /// </summary>
-    Task<DonationDto> ProcessRecurrentDonation(RecurrentDonationPayload payload, DateTime createdAt, DateTime sentAt);
+    Task<DonationDto> ProcessRecurrentDonation(string webhookName, RecurrentDonationPayload payload, DateTime createdAt, DateTime sentAt);
 
     /// <summary>
     /// Get all subscriptions from Airtable

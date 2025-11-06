@@ -3,6 +3,7 @@ namespace Catebi.Api.Domain.Features.Finance.Tribute.ViewModels;
 public class SubscriptionDto
 {
     public string? RecordId { get; set; }
+    public string WebhookName { get; set; } = string.Empty;
     public string SubscriptionName { get; set; } = string.Empty;
     public int SubscriptionId { get; set; }
     public int PeriodId { get; set; }

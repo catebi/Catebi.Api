@@ -8,6 +8,7 @@ public static class TributeConverter
     public static SubscriptionDto ToDto(AtTributeSubscription subscription) => new()
     {
         RecordId = subscription.RecordId,
+        WebhookName = subscription.WebhookName,
         SubscriptionName = subscription.SubscriptionName,
         SubscriptionId = subscription.SubscriptionId,
         PeriodId = subscription.PeriodId,
@@ -27,6 +28,7 @@ public static class TributeConverter
     public static DonationDto ToDto(AtTributeDonation donation) => new()
     {
         RecordId = donation.RecordId,
+        WebhookName = donation.WebhookName,
         DonationRequestId = donation.DonationRequestId,
         DonationName = donation.DonationName,
         Period = donation.Period,

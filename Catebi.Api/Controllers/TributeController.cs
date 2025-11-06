@@ -22,13 +22,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogInformation($"Received new subscription webhook: {request.Name}");
-
-            if (request.Name != "new_subscription")
-            {
-                _logger.LogWarning($"Invalid webhook name for subscription endpoint: {request.Name}");
-                return BadRequest(new { error = "Invalid webhook name, expected 'new_subscription'" });
-            }
+            _logger.LogInformation($"Received webhook: {request.Name}");
 
             // Deserialize the payload
             var payload = JsonSerializer.Deserialize<NewSubscriptionPayload>(
@@ -41,8 +35,9 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 return BadRequest(new { error = "Invalid payload format" });
             }
 
-            // Process the subscription
+            // Process the subscription with webhook name
             var subscriptionDto = await _tributeService.ProcessNewSubscription(
+                request.Name,
                 payload,
                 request.CreatedAt,
                 request.SentAt);
@@ -71,13 +66,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     {
         try
         {
-            _logger.LogInformation($"Received recurrent donation webhook: {request.Name}");
-
-            if (request.Name != "recurrent_donation")
-            {
-                _logger.LogWarning($"Invalid webhook name for donation endpoint: {request.Name}");
-                return BadRequest(new { error = "Invalid webhook name, expected 'recurrent_donation'" });
-            }
+            _logger.LogInformation($"Received webhook: {request.Name}");
 
             // Deserialize the payload
             var payload = JsonSerializer.Deserialize<RecurrentDonationPayload>(
@@ -90,8 +79,9 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
                 return BadRequest(new { error = "Invalid payload format" });
             }
 
-            // Process the donation
+            // Process the donation with webhook name
             var donationDto = await _tributeService.ProcessRecurrentDonation(
+                request.Name,
                 payload,
                 request.CreatedAt,
                 request.SentAt);
