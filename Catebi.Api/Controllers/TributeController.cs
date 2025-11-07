@@ -15,33 +15,57 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     private readonly ILogger<TributeController> _logger = logger;
 
     /// <summary>
-    /// Webhook endpoint for new subscription events from Tribute
+    /// Unified webhook endpoint for all Tribute events
     /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> WebhookNewSubscription([FromBody] TributeWebhookRequest request)
+    [HttpPost("Webhook")]
+    public async Task<IActionResult> Webhook([FromBody] JsonElement rawRequest)
     {
         try
         {
-            _logger.LogInformation($"Processing webhook: {request?.Name ?? "NULL"} (CreatedAt: {request?.CreatedAt}, SentAt: {request?.SentAt})");
+            // Handle test event
+            if (rawRequest.TryGetProperty("test_event", out var testEventValue))
+            {
+                _logger.LogInformation($"Received test event: {testEventValue.GetString()}");
+                return Ok(new { success = true, message = "Test event received successfully" });
+            }
+
+            // Deserialize as normal webhook request
+            var request = JsonSerializer.Deserialize<TributeWebhookRequest>(
+                rawRequest.GetRawText(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             if (request == null)
             {
-                _logger.LogError("Request is null");
+                _logger.LogError("Failed to deserialize webhook request");
                 return BadRequest(new { error = "Invalid request" });
             }
 
-            // Deserialize the payload
-            string payloadJson;
-            try
+            _logger.LogInformation($"Processing webhook: {request.Name} (CreatedAt: {request.CreatedAt}, SentAt: {request.SentAt})");
+
+            // Route based on webhook event name
+            return request.Name switch
             {
-                payloadJson = request.Payload.GetRawText();
-                _logger.LogDebug($"Payload JSON: {payloadJson}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error calling GetRawText. Payload.ValueKind: {request.Payload.ValueKind}");
-                throw;
-            }
+                "new_subscription" => await HandleNewSubscription(request),
+                "cancelled_subscription" => await HandleCancelledSubscription(request),
+                "new_donation" => await HandleNewDonation(request),
+                "recurrent_donation" => await HandleRecurrentDonation(request),
+                "cancelled_donation" => await HandleCancelledDonation(request),
+                _ => BadRequest(new { error = $"Unknown webhook type: {request.Name}" })
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing Tribute webhook");
+            return StatusCode(500, new { error = "Internal server error processing webhook" });
+        }
+    }
+
+    private async Task<IActionResult> HandleNewSubscription(TributeWebhookRequest request)
+    {
+        try
+        {
+            var payloadJson = request.Payload.GetRawText();
+            _logger.LogDebug($"Payload JSON: {payloadJson}");
 
             var payload = JsonSerializer.Deserialize<NewSubscriptionPayload>(
                 payloadJson,
@@ -55,7 +79,6 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
 
             _logger.LogInformation($"Parsed subscription - Name: '{payload.SubscriptionName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}");
 
-            // Process the subscription with webhook name
             var subscriptionDto = await _tributeService.ProcessNewSubscription(
                 request.Name,
                 payload,
@@ -74,38 +97,98 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing new subscription webhook");
-            return StatusCode(500, new { error = "Internal server error processing subscription" });
+            throw;
         }
     }
 
-    /// <summary>
-    /// Webhook endpoint for recurrent donation events from Tribute
-    /// </summary>
-    [HttpPost]
-    public async Task<IActionResult> WebhookRecurrentDonation([FromBody] TributeWebhookRequest request)
+    private async Task<IActionResult> HandleCancelledSubscription(TributeWebhookRequest request)
     {
         try
         {
-            _logger.LogInformation($"Processing webhook: {request?.Name ?? "NULL"} (CreatedAt: {request?.CreatedAt}, SentAt: {request?.SentAt})");
+            var payloadJson = request.Payload.GetRawText();
+            _logger.LogDebug($"Payload JSON: {payloadJson}");
 
-            if (request == null)
+            var payload = JsonSerializer.Deserialize<CancelledSubscriptionPayload>(
+                payloadJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (payload == null)
             {
-                _logger.LogError("Request is null");
-                return BadRequest(new { error = "Invalid request" });
+                _logger.LogError("Failed to deserialize cancelled subscription payload");
+                return BadRequest(new { error = "Invalid payload format" });
             }
 
-            // Deserialize the payload
-            string payloadJson;
-            try
+            _logger.LogInformation($"Parsed cancelled subscription - Name: '{payload.SubscriptionName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}, CancelReason: {payload.CancelReason}");
+
+            var subscriptionDto = await _tributeService.ProcessCancelledSubscription(
+                request.Name,
+                payload,
+                request.CreatedAt,
+                request.SentAt);
+
+            _logger.LogInformation($"Successfully processed cancelled subscription - RecordId: {subscriptionDto.RecordId}, SubscriptionId: {payload.SubscriptionId}, User: {payload.TelegramUserId}");
+
+            return Ok(new
             {
-                payloadJson = request.Payload.GetRawText();
-                _logger.LogDebug($"Payload JSON: {payloadJson}");
-            }
-            catch (Exception ex)
+                success = true,
+                message = "Cancelled subscription processed successfully",
+                recordId = subscriptionDto.RecordId
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing cancelled subscription webhook");
+            throw;
+        }
+    }
+
+    private async Task<IActionResult> HandleNewDonation(TributeWebhookRequest request)
+    {
+        try
+        {
+            var payloadJson = request.Payload.GetRawText();
+            _logger.LogDebug($"Payload JSON: {payloadJson}");
+
+            var payload = JsonSerializer.Deserialize<NewDonationPayload>(
+                payloadJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (payload == null)
             {
-                _logger.LogError(ex, $"Error calling GetRawText. Payload.ValueKind: {request.Payload.ValueKind}");
-                throw;
+                _logger.LogError("Failed to deserialize new donation payload");
+                return BadRequest(new { error = "Invalid payload format" });
             }
+
+            _logger.LogInformation($"Parsed new donation - Name: '{payload.DonationName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}, Anonymous: {payload.Anonymously}, Message: {payload.Message}");
+
+            var donationDto = await _tributeService.ProcessNewDonation(
+                request.Name,
+                payload,
+                request.CreatedAt,
+                request.SentAt);
+
+            _logger.LogInformation($"Successfully processed new donation - RecordId: {donationDto.RecordId}, DonationRequestId: {payload.DonationRequestId}, User: {payload.TelegramUserId}");
+
+            return Ok(new
+            {
+                success = true,
+                message = "New donation processed successfully",
+                recordId = donationDto.RecordId
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing new donation webhook");
+            throw;
+        }
+    }
+
+    private async Task<IActionResult> HandleRecurrentDonation(TributeWebhookRequest request)
+    {
+        try
+        {
+            var payloadJson = request.Payload.GetRawText();
+            _logger.LogDebug($"Payload JSON: {payloadJson}");
 
             var payload = JsonSerializer.Deserialize<RecurrentDonationPayload>(
                 payloadJson,
@@ -119,7 +202,6 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
 
             _logger.LogInformation($"Parsed donation - Name: '{payload.DonationName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}, Anonymous: {payload.Anonymously}");
 
-            // Process the donation with webhook name
             var donationDto = await _tributeService.ProcessRecurrentDonation(
                 request.Name,
                 payload,
@@ -138,7 +220,48 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing recurrent donation webhook");
-            return StatusCode(500, new { error = "Internal server error processing donation" });
+            throw;
+        }
+    }
+
+    private async Task<IActionResult> HandleCancelledDonation(TributeWebhookRequest request)
+    {
+        try
+        {
+            var payloadJson = request.Payload.GetRawText();
+            _logger.LogDebug($"Payload JSON: {payloadJson}");
+
+            var payload = JsonSerializer.Deserialize<CancelledDonationPayload>(
+                payloadJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (payload == null)
+            {
+                _logger.LogError("Failed to deserialize cancelled donation payload");
+                return BadRequest(new { error = "Invalid payload format" });
+            }
+
+            _logger.LogInformation($"Parsed cancelled donation - Name: '{payload.DonationName}', Amount: {payload.Amount / 100.0:F2} {payload.Currency}, Period: {payload.Period}, TelegramUserId: {payload.TelegramUserId}, Anonymous: {payload.Anonymously}");
+
+            var donationDto = await _tributeService.ProcessCancelledDonation(
+                request.Name,
+                payload,
+                request.CreatedAt,
+                request.SentAt);
+
+            _logger.LogInformation($"Successfully processed cancelled donation - RecordId: {donationDto.RecordId}, DonationRequestId: {payload.DonationRequestId}, User: {payload.TelegramUserId}");
+
+            return Ok(new
+            {
+                success = true,
+                message = "Cancelled donation processed successfully",
+                recordId = donationDto.RecordId
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing cancelled donation webhook");
+            throw;
         }
     }
 

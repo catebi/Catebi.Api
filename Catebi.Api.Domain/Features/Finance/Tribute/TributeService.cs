@@ -6,9 +6,7 @@ using Catebi.Api.Domain.Features.Finance.Tribute.Models;
 using Catebi.Api.Domain.Features.Finance.Tribute.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace Catebi.Api.Domain.Features.Finance.Tribute;
@@ -37,6 +35,7 @@ public class TributeService(
         // Create Airtable record
         var fields = new Fields();
         fields.AddField("WebhookName", webhookName);
+        fields.AddField("Type", webhookName);
         fields.AddField("SubscriptionName", payload.SubscriptionName);
         fields.AddField("SubscriptionId", payload.SubscriptionId);
         fields.AddField("PeriodId", payload.PeriodId);
@@ -94,6 +93,68 @@ public class TributeService(
         return subscriptionDto;
     }
 
+    public async Task<DonationDto> ProcessNewDonation(string webhookName, NewDonationPayload payload, DateTime createdAt, DateTime sentAt)
+    {
+        _logger.LogInformation($"Processing webhook '{webhookName}': {payload.DonationName} for user {payload.TelegramUserId}");
+
+        // Get Telegram username
+        var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+
+        // Create Airtable record
+        var fields = new Fields();
+        fields.AddField("WebhookName", webhookName);
+        fields.AddField("Type", webhookName);
+        fields.AddField("DonationRequestId", payload.DonationRequestId);
+        fields.AddField("DonationName", payload.DonationName);
+        fields.AddField("Period", payload.Period);
+        fields.AddField("Amount", payload.Amount);
+        fields.AddField("Currency", payload.Currency);
+        fields.AddField("Anonymously", payload.Anonymously);
+        fields.AddField("WebAppLink", payload.WebAppLink);
+        fields.AddField("UserId", payload.UserId);
+        fields.AddField("TelegramUserId", payload.TelegramUserId.ToString());
+        if (!string.IsNullOrEmpty(telegramUsername))
+        {
+            fields.AddField("TelegramUsername", telegramUsername);
+        }
+        fields.AddField("CreatedAt", createdAt);
+        fields.AddField("SentAt", sentAt);
+
+        var response = await _airtableRepository.CreateRecord(_donationTableName, fields);
+
+        if (!response.Success)
+        {
+            _logger.LogError($"Error creating donation record: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error creating donation record: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        _logger.LogInformation($"Donation record created with ID: {response.Record.Id}");
+
+        // Send Telegram notification
+        await SendNewDonationNotification(payload, response.Record.Id);
+
+        // Return DTO
+        var donationDto = new DonationDto
+        {
+            RecordId = response.Record.Id,
+            WebhookName = webhookName,
+            DonationRequestId = payload.DonationRequestId,
+            DonationName = payload.DonationName,
+            Period = payload.Period,
+            Amount = payload.Amount,
+            Currency = payload.Currency,
+            Anonymously = payload.Anonymously,
+            WebAppLink = payload.WebAppLink,
+            UserId = payload.UserId,
+            TelegramUserId = payload.TelegramUserId,
+            TelegramUsername = telegramUsername,
+            CreatedAt = createdAt,
+            SentAt = sentAt
+        };
+
+        return donationDto;
+    }
+
     public async Task<DonationDto> ProcessRecurrentDonation(string webhookName, RecurrentDonationPayload payload, DateTime createdAt, DateTime sentAt)
     {
         _logger.LogInformation($"Processing webhook '{webhookName}': {payload.DonationName} for user {payload.TelegramUserId}");
@@ -104,6 +165,7 @@ public class TributeService(
         // Create Airtable record
         var fields = new Fields();
         fields.AddField("WebhookName", webhookName);
+        fields.AddField("Type", webhookName);
         fields.AddField("DonationRequestId", payload.DonationRequestId);
         fields.AddField("DonationName", payload.DonationName);
         fields.AddField("Period", payload.Period);
@@ -132,6 +194,136 @@ public class TributeService(
 
         // Send Telegram notification
         await SendDonationNotification(payload, response.Record.Id);
+
+        // Return DTO
+        var donationDto = new DonationDto
+        {
+            RecordId = response.Record.Id,
+            WebhookName = webhookName,
+            DonationRequestId = payload.DonationRequestId,
+            DonationName = payload.DonationName,
+            Period = payload.Period,
+            Amount = payload.Amount,
+            Currency = payload.Currency,
+            Anonymously = payload.Anonymously,
+            WebAppLink = payload.WebAppLink,
+            UserId = payload.UserId,
+            TelegramUserId = payload.TelegramUserId,
+            TelegramUsername = telegramUsername,
+            CreatedAt = createdAt,
+            SentAt = sentAt
+        };
+
+        return donationDto;
+    }
+
+    public async Task<SubscriptionDto> ProcessCancelledSubscription(string webhookName, CancelledSubscriptionPayload payload, DateTime createdAt, DateTime sentAt)
+    {
+        _logger.LogInformation($"Processing webhook '{webhookName}': Cancelled subscription {payload.SubscriptionName} for user {payload.TelegramUserId}");
+
+        // Get Telegram username
+        var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+
+        // Create Airtable record
+        var fields = new Fields();
+        fields.AddField("WebhookName", webhookName);
+        fields.AddField("Type", webhookName);
+        fields.AddField("SubscriptionName", payload.SubscriptionName);
+        fields.AddField("SubscriptionId", payload.SubscriptionId);
+        fields.AddField("PeriodId", payload.PeriodId);
+        fields.AddField("Period", payload.Period);
+        fields.AddField("Price", payload.Price);
+        fields.AddField("Amount", payload.Amount);
+        fields.AddField("Currency", payload.Currency);
+        fields.AddField("UserId", payload.UserId);
+        fields.AddField("TelegramUserId", payload.TelegramUserId.ToString());
+        if (!string.IsNullOrEmpty(telegramUsername))
+        {
+            fields.AddField("TelegramUsername", telegramUsername);
+        }
+        fields.AddField("ChannelId", payload.ChannelId);
+        fields.AddField("ChannelName", payload.ChannelName);
+        fields.AddField("ExpiresAt", payload.ExpiresAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
+        fields.AddField("CreatedAt", createdAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
+        fields.AddField("SentAt", sentAt.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"));
+
+        var response = await _airtableRepository.CreateRecord(_subscriptionTableName, fields);
+
+        if (!response.Success)
+        {
+            _logger.LogError($"Error creating cancelled subscription record: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error creating cancelled subscription record: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        _logger.LogInformation($"Cancelled subscription record created with ID: {response.Record.Id}");
+
+        // Send Telegram notification
+        await SendCancelledSubscriptionNotification(payload, response.Record.Id);
+
+        // Return DTO
+        var subscriptionDto = new SubscriptionDto
+        {
+            RecordId = response.Record.Id,
+            WebhookName = webhookName,
+            SubscriptionName = payload.SubscriptionName,
+            SubscriptionId = payload.SubscriptionId,
+            PeriodId = payload.PeriodId,
+            Period = payload.Period,
+            Price = payload.Price,
+            Amount = payload.Amount,
+            Currency = payload.Currency,
+            UserId = payload.UserId,
+            TelegramUserId = payload.TelegramUserId,
+            TelegramUsername = telegramUsername,
+            ChannelId = payload.ChannelId,
+            ChannelName = payload.ChannelName,
+            ExpiresAt = payload.ExpiresAt,
+            CreatedAt = createdAt,
+            SentAt = sentAt
+        };
+
+        return subscriptionDto;
+    }
+
+    public async Task<DonationDto> ProcessCancelledDonation(string webhookName, CancelledDonationPayload payload, DateTime createdAt, DateTime sentAt)
+    {
+        _logger.LogInformation($"Processing webhook '{webhookName}': Cancelled donation {payload.DonationName} for user {payload.TelegramUserId}");
+
+        // Get Telegram username
+        var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+
+        // Create Airtable record
+        var fields = new Fields();
+        fields.AddField("WebhookName", webhookName);
+        fields.AddField("Type", webhookName);
+        fields.AddField("DonationRequestId", payload.DonationRequestId);
+        fields.AddField("DonationName", payload.DonationName);
+        fields.AddField("Period", payload.Period);
+        fields.AddField("Amount", payload.Amount);
+        fields.AddField("Currency", payload.Currency);
+        fields.AddField("Anonymously", payload.Anonymously);
+        fields.AddField("WebAppLink", payload.WebAppLink);
+        fields.AddField("UserId", payload.UserId);
+        fields.AddField("TelegramUserId", payload.TelegramUserId.ToString());
+        if (!string.IsNullOrEmpty(telegramUsername))
+        {
+            fields.AddField("TelegramUsername", telegramUsername);
+        }
+        fields.AddField("CreatedAt", createdAt);
+        fields.AddField("SentAt", sentAt);
+
+        var response = await _airtableRepository.CreateRecord(_donationTableName, fields);
+
+        if (!response.Success)
+        {
+            _logger.LogError($"Error creating cancelled donation record: {response.AirtableApiError.ErrorMessage}");
+            throw new Exception($"Error creating cancelled donation record: {response.AirtableApiError.ErrorMessage}");
+        }
+
+        _logger.LogInformation($"Cancelled donation record created with ID: {response.Record.Id}");
+
+        // Send Telegram notification
+        await SendCancelledDonationNotification(payload, response.Record.Id);
 
         // Return DTO
         var donationDto = new DonationDto
@@ -266,6 +458,121 @@ public class TributeService(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send donation notification to Telegram");
+        }
+    }
+
+    private async Task SendNewDonationNotification(NewDonationPayload payload, string recordId)
+    {
+        try
+        {
+            var superchatId = _configuration["Finance:Telegram:SuperchatId"];
+            var topicId = _configuration["Finance:Telegram:TopicId"];
+
+            if (string.IsNullOrEmpty(superchatId) || string.IsNullOrEmpty(topicId))
+            {
+                _logger.LogWarning("Telegram superchat or topic ID not configured, skipping notification");
+                return;
+            }
+
+            var chatId = long.Parse(superchatId);
+            var threadId = int.Parse(topicId);
+            
+            _logger.LogInformation($"Attempting to send new donation notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
+
+            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency}";
+            if (!string.IsNullOrEmpty(payload.Message))
+            {
+                message += $"\nMessage: {payload.Message}";
+            }
+
+            await _telegramBotClient.Client.SendMessage(
+                chatId: chatId,
+                text: message,
+                parseMode: ParseMode.Html,
+                messageThreadId: threadId
+            );
+
+            _logger.LogInformation($"New donation notification sent successfully - ChatId: {chatId}, TopicId: {threadId}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send new donation notification to Telegram");
+        }
+    }
+
+    private async Task SendCancelledSubscriptionNotification(CancelledSubscriptionPayload payload, string recordId)
+    {
+        try
+        {
+            var superchatId = _configuration["Finance:Telegram:SuperchatId"];
+            var topicId = _configuration["Finance:Telegram:TopicId"];
+
+            if (string.IsNullOrEmpty(superchatId) || string.IsNullOrEmpty(topicId))
+            {
+                _logger.LogWarning("Telegram superchat or topic ID not configured, skipping notification");
+                return;
+            }
+
+            var chatId = long.Parse(superchatId);
+            var threadId = int.Parse(topicId);
+            
+            _logger.LogInformation($"Attempting to send cancelled subscription notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
+
+            var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+            var message = $"❌ Subscription Cancelled! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} by user {telegramUsername}";
+            if (!string.IsNullOrEmpty(payload.CancelReason))
+            {
+                message += $"\nReason: {payload.CancelReason}";
+            }
+
+            await _telegramBotClient.Client.SendMessage(
+                chatId: chatId,
+                text: message,
+                parseMode: ParseMode.Html,
+                messageThreadId: threadId
+            );
+
+            _logger.LogInformation($"Cancelled subscription notification sent successfully - ChatId: {chatId}, TopicId: {threadId}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send cancelled subscription notification to Telegram");
+        }
+    }
+
+    private async Task SendCancelledDonationNotification(CancelledDonationPayload payload, string recordId)
+    {
+        try
+        {
+            var superchatId = _configuration["Finance:Telegram:SuperchatId"];
+            var topicId = _configuration["Finance:Telegram:TopicId"];
+
+            if (string.IsNullOrEmpty(superchatId) || string.IsNullOrEmpty(topicId))
+            {
+                _logger.LogWarning("Telegram superchat or topic ID not configured, skipping notification");
+                return;
+            }
+
+            var chatId = long.Parse(superchatId);
+            var threadId = int.Parse(topicId);
+            
+            _logger.LogInformation($"Attempting to send cancelled donation notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
+
+            var telegramUsername = await GetTelegramUsername(payload.TelegramUserId);
+            var message = $"❌ Donation Cancelled! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period} by user {telegramUsername}";
+
+            await _telegramBotClient.Client.SendMessage(
+                chatId: chatId,
+                text: message,
+                parseMode: ParseMode.Html,
+                messageThreadId: threadId
+            );
+
+            _logger.LogInformation($"Cancelled donation notification sent successfully - ChatId: {chatId}, TopicId: {threadId}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send cancelled donation notification to Telegram");
         }
     }
 
