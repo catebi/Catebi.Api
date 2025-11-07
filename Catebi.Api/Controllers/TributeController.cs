@@ -17,7 +17,7 @@ public class TributeController(ITributeService tributeService, ILogger<TributeCo
     /// <summary>
     /// Unified webhook endpoint for all Tribute events
     /// </summary>
-    [HttpPost("Webhook")]
+    [HttpPost]
     public async Task<IActionResult> Webhook([FromBody] JsonElement rawRequest)
     {
         try
