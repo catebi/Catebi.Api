@@ -444,7 +444,7 @@ public class TributeService(
             
             _logger.LogInformation($"Attempting to send donation notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
 
-            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} per {payload.Period}";
+            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} {payload.Period?.ToLower()}";
 
             await _telegramBotClient.Client.SendMessage(
                 chatId: chatId,
@@ -478,8 +478,8 @@ public class TributeService(
             var threadId = int.Parse(topicId);
             
             _logger.LogInformation($"Attempting to send new donation notification - ChatId: {chatId}, TopicId: {threadId}, RecordId: {recordId}");
-
-            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency}";
+            
+            var message = $"💝 New Donation! {payload.Amount / 100.0:F2}{payload.Currency} {payload.Period?.ToLower()}";
             if (!string.IsNullOrEmpty(payload.Message))
             {
                 message += $"\nMessage: {payload.Message}";
