@@ -9,23 +9,33 @@ WORKDIR /src
 COPY . .
 
 # Step 1: restore .net dependencies
-RUN dotnet restore -a $TARGETARCH \
-        --configfile "./nuget.build.config" \
-        -r linux-musl-x64 \
-        /p:PublishReadyToRun=true \
-        Catebi.Api.sln \
-        /m:1 /nr:false \
-        /p:UseSharedCompilation=false
+RUN case "$TARGETARCH" in \
+          amd64) DOTNET_RID="linux-musl-x64" ;; \
+          arm64) DOTNET_RID="linux-musl-arm64" ;; \
+          *) echo "Unsupported TARGETARCH=$TARGETARCH" && exit 1 ;; \
+        esac && \
+        dotnet restore \
+          --configfile "./nuget.build.config" \
+          -r "$DOTNET_RID" \
+          /p:PublishReadyToRun=true \
+          Catebi.Api.sln \
+          /m:1 /nr:false \
+          /p:UseSharedCompilation=false
 
 # Step 2: build and publish
 WORKDIR /src
-RUN dotnet publish Catebi.Api/Catebi.Api.csproj -c Release -a $TARGETARCH -o /app/publish \
-    # -r linux-musl-x64         \
-    --no-restore              \
-    --self-contained false    \
-    /p:RunAnalyzers=false \
-    /m:1 /nr:false \
-    /p:UseSharedCompilation=false
+RUN case "$TARGETARCH" in \
+          amd64) DOTNET_RID="linux-musl-x64" ;; \
+          arm64) DOTNET_RID="linux-musl-arm64" ;; \
+          *) echo "Unsupported TARGETARCH=$TARGETARCH" && exit 1 ;; \
+        esac && \
+    dotnet publish Catebi.Api/Catebi.Api.csproj -c Release -o /app/publish \
+      -r "$DOTNET_RID" \
+      --no-restore \
+      --self-contained false \
+      /p:RunAnalyzers=false \
+      /m:1 /nr:false \
+      /p:UseSharedCompilation=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine as base
 WORKDIR /app
