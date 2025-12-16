@@ -73,7 +73,7 @@ public class AdoptionBotAdminService(
         return result;
     }
 
-    public async Task<bool> ConfirmUser(string atUserId, bool isVolunteer, string? notes)
+    public async Task<bool> ConfirmUser(string atUserId, bool isVolunteer, string? notes, string? confirmedByTelegramUsername)
     {
         var userRecord = await AirtableRepository.RetrieveRecord<AtUser>(UserTableName, atUserId);
 
@@ -112,6 +112,39 @@ public class AdoptionBotAdminService(
         // Send a localized Telegram message
         var message = LocalizationService.GetUserConfirmationMessage(userModel.Language, userModel.Name, isVolunteer);
         await TelegramBotClient.SendMessage(userModel.TelegramChatId, message);
+
+        // Notify work chat (event topic) who confirmed the user
+        try
+        {
+            var (workChatId, eventTopicId) = await SettingsService.GetChatTopicInfo();
+            var confirmedBy = string.IsNullOrWhiteSpace(confirmedByTelegramUsername) ? "unknown" : confirmedByTelegramUsername.Trim();
+            var adminMessage = LocalizationService.GetAdminUserConfirmationNotification(
+                Languages.ru,
+                userModel.Name,
+                userModel.Telegram,
+                isVolunteer,
+                confirmedBy
+            );
+
+            var keyboard = new InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton.WithUrl("👥 Open Admin Users", "t.me/CatebiAdoptionBot/eventappa?startapp=admin_users")
+                ]
+            ]);
+
+            await CommonTelegramBotClient.Client.SendMessage(
+                chatId: workChatId,
+                adminMessage,
+                parseMode: ParseMode.Html,
+                replyMarkup: keyboard,
+                messageThreadId: (int)eventTopicId
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error sending work chat notification for user confirmation (UserRecordId: {UserRecordId})", atUserId);
+        }
 
         return true;
     }

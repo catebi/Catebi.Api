@@ -3,10 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.OpenApi.Models;
 using AirtableApiClient;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Resources;
 using Telegram.Bot;
 
 using Catebi.Api.HealthChecks;
@@ -17,6 +14,7 @@ using Catebi.Api.Authorization;
 using Catebi.Api.Authorization.Requirements;
 using Catebi.Api.Middleware;
 using Catebi.Api.Services;
+using Microsoft.OpenApi;
 
 namespace Catebi.Api;
 
@@ -212,20 +210,16 @@ public class Startup(IConfiguration configuration)
                 Name = ".AspNetCore.Identity.Application",
                 Description = "Identity cookie authentication"
             });
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "cookieAuth"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
-                    });
+            // c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            //         {
+            //             {
+            //                 new OpenApiSecurityScheme
+            //                 {
+            //                     Scheme = "cookieAuth"
+            //                 },
+            //                 Array.Empty<string>()
+            //             }
+            //         });
         });
         services.AddMemoryCache();
 

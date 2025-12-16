@@ -1,10 +1,10 @@
 # Tribute.tg Webhook Integration
 
-This document describes the Tribute.tg webhook integration for receiving new subscriptions and recurrent donations.
+This document describes the Tribute.tg webhook integration for receiving subscription and donation events.
 
 ## Overview
 
-The integration receives webhooks from Tribute.tg, validates the signature, stores data in Airtable, and sends notifications to a Telegram superchat topic.
+The integration receives webhooks from Tribute.tg through a unified endpoint, validates signatures, stores data in Airtable, and sends notifications to a Telegram superchat topic. All webhook event types (new_subscription, cancelled_subscription, recurrent_donation, cancelled_donation, and test events) are processed through a single endpoint that routes based on the event name.
 
 ## Architecture
 
@@ -53,6 +53,8 @@ Create a new Airtable base with two tables:
 ### TributeSubscription Table
 
 Fields:
+- `WebhookName` (Single line text) - Tribute webhook event name (e.g., "new_subscription", "cancelled_subscription")
+- `Type` (Single line text) - Event type, same as WebhookName, used for filtering
 - `SubscriptionName` (Single line text)
 - `SubscriptionId` (Number)
 - `PeriodId` (Number)
@@ -62,6 +64,7 @@ Fields:
 - `Currency` (Single line text)
 - `UserId` (Number)
 - `TelegramUserId` (Single line text)
+- `TelegramUsername` (Single line text)
 - `ChannelId` (Number)
 - `ChannelName` (Single line text)
 - `ExpiresAt` (Date)
@@ -71,6 +74,8 @@ Fields:
 ### TributeDonation Table
 
 Fields:
+- `WebhookName` (Single line text) - Tribute webhook event name (e.g., "new_donation", "recurrent_donation", "cancelled_donation")
+- `Type` (Single line text) - Event type, same as WebhookName, used for filtering
 - `DonationRequestId` (Number)
 - `DonationName` (Single line text)
 - `Period` (Single line text)
@@ -80,20 +85,31 @@ Fields:
 - `WebAppLink` (URL)
 - `UserId` (Number)
 - `TelegramUserId` (Single line text)
+- `TelegramUsername` (Single line text)
 - `CreatedAt` (Date)
 - `SentAt` (Date)
 
-## Webhook Endpoints
+## Webhook Endpoint
 
-### New Subscription Webhook
+### Unified Webhook
 
-**Endpoint**: `POST /Tribute/WebhookNewSubscription`
+**Endpoint**: `POST /Tribute/Webhook`
 
-**Description**: Receives new subscription events from Tribute.tg
+**Description**: Single unified endpoint that handles all Tribute webhook event types. The endpoint routes events based on the `name` field in the request body.
 
 **Authentication**: Validates `trbt-signature` header using HMAC-SHA256
 
-**Request Body**:
+**Supported Event Types**:
+- `new_subscription` - New subscription created
+- `cancelled_subscription` - Subscription cancelled
+- `new_donation` - One-time or first donation payment
+- `recurrent_donation` - Recurring donation payment
+- `cancelled_donation` - Recurring donation cancelled
+- Test event (special format: `{"test_event": "test_event"}`)
+
+### Event Examples
+
+#### New Subscription
 ```json
 {
   "name": "new_subscription",
@@ -125,15 +141,70 @@ Fields:
 }
 ```
 
-### Recurrent Donation Webhook
+#### Cancelled Subscription
+```json
+{
+  "name": "cancelled_subscription",
+  "created_at": "2025-03-21T11:20:44.013969Z",
+  "sent_at": "2025-03-21T11:20:44.527657077Z",
+  "payload": {
+    "subscription_name": "Support creativity 🌟",
+    "subscription_id": 1646,
+    "period_id": 1549,
+    "period": "monthly",
+    "price": 1000,
+    "amount": 1000,
+    "currency": "eur",
+    "user_id": 31326,
+    "telegram_user_id": 12321321,
+    "channel_id": 614,
+    "channel_name": "lbs",
+    "cancel_reason": "User requested cancellation",
+    "expires_at": "2025-03-20T11:13:44.737Z"
+  }
+}
+```
 
-**Endpoint**: `POST /Tribute/WebhookRecurrentDonation`
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Cancelled subscription processed successfully",
+  "recordId": "recXXXXXXXXXXXXXX"
+}
+```
 
-**Description**: Receives recurrent donation events from Tribute.tg
+#### New Donation
+```json
+{
+  "name": "new_donation",
+  "created_at": "2025-03-20T01:15:58.33246Z",
+  "sent_at": "2025-03-20T01:15:58.542279448Z",
+  "payload": {
+    "donation_request_id": 123,
+    "donation_name": "Support my work",
+    "message": "Thank you for your content!",
+    "period": "once",
+    "amount": 1000,
+    "currency": "usd",
+    "anonymously": false,
+    "web_app_link": "https://t.me/tribute/app?startapp=d123",
+    "user_id": 31326,
+    "telegram_user_id": 12321321
+  }
+}
+```
 
-**Authentication**: Validates `trbt-signature` header using HMAC-SHA256
+**Response**:
+```json
+{
+  "success": true,
+  "message": "New donation processed successfully",
+  "recordId": "recYYYYYYYYYYYYYY"
+}
+```
 
-**Request Body**:
+#### Recurrent Donation
 ```json
 {
   "name": "recurrent_donation",
@@ -159,6 +230,50 @@ Fields:
   "success": true,
   "message": "Donation processed successfully",
   "recordId": "recYYYYYYYYYYYYYY"
+}
+```
+
+#### Cancelled Donation
+```json
+{
+  "name": "cancelled_donation",
+  "created_at": "2025-03-20T01:15:58.33246Z",
+  "sent_at": "2025-03-20T01:15:58.542279448Z",
+  "payload": {
+    "donation_request_id": 123,
+    "donation_name": "Monthly support",
+    "period": "monthly",
+    "amount": 500,
+    "currency": "eur",
+    "anonymously": false,
+    "web_app_link": "https://t.me/tribute/app?startapp=d456",
+    "user_id": 31326,
+    "telegram_user_id": 12321321
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Cancelled donation processed successfully",
+  "recordId": "recYYYYYYYYYYYYYY"
+}
+```
+
+#### Test Event
+```json
+{
+  "test_event": "test_event"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "Test event received successfully"
 }
 ```
 
@@ -244,28 +359,53 @@ For anonymous donations, the donor information shows "Anonymous".
 1. Go to Creator Dashboard → Settings (three-dot menu) → API Keys section
 2. Generate API key if you haven't already
 3. Copy the API key and add it to your `appsettings.json`
-4. In the webhook settings, specify your webhook URLs:
-   - New Subscription: `https://your-api-domain.com/Tribute/WebhookNewSubscription`
-   - Recurrent Donation: `https://your-api-domain.com/Tribute/WebhookRecurrentDonation`
+4. In the webhook settings, specify your webhook URL:
+   - Webhook URL: `https://your-api-domain.com/Tribute/Webhook`
+   
+This single endpoint will handle all webhook event types (new_subscription, cancelled_subscription, recurrent_donation, cancelled_donation).
 
 ## Testing
 
-### Using Tribute Test Webhooks
+### Using Tribute Test API
 
-If Tribute provides a test webhook functionality in their dashboard, use it to send test events.
+Tribute provides a test API method that sends a test event to your webhook:
+
+```json
+{
+  "test_event": "test_event"
+}
+```
+
+The endpoint will respond with:
+```json
+{
+  "success": true,
+  "message": "Test event received successfully"
+}
+```
 
 ### Manual Testing with curl
 
-You can test the endpoints manually with curl (you'll need to generate a valid signature):
+You can test the endpoint manually with curl (you'll need to generate a valid signature):
 
 ```bash
-# Calculate signature
+# Calculate signature for test event
+echo -n '{"test_event":"test_event"}' | \
+  openssl dgst -sha256 -hmac "YOUR_API_KEY" | \
+  awk '{print $2}'
+
+# Make test request
+curl -X POST https://your-api-domain.com/Tribute/Webhook \
+  -H "Content-Type: application/json" \
+  -H "trbt-signature: CALCULATED_SIGNATURE" \
+  -d '{"test_event":"test_event"}'
+
+# Test new subscription event
 echo -n '{"name":"new_subscription","created_at":"2025-08-25T01:15:58.33246Z","sent_at":"2025-08-25T01:15:58.542279448Z","payload":{"subscription_name":"Test","subscription_id":1,"period_id":1,"period":"monthly","price":1000,"amount":700,"currency":"eur","user_id":123,"telegram_user_id":12345678,"channel_id":1,"channel_name":"test","expires_at":"2025-04-20T01:15:57.305733Z"}}' | \
   openssl dgst -sha256 -hmac "YOUR_API_KEY" | \
   awk '{print $2}'
 
-# Make request
-curl -X POST https://your-api-domain.com/Tribute/WebhookNewSubscription \
+curl -X POST https://your-api-domain.com/Tribute/Webhook \
   -H "Content-Type: application/json" \
   -H "trbt-signature: CALCULATED_SIGNATURE" \
   -d '{"name":"new_subscription","created_at":"2025-08-25T01:15:58.33246Z","sent_at":"2025-08-25T01:15:58.542279448Z","payload":{"subscription_name":"Test","subscription_id":1,"period_id":1,"period":"monthly","price":1000,"amount":700,"currency":"eur","user_id":123,"telegram_user_id":12345678,"channel_id":1,"channel_name":"test","expires_at":"2025-04-20T01:15:57.305733Z"}}'

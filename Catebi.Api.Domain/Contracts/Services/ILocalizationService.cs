@@ -30,6 +30,11 @@ public interface ILocalizationService
     string GetAdminUserRegistrationNotification(Languages language, string userName, string userTelegram, string userRecordId);
 
     /// <summary>
+    /// Get localized admin notification message for user confirmation
+    /// </summary>
+    string GetAdminUserConfirmationNotification(Languages language, string userName, string userTelegram, bool isVolunteer, string confirmedByTelegramUsername);
+
+    /// <summary>
     /// Get localized admin notification message for new payment submission
     /// </summary>
     string GetAdminPaymentSubmissionNotification(Languages language, string catName, string ownerName, string catRecordId, string paymentRecordId);

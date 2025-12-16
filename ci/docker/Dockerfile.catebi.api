@@ -1,7 +1,7 @@
 # https://github.com/dotnet/dotnet-docker/issues/4388
 # https://github.com/dotnet/dotnet-docker/tree/main/samples/aspnetapp
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS dotnet-build
 LABEL "Author" = "sasha.karpov@catebi.team"
 ARG TARGETARCH
 WORKDIR /src
@@ -27,7 +27,7 @@ RUN dotnet publish Catebi.Api/Catebi.Api.csproj -c Release -a $TARGETARCH -o /ap
     /m:1 /nr:false \
     /p:UseSharedCompilation=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine as base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine as base
 WORKDIR /app
 
 # Step 3: upgrade musl

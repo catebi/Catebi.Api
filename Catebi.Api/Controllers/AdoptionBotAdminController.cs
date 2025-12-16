@@ -21,8 +21,12 @@ public class AdoptionBotAdminController(IAdoptionBotAdminService AdminService) :
         // Get admin info from claims for audit trail
         var adminTelegramId = User.FindFirst("TelegramId")?.Value;
         var adminName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        var adminUsername = User.FindFirst("Username")?.Value;
+        var confirmedBy = !string.IsNullOrWhiteSpace(adminUsername)
+            ? $"@{adminUsername}"
+            : adminName;
 
-        var result = await AdminService.ConfirmUser(request.RecordId, request.IsVolunteer, request.Notes);
+        var result = await AdminService.ConfirmUser(request.RecordId, request.IsVolunteer, request.Notes, confirmedBy);
 
         if (result)
         {

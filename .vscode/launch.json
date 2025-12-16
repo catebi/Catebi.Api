@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Catebi.Api/bin/Debug/net9.0/Catebi.Api.dll",
+            "program": "${workspaceFolder}/Catebi.Api/bin/Debug/net10.0/Catebi.Api.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Catebi.Api",
             "stopAtEntry": false,

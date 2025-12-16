@@ -2,7 +2,7 @@ namespace Catebi.Api.Domain.Features.AdoptionBot;
 
 public interface IAdoptionBotAdminService
 {
-    Task<bool> ConfirmUser(string atUserId, bool isVolunteer, string? notes);
+    Task<bool> ConfirmUser(string atUserId, bool isVolunteer, string? notes, string? confirmedByTelegramUsername);
     Task<bool> ConfirmCatPayment(string paymentRecordId);
     Task<MessageDto> BroadcastMessage(string content, string adminRecordId);
     Task<IEnumerable<MessageDto>> GetBroadcastMessages();

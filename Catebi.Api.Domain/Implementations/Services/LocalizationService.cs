@@ -113,6 +113,23 @@ You can now access to push your cat to the Catbook or to book event for them."
         };
     }
 
+    public string GetAdminUserConfirmationNotification(Languages language, string userName, string userTelegram, bool isVolunteer, string confirmedByTelegramUsername)
+    {
+        static string NormalizeTelegram(string value)
+        {
+            var v = (value ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(v)) return "unknown";
+            return v.StartsWith("@", StringComparison.Ordinal) ? v : $"@{v}";
+        }
+
+        var userTg = NormalizeTelegram(userTelegram);
+        var adminTg = NormalizeTelegram(confirmedByTelegramUsername);
+        var roleText = isVolunteer ? "как волонтёр" : "как обычный пользователь";
+
+        // Keep the same short format for all languages (work chat is RU-oriented)
+        return $"✅ {userTg} подтвержден {adminTg} {roleText}";
+    }
+
     public string GetAdminPaymentSubmissionNotification(Languages language, string catName, string ownerName, string catRecordId, string paymentRecordId)
     {
         return language switch
