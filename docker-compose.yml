@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 networks:
   dev:
@@ -37,7 +37,7 @@ services:
       - dev
 
   catebi_db:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres
@@ -52,7 +52,7 @@ services:
       - dev
 
   backups:
-    image: prodrigestivill/postgres-backup-local:16-debian-4d1f860
+    image: prodrigestivill/postgres-backup-local:17-debian-d257e5d
     restart: always
     depends_on:
       - catebi_db

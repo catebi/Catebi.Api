@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 networks:
   dev:
@@ -22,7 +22,7 @@ services:
       - dev
 
   catebi_db:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres
