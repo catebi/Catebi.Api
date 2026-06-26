@@ -2,8 +2,8 @@ name: Build and Deploy to VPS
 
 on:
   push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+    branches:
+      - main
 
 jobs:
   checkout:
@@ -99,8 +99,8 @@ jobs:
             echo "FINANCE_AIRTABLE_APIKEY=${{ secrets.FINANCE_AIRTABLE_APIKEY }}" >> .env
             echo "FINANCE_AIRTABLE_BASEID=${{ secrets.FINANCE_AIRTABLE_BASEID }}" >> .env
             echo "CORS_ALLOWED_ORIGINS=${{ vars.CORS_ALLOWED_ORIGINS }}" >> .env
-            docker-compose down
-            docker-compose up --build -d
+            docker compose down
+            docker compose up --build -d
             sleep 10  # Wait for 10 seconds before performing health check
 
   healthcheck:
