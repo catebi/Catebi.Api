@@ -1,8 +1,5 @@
-version: "3.8"
-
 networks:
   dev:
-    driver: bridge
 
 services:
   catebi_api:
@@ -14,8 +11,9 @@ services:
     depends_on:
       - catebi_db
     container_name: catebi_api
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ci/docker/Dockerfile.catebi.api
@@ -43,8 +41,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASS}
       - POSTGRES_DB=postgres
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     restart: always
     volumes:
       - postgres-data:/var/lib/postgresql/data/
